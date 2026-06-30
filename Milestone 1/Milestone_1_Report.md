@@ -148,7 +148,7 @@ This project's primary contribution is not a new model architecture. It lies in 
 
 ---
 
-## 7. Evidence Plan — How We Will Demonstrate Success
+## 7. Evaluation Plan 
 
 The proposed system will be evaluated at both the component and system levels. Evidence will be gathered to assess the accuracy of vehicle damage detection, the relevance of retrieved policy information, and the quality of the generated claim reports, providing a comprehensive evaluation of the end-to-end pipeline.
 
