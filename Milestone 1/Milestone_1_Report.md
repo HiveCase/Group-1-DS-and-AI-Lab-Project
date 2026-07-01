@@ -148,19 +148,37 @@ This project's primary contribution is not a new model architecture. It lies in 
 
 ---
 
-## 7. Evaluation Plan 
+## 7. High-Level Architecture Diagram
+
+![High-Level Architecture Diagram](multimodal_damage_assessment_architecture.svg)
+
+---
+
+## 8. Modern VLMs vs Modular YOLO + RAG + LLM — Justification
+
+1. Separation of concerns / independent debuggability - In Modular design, you can isolate which component has caused the fault. Using a single VLM is a black box, a bad output may not necessarily give us any signal as to what went wrong. It will make our iterations slower.
+
+2. Measurable Detection - YOLO will produce bounding boxes and classes very precisely. VLMs describe damage in a not-so precise manner, calibrated localisation and the severity of damage could be unreliable and hard to score against the ground-truth of datasets (VehiDE).
+
+3. Cost, Latency and Deployment - A fine-tuned YOLO-n/s will run on cpu or a small gpu and can be deployed on huggingface spaces with memory overhead to spare. Large VLMs would need paid API calls or dedicated GPU memory that spaces cannot reliably host.
+
+VLMs are not worse, but modular is the better fit for our constraints.
+
+---
+
+## 9. Evaluation Plan 
 
 The proposed system will be evaluated at both the component and system levels. Evidence will be gathered to assess the accuracy of vehicle damage detection, the relevance of retrieved policy information, and the quality of the generated claim reports, providing a comprehensive evaluation of the end-to-end pipeline.
 
-### 7.1 Vehicle Damage Detection
+### 9.1 Vehicle Damage Detection
 
 The computer vision component will be evaluated using standard object detection metrics, including mAP@50, mAP@50–95, Precision, Recall, and F1-score on unseen test images. These metrics will indicate how accurately the YOLO model detects and classifies different types of vehicle damage.
 
-### 7.2 Policy Retrieval
+### 9.2 Policy Retrieval
 
 The RAG component will be evaluated by measuring whether it retrieves the correct policy clauses for detected damage. Retrieval Precision@3 will be used to determine how often the relevant policy information appears within the top three retrieved results. This demonstrates that the language model is provided with appropriate supporting evidence before generating a report.
 
-### 7.3 Generated Claim Reports
+### 9.3 Generated Claim Reports
 
 The final reports will be assessed for three key qualities:
 
@@ -174,9 +192,9 @@ Together, these evaluations will demonstrate the effectiveness of each individua
 
 ---
 
-## 8. Dataset Plan
+## 10. Dataset Plan
 
-### 8.1 Vision Datasets
+### 10.1 Vision Datasets
 
 | Dataset | Size | Annotation type | Role |
 |---|---|---|---|
@@ -185,7 +203,7 @@ Together, these evaluations will demonstrate the effectiveness of each individua
 | COCO Car Damage | ~500 images | COCO-format bounding boxes | Supplementary for architecture comparison |
 | Car Damage Severity | ~2,300 images | Minor / Moderate / Severe labels | Severity classifier calibration |
 
-### 8.2 Synthetic Data
+### 10.2 Synthetic Data
 
 No public dataset of insurance policy documents paired with vehicle damage annotations exists. The team will produce:
 
@@ -195,7 +213,11 @@ No public dataset of insurance policy documents paired with vehicle damage annot
 
 ---
 
-## 9. References
+## 11. Challenges and Project Risks
+
+---
+
+## 12. References
 
 1. K. Patil, S. Kulkarni, S. M. P. B., and V. K. Bairagi, "Car Damage Detection Using Convolutional Neural Networks," *International Journal of Engineering Research & Technology (IJERT)*, vol. 6, no. 2, 2017.
 
