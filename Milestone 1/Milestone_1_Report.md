@@ -9,14 +9,14 @@
 
 ### 1.1 What problem are we solving?
 
-Insurance claim processing for vehicle damage is a slow, labour-intensive, and inconsistent process. When a vehicle is damaged, a claim assessor must manually examine submitted photographs, cross-reference the relevant sections of the policyholder's insurance document, and produce a written preliminary assessment report — a workflow that is both time-consuming and susceptible to inter-assessor variability.
+Insurance claim processing for vehicle damage is a slow, labour-intensive, and inconsistent process. When a vehicle is damaged, a claim assessor must manually examine submitted photographs, cross-reference the relevant sections of the policyholder's insurance document, and produce a written preliminary assessment report - a workflow that is both time-consuming and susceptible to inter-assessor variability.
 
 This project builds an AI-powered decision-support system that automates the initial stage of this assessment pipeline.
 
 ### 1.2 Who are the stakeholders?
 
-| Stakeholder Type | Type | Interest in the system |
-|---|---|---|
+| **Stakeholder** | **Type** | **Interest in the system** |
+| --- | --- | --- |
 | Insurance claim assessors | Primary | Faster, consistent first-pass reports; reduced repetitive manual work |
 | Insurance companies | Primary | Reduced processing time per claim; standardised initial assessments |
 | Policyholders (vehicle owners) | Secondary | Faster claim decisions; transparent, traceable damage documentation |
@@ -26,18 +26,27 @@ This project builds an AI-powered decision-support system that automates the ini
 **In Scope**
 
 - Detection and localisation of visible vehicle damage from uploaded photographs using a fine-tuned YOLO object detection model.
+
 - Classification of damage into types: dent, scratch, crack, broken lamp, flat tyre, shattered glass.
+
 - Severity estimation per detected damage region, categorised as Minor, Moderate, or Severe, based on the proportion of the damaged area relative to the vehicle surface visible in the image.
+
 - Retrieval of relevant insurance policy clauses from a user-provided policy PDF using a RAG pipeline.
+
 - LLM-generated preliminary claim assessment report containing: detected damage summary table, estimated severity per damage, applicable policy coverage, and recommended next steps for the assessor.
+
 - A Gradio-based web interface accessible via Hugging Face Spaces for live demonstration.
 
 **Out of Scope**
 
-- Final claim approval or rejection: The system produces a preliminary report only; all final decisions remain with a qualified human assessor.
-- Repair costs depend on numerous variables such as vehicle make, model, manufacturing year, spare-part prices, labour rates, geographic location of service centre, and other policies — none of which are determinable from photographs alone. Hence the final repair cost estimation is out of scope of this project.
-- Detection of damage not visible in photographs such as internal mechanical damage, frame damage, or anything that requires expertise is out of scope for this project.
+- Final claim approval or rejection: The system produces a preliminary report only, all final decisions remain with a qualified human assessor.
+
+- Repair costs depend on numerous variables such as vehicle make, model, manufacturing year, spare-part prices, labour rates, geographic location of service centre, and other policies none of which are determinable from photographs alone. Hence the final repair cost estimation is out of scope of this project.
+
+- Detection of damage not visible in photographs such as internal mechanical damage, frame damage or anything that requires expertise is out of scope for this project.
+
 - Synthetic policy will be used throughout the project due to the proprietary nature of real insurer documents.
+
 - Multi-vehicle accident scenarios, fraud detection, or third-party liability assessment are out of scope for this project.
 
 ---
