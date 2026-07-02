@@ -385,3 +385,14 @@ Even with RAG grounding, LLMs can introduce inaccuracies when the retrieved clau
 
 
 ---
+
+***Declaration:***
+
+I have read and reviewed this submission in its entirety and confirm that it accurately represents the work of our group. By entering my initials and the date below, I acknowledge my approval of this submission.
+
+| Name | Date of Review |
+|---|---|
+| Satyajeet Kumar | 02 July 2026 |
+
+
+---
