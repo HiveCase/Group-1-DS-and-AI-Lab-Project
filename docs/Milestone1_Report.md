@@ -395,7 +395,7 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 | Satyajeet Kumar | 02 July 2026 | S.K. |
 | Agnesh Kundu | 02 July 2026 | A.K. |
 |Pranab Kumar Manna | 02 July 2026| P.K.Manna|
-| | | |
+| Venkata Siva Kamal Guddanti | 02 July 2026 | Kamal G |
 | | | |
 
 
