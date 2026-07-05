@@ -5,7 +5,7 @@ __pycache__/
 venv/
 
 .agent
-*/.gitkeep
+.gitkeep
 
 # Jupyter
 .ipynb_checkpoints/
