@@ -24,7 +24,7 @@
 ## Team Responsibilities
 
 TODO: Add team members and ownership areas.
-# Contribution Table
+### Contribution Table
 
 | Group Member | Contribution | Remarks |
 |--------------|--------------|---------|
