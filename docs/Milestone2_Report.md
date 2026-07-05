@@ -24,7 +24,6 @@
 | **Name** | **Email ID** | **GitHub Profile** |
 | --- | --- | --- |
 | SATYAJEET KUMAR | 23f1003132@ds.study.iitm.ac.in | [HiveCase](https://github.com/HiveCase) |
-| AGNESH KUNDU | 22f1000768@ds.study.iitm.ac.in | [AgneshK](https://github.com/AgneshK) |
 | ANUJ GAUTAM | 21f1002407@ds.study.iitm.ac.in | [anujgautam1](https://github.com/anujgautam1) |
 | PRANAB KUMAR MANNA | 22f1000887@ds.study.iitm.ac.in | [pranab92](https://github.com/pranab92) |
 | VENKATA SIVA KAMAL GUDDANTI | 22f2000094@ds.study.iitm.ac.in | [22f2000094](https://github.com/22f2000094) |
@@ -346,7 +345,6 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 | Name | Date of Review | Sign |
 |---|---|---|
 | Satyajeet Kumar | | |
-| Agnesh Kundu | | |
 | Pranab Kumar Manna | | |
 | Venkata Siva Kamal Guddanti | | |
 | Anuj Gautam | | |
