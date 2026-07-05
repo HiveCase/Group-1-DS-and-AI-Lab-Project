@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data and model artifacts
+data/raw/*
+data/processed/*
+models/checkpoints/*
+outputs/*
+
+# Keep folder placeholders
+!.gitkeep
+!README.md
