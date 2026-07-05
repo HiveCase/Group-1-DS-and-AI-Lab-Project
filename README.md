@@ -1,2 +1,2 @@
-# Group-1-DS-and-AI-Lab-Project
+# Multimodal Damage Assessment for Insurance Claims
 
