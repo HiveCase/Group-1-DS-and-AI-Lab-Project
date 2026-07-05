@@ -26,9 +26,9 @@
 TODO: Add team members and ownership areas.
 ### Contribution Table
 
-| Group Member | Contribution | Remarks |
-|--------------|--------------|---------|
-| **Satyajeet Kumar** | | |
-| **Pranab Kumar Manna** | | |
-| **Venkata Siva Kamal Guddanti** | | |
-| **Anuj Gautam** | | |
+| Group Member | Contribution Percentage | Ownership Area | Remarks |
+|--------------|--------------|---------|---------|
+| **Satyajeet Kumar** | | | |
+| **Pranab Kumar Manna** | | | |
+| **Venkata Siva Kamal Guddanti** | | | |
+| **Anuj Gautam** | | | |
