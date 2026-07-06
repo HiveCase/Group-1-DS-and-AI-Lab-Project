@@ -331,12 +331,13 @@ Together, these evaluations will demonstrate the effectiveness of each individua
 
 ### 9.1 Vision Datasets
 
-| **Dataset** | **Size** | **Annotation type** | **Role** |
-| --- | --- | --- | --- |
-| VehiDE | 13,945 images | Bounding boxes, 32k+ instances | Primary training and evaluation dataset |
-| CarDD | Varies by split | Pixel-level segmentation masks | Supplementary segmentation fine-tuning |
-| COCO Car Damage | ~500 images | COCO-format bounding boxes | Supplementary for architecture comparison |
-| Car Damage Severity | ~2,300 images | Minor / Moderate / Severe labels | Severity classifier calibration |
+| **Dataset** | **Size** | **Annotation type** | **Role** | **Justification for selection** |
+| --- | --- | --- | --- | --- |
+| VehiDE | 13,945 images | Bounding boxes, 32k+ instances | Primary training and evaluation dataset | Largest publicly available annotated vehicle damage dataset; diverse damage types across real vehicle images; sufficient scale for YOLO fine-tuning without data augmentation alone. |
+| CarDD | Varies by split | Pixel-level segmentation masks | Supplementary segmentation fine-tuning | Provides pixel-level masks unavailable in VehiDE; enables training and evaluating the segmentation head of YOLO11-seg, which underpins the bounding-box severity proxy. |
+| COCO Car Damage | ~500 images | COCO-format bounding boxes | Supplementary for architecture comparison | COCO-format annotations allow direct integration with standard detection training pipelines and enable comparison against published COCO-trained baselines. |
+| Car Damage Severity | ~2,300 images | Minor / Moderate / Severe labels | Severity classifier calibration | The only publicly available dataset with human-assigned severity labels matching our three-category scheme; used to calibrate and validate the bounding-box-area severity proxy against human judgment. |
+
 
 ### 9.2 Synthetic Data
 
