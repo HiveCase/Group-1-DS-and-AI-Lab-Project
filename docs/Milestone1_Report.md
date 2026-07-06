@@ -70,8 +70,14 @@
   - [10.3 Domain Shift Between Training Data and Real Claims](#103-domain-shift-between-training-data-and-real-claims)
   - [10.4 RAG Faithfulness with Synthetic Policies](#104-rag-faithfulness-with-synthetic-policies)
   - [10.5 LLM Hallucination on Edge Cases](#105-llm-hallucination-on-edge-cases)
-- [11. References](#11-references)
-
+  - [10.6 Compute Resources and Infrastructure](#106-compute-resources-and-infrastructure)
+  - [10.7 API and Deployment Risks](#107-api-and-deployment-risks)
+  - [10.8 Expected Failure Scenarios](#108-expected-failure-scenarios)
+- [11. Ethical Considerations](#11-ethical-considerations)
+  - [11.1 Fairness and Bias in Insurance Decision Support](#111-fairness-and-bias-in-insurance-decision-support)
+  - [11.2 Privacy of Uploaded Images and Documents](#112-privacy-of-uploaded-images-and-documents)
+  - [11.3 Transparency of AI-Generated Reports](#113-transparency-of-ai-generated-reports)
+- [12. References](#12-references)
 
 ---
 
@@ -346,29 +352,70 @@ To ensure the synthetic policies are a reasonable approximation of real-world do
 
 ## 10. Expected Challenges and Project Risks
 
-## 10.1 Dataset Imbalance
+### 10.1 Dataset Imbalance
 
 Real-world vehicle damage distributions are highly skewed. Dents and scratches are far more frequent than flat tyres or shattered glass, and this imbalance is reflected in publicly available datasets including VehiDE. A model trained on an imbalanced dataset will likely exhibit high precision on common classes but poor recall on rare ones, directly threatening the per-class F1 target of >= 0.65 set in Section 4.1. Mitigation strategies include class-weighted loss functions, oversampling minority classes with augmentation, and monitoring per-class metrics separately rather than relying solely on overall mAP.
 
-## 10.2 Severity Estimation Reliability
+### 10.2 Severity Estimation Reliability
 
-The severity estimation approach in this project relies on the ratio of bounding box area to visible vehicle surface area as a proxy for damage extent. This is a practical approximation but has known failure modes: a large but shallow scratch may be classified as Severe, while a small but deep crack may be classified as Minor. Additionally, image angle, zoom level, and occlusion all affect the apparent size of a damage region. The severity accuracy target of >= 0.75 (Section 4.3) is achievable but will require careful calibration against the Car Damage Severity dataset and human annotator consensus.
+The severity estimation approach in this project relies on the ratio of bounding box area to visible vehicle surface area as a proxy for damage extent. This is a practical approximation but has known failure modes: a large but shallow scratch may be classified as Severe, while a small but deep crack may be classified as Minor. Additionally, image angle, zoom level, and occlusion all affect the apparent size of a damage region. Alternative approaches considered include training a dedicated severity classification head on the Car Damage Severity dataset, or querying a VLM with a structured prompt to assign severity from the image. The dedicated classifier approach was not selected as the primary method because the Car Damage Severity dataset (~2,300 images) is insufficient to train a reliable standalone classifier without severe overfitting; however, it will be used for calibration. The VLM approach introduces API cost and latency that are incompatible with the deployment target. The bounding-box proxy therefore remains the primary method, with the Car Damage Severity dataset used to validate its accuracy against human labels, as described in Section 4.3. The severity accuracy target of >= 0.75 reflects this constraint.
 
-## 10.3 Domain Shift Between Training Data and Real Claims
+### 10.3 Domain Shift Between Training Data and Real Claims
 
 The YOLO model will be trained on datasets collected under controlled or near-controlled conditions (studio photography, consistent lighting, unoccluded vehicles). Real insurance claim photographs are submitted by policyholders using mobile phones under variable lighting, angles, and occlusion conditions. This domain shift is a standard challenge in applied computer vision and may cause a significant drop in mAP when moving from the test set to realistic inputs. Mitigation includes augmenting training data with brightness, contrast, and perspective transforms, and stress-testing the model on a manually collected set of realistic claim-style photographs.
 
-## 10.4 RAG Faithfulness with Synthetic Policies
+### 10.4 RAG Faithfulness with Synthetic Policies
 
 Because real insurer policy documents cannot be used due to proprietary constraints, the RAG pipeline will be developed and evaluated against synthetic policies authored by the project team. This introduces a risk that the synthetic policies are structurally simpler or more consistently formatted than real documents, making retrieval artificially easy. The team will deliberately vary clause phrasing, introduce negations and exceptions, and include distractor clauses to stress-test the retrieval component and produce a more robust faithfulness evaluation.
 
-## 10.5 LLM Hallucination on Edge Cases
+### 10.5 LLM Hallucination on Edge Cases
 
 Even with RAG grounding, LLMs can introduce inaccuracies when the retrieved clauses are ambiguous or when no relevant clause is found for a detected damage type. In such cases, the model may fall back on parametric knowledge and fabricate plausible-sounding but incorrect coverage details. This risk is mitigated by the faithfulness evaluation (Section 4.2) and by including explicit instructions in the prompt to state "not covered under retrieved policy" rather than infer coverage from general knowledge.
 
+### 10.6 Compute Resources and Infrastructure
+
+YOLO fine-tuning will be conducted on a single NVIDIA T4 GPU available via Google Colab Pro or Kaggle Notebooks (up to 30 free GPU hours per week each). A T4 provides 16 GB VRAM, sufficient for YOLO11m-seg training at 640px input with a batch size of 16. Estimated training time for 50 epochs on VehiDE is approximately 2-4 hours per run. RAG index construction will be performed on CPU using FAISS. LLM inference will use the OpenAI API (GPT-4o) or Gemini API as a fallback. The Gradio demo will be deployed on Hugging Face Spaces using a CPU-basic instance (2 vCPU, 16 GB RAM), sufficient for inference-only use. If GPU availability on free tiers is interrupted, the team will use Kaggle's GPU quota as a secondary environment.
+
+### 10.7 API and Deployment Risks
+
+The report generation component depends on access to the OpenAI GPT-4o API or an equivalent paid service. Risks include API rate limiting during evaluation, unexpected cost overruns if the number of evaluation samples grows beyond budget, and potential changes to API response format. Mitigations include caching all API responses during development, using Gemini 1.5 Flash as a cost-efficient fallback, and testing prompt templates with smaller models before large-scale evaluation. Deployment on Hugging Face Spaces introduces a further risk of resource contention during the live demonstration. A local fallback environment will be prepared as a contingency for the Milestone 6 presentation.
+
+### 10.8 Expected Failure Scenarios
+
+Beyond the technical risks described above, the system has identifiable expected failure modes that evaluators should be aware of:
+
+- **Poor lighting and low image quality:** The YOLO model will likely underperform on photographs taken at night, in heavy rain, or with significant motion blur. Scratches and small cracks are particularly sensitive to lighting conditions, as their visual texture is disrupted under low light.
+
+- **Heavy occlusion:** If a damaged area is obscured by another vehicle, debris, or an unfavourable camera angle, the model cannot detect it. A dented wheel arch hidden behind an open door, for example, will not appear in the detection output.
+
+- **Internal and hidden damage:** Damage to internal components (engine, gearbox, frame, wiring) is entirely outside the scope of a vision-based system and will not be flagged in any report. All generated reports will include a disclaimer reminding assessors to conduct a physical inspection for non-visible damage.
+
+- **Novel damage types:** Damage classes not seen during training (fire damage, water submersion marks, vandalism beyond standard scratching) may be missed or misclassified.
+
+- **Multi-vehicle images:** If multiple damaged vehicles appear in a single image, the model may confuse detections across vehicles. The current scope restricts use to single-vehicle photographs.
+
 ---
 
-# 11. References
+## 11. Ethical Considerations
+
+This project is positioned as a decision-support tool and not a replacement for qualified human assessors. Nevertheless, several ethical dimensions warrant explicit discussion.
+
+### 11.1 Fairness and Bias in Insurance Decision Support
+
+If the training datasets (VehiDE, CarDD) are not representative of the full diversity of vehicle types, damage patterns, or photographic conditions encountered by real policyholders, the model may systematically underperform for certain groups. For example, if certain vehicle colours, body types, or damage patterns are underrepresented in training data, detection rates may differ across policyholders, introducing a form of indirect algorithmic bias into the claim handling process. As a mitigation, we will include a stratified error analysis across damage classes and, where metadata is available, across vehicle types in the later stages of project. All generated reports will explicitly state that they are AI-generated preliminary assessments subject to human review.
+
+### 11.2 Privacy of Uploaded Images and Documents
+
+Vehicle damage photographs and insurance policy documents submitted by users are sensitive personal data. The Gradio demo deployed on Hugging Face Spaces will display a clear notice stating that no submitted images or documents are stored or logged by the system beyond the current session. In a production deployment, data handling would need to comply with applicable data protection regulations such as India's Digital Personal Data Protection (DPDP) Act and, where relevant, the GDPR. The project team will not collect, store, or share any real policyholder data at any stage of the project.
+
+### 11.3 Transparency of AI-Generated Reports
+
+All reports generated by the system will include a prominent disclaimer stating that the report is a preliminary AI-assisted assessment, has not been verified by a licensed insurance assessor, and must not be used as the sole basis for a final claim decision. This is consistent with the system's intended role as a first-pass tool that supports, rather than replaces, the assessor's judgment.
+
+
+---
+
+# 12. References
 
 [1] K. Patil, S. Kulkarni, S. M. P. B., and V. K. Bairagi, "Car Damage Detection Using Convolutional Neural Networks," International Journal of Engineering Research & Technology (IJERT), vol. 6, no. 2, 2017.
 
