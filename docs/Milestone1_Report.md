@@ -105,7 +105,7 @@ This project builds an AI-powered decision-support system that automates the ini
 
 - Classification of damage into types: dent, scratch, crack, broken lamp, flat tyre, shattered glass.
 
-- Severity estimation per detected damage region, categorised as Minor, Moderate, or Severe, based on the proportion of the damaged area relative to the vehicle surface visible in the image.
+- Severity estimation per detected damage region, categorised as Minor, Moderate, or Severe, based on the proportion of the damaged area relative to the vehicle surface visible in the image. This is a practical approximation with known limitations (discussed in Section 10.2), which also evaluates alternative severity estimation approaches.
 
 - Retrieval of relevant insurance policy clauses from a user-provided policy PDF using a RAG pipeline.
 
@@ -201,15 +201,14 @@ Therefore, although modern VLMs offer an attractive end-to-end paradigm, the pro
 
 The table below provides a structured critical comparison of the key prior works reviewed, covering datasets, models, reported metrics, and limitations.
 
-| **Paper / System** | **Dataset** | **Model / Method** | **Metrics Reported** | **Key Limitations** |
+| **Paper / System** | **Dataset** | **Model / Method** | **Metrics Reported (Scores)** | **Key Limitations** |
 | --- | --- | --- | --- | --- |
-| Patil et al. (2017) | Custom small dataset | CNN (classification only) | Accuracy (binary) | No localisation; very small dataset; no severity estimation; no report generation |
-| He et al. Mask R-CNN (ICCV 2017) | COCO | Mask R-CNN | mAP (COCO) | High compute cost; requires pre-segmented vehicle; no insurance domain adaptation |
-| CarDD benchmark (USTC, 2023) | CarDD (pixel-level) | Various (benchmark evaluation) | mAP, segmentation IoU | Detection only; no downstream report generation; limited damage classes |
-| YOLOv8 damage segmentation (IEEE, 2024) | Custom 4k images, 21 part + 8 damage classes | YOLOv8-seg | mAP@50 (part and damage) | No policy integration; no structured report; severity not defined; proprietary dataset |
-| HL-YOLO (MDPI, 2025) | Custom vehicle dataset | YOLO11 + heterogeneous convolutions | Precision, Recall, mAP | Detection only; no NLP or policy component; severity not addressed |
-| Lewis et al. RAG (NeurIPS, 2020) | NaturalQuestions, TriviaQA | DPR + BART | Exact Match, F1 | Text-only; not applied to visual or insurance contexts; hallucination risk without strict grounding |
-| **This project (2026)** | **VehiDE + CarDD + synthetic policy PDFs** | **YOLO11 + FAISS RAG + GPT-4o** | **mAP@50, Retrieval P@3, MRR, Human Eval** | **Synthetic policies; bounding-box severity proxy; single-vehicle images only** |
+| Patil et al. (2017) | Custom small dataset | CNN (classification only) | Binary accuracy: ~84% on held-out test set | No localisation; very small dataset; no severity estimation; no report generation |
+| He et al. Mask R-CNN (ICCV 2017) | COCO | Mask R-CNN | Box AP: 37.1, Mask AP: 35.7 on COCO test-dev | High compute cost; requires pre-segmented vehicle; no insurance domain adaptation |
+| CarDD benchmark (USTC, 2023) | CarDD (pixel-level) | Various (benchmark evaluation) | Best mAP@50: ~0.71 across evaluated models | Detection only; no downstream report generation; limited damage classes |
+| YOLOv8 damage segmentation (IEEE, 2024) | Custom 4k images, 21 part + 8 damage classes | YOLOv8-seg | mAP@50: ~0.73 for damage classes; part segmentation mAP@50: ~0.81 | No policy integration; no structured report; severity not defined; proprietary dataset |
+| HL-YOLO (MDPI, 2025) | Custom vehicle dataset | YOLO11 + heterogeneous convolutions | Precision: +2.5%, Recall: +5.8%, mAP: +3-4% over YOLO11 baseline; absolute mAP@50: ~0.79 | Detection only; no NLP or policy component; severity not addressed |
+| Lewis et al. RAG (NeurIPS, 2020) | NaturalQuestions, TriviaQA | DPR + BART | NQ Exact Match: 44.5; TriviaQA Exact Match: 56.8 | Text-only; not applied to visual or insurance contexts; hallucination risk without strict grounding |
 
 
 ---
@@ -277,6 +276,8 @@ This project's primary contribution is not a new model architecture. It lies in 
 - **Deployment context and usability:** We will develop publicly accessible, open-source end-to-end pipeline combining vision-based damage detection with policy-aware LLM report generation. The system is specifically designed for practical use by claim assessors significantly reducing the time required to produce the first draft of insurance claim assessment report.
 
 - **Pipeline integration:** The YOLO detection results will be converted into a structured format and provided to an LLM together with relevant policy information retrieved using RAG. This enables the LLM to generate responses that are accurate, grounded in policy, and easy for non-technical assessors to understand. The integration of YOLO-based object detection with a RAG-supported LLM forms the core of this project.
+
+- **Defined scope and reproducible benchmark:** This project draws a deliberate boundary around what a vision-based pipeline operating on photographs alone can reliably deliver at an academic scale. Capabilities such as repair cost estimation require vehicle-specific data (make, model, manufacturing year, local labour rates, spare-part prices) that lie outside the image, and integrating them is a separate engineering problem beyond the scope of this work. By restricting severity to three human-interpretable categories (Minor, Moderate, Severe), focusing on visible damage only, and grounding all report conclusions in retrieved policy clauses with a documented evaluation protocol, this project establishes a clearly scoped, reproducible benchmark for the preliminary claim assessment task. This scope definition is itself a contribution: it gives future work a well-defined baseline to build on and compare against. 
 
 
 ---
