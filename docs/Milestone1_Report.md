@@ -290,9 +290,9 @@ The system consists of three sequential stages that interact as follows:
 
 **Stage 1 - YOLO Detection Module:** The uploaded vehicle image is passed through a fine-tuned YOLOv8/YOLOv11 model. The model outputs a list of detected damage regions, each with a class label (dent, scratch, crack, broken lamp, flat tyre, shattered glass), a bounding box, a confidence score, and a severity category (Minor, Moderate, Severe) derived from the proportion of the bounding box area relative to the visible vehicle surface.
 
-**Stage 2 - RAG Pipeline:** At ingestion time, the policy PDF is chunked (200-400 tokens with overlap), embedded using a bi-encoder model, and stored in a vector index. At inference time, a query is constructed from the detected damage classes and submitted to the retriever, which returns the top-k most relevant policy clauses.
+**Stage 2 - RAG Pipeline:** At ingestion time, the policy PDF is chunked into overlapping 300-token segments using LangChain's RecursiveCharacterTextSplitter. Each chunk is embedded using sentence-transformers/all-MiniLM-L6-v2 [11], a lightweight bi-encoder model that produces 384-dimensional dense vectors, and stored in a FAISS flat index [12] (cosine similarity). At inference time, a query string is constructed from the detected damage classes and submitted to the retriever, which returns the top-k most relevant policy chunks.
 
-**Stage 3 - LLM Report Generator:** The structured detection output from Stage 1 and the retrieved clauses from Stage 2 are combined into a prompt. An LLM generates the preliminary claim assessment report, constrained to the retrieved policy context to minimise hallucination.
+**Stage 3 - LLM Report Generator:** The structured detection output from Stage 1 and the retrieved clauses from Stage 2 are combined into a structured prompt. GPT-4o [18] (primary, via the OpenAI API) generates the preliminary claim assessment report, constrained to the retrieved policy context to minimise hallucination. Gemini 1.5 Flash is maintained as a cost-efficient fallback in case of API budget constraints or rate limiting.
 
 ---
 
@@ -407,7 +407,12 @@ If the training datasets (VehiDE, CarDD) are not representative of the full dive
 
 ### 11.2 Privacy of Uploaded Images and Documents
 
-Vehicle damage photographs and insurance policy documents submitted by users are sensitive personal data. The Gradio demo deployed on Hugging Face Spaces will display a clear notice stating that no submitted images or documents are stored or logged by the system beyond the current session. In a production deployment, data handling would need to comply with applicable data protection regulations such as India's Digital Personal Data Protection (DPDP) Act and, where relevant, the GDPR. The project team will not collect, store, or share any real policyholder data at any stage of the project.
+Vehicle damage photographs and insurance policy documents submitted by users are sensitive personal data that may contain Personally Identifiable Information (PII) such as names, addresses, vehicle registration numbers, and contact details. The project team will not collect, store, share, or disclose any original user-submitted data to third parties at any stage of the project.
+For the Gradio demo deployed on Hugging Face Spaces, a clear on-screen notice will inform users that no submitted images or documents are retained beyond the current session. In any internal testing that requires handling of sample data containing PII, the team will apply one of the following two anonymisation strategies before use:
+- **PII detection and masking:** Sensitive fields in text inputs and policy documents will be identified and redacted using the Microsoft Presidio SDK (a Python-based open-source PII detection and anonymisation framework), which supports entity types such as names, phone numbers, addresses, and national identifiers. Detected entities will be replaced with type-level placeholders (for example, <PERSON>, <ADDRESS>) before the data enters any pipeline component.
+- **Attribute shuffling:** Where structured sample records are used for testing (for example, rows of claimant profiles), personal attributes will be shuffled across records so that no combination of values in a single row corresponds to a real individual. For instance, a dataset containing records `[Ram, 23, IT, Kolkata]` and `[Shyam, 34, CSE, HP]` would be shuffled to `[Shyam, 23, CSE, Kolkata]` and `[Ram, 34, IT, HP]`, preserving statistical distributions without retaining any real person's complete profile.
+  
+In a production deployment, data handling would need to comply with applicable data protection regulations, including India's Digital Personal Data Protection (DPDP) Act and, where relevant, the GDPR.
 
 ### 11.3 Transparency of AI-Generated Reports
 
