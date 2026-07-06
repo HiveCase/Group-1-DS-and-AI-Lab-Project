@@ -223,19 +223,26 @@ Object detection and segmentation research uses the following standard metrics:
 
 ### 4.2 RAG Pipeline Metrics
 
-| Metric | Definition | Target |
-|---|---|---|
-| Retrieval precision @3 | Proportion of test queries for which the relevant policy clause is retrieved within the top three retrieved chunks. | ≥ 0.80 |
+| **Metric** | **Definition** | **Target** |
+| --- | --- | --- |
+| Retrieval Precision@3 | Proportion of test queries for which the relevant policy clause is retrieved within the top three retrieved chunks. | ≥ 0.80 |
+| Recall@3 | Proportion of all ground-truth relevant clauses that are retrieved within the top three results, averaged across queries. | ≥ 0.75 |
+| MRR (Mean Reciprocal Rank) | Average of the reciprocal rank of the first correct clause retrieved. Captures how highly the correct clause is ranked, not just whether it appears. | ≥ 0.70 |
 | Faithfulness score | Proportion of generated reports whose conclusions are fully supported by the retrieved policy clauses, assessed through manual evaluation of a 20-sample test set. | ≥ 0.85 |
+
 
 ### 4.3 End-to-End and Usability Metrics
 
-| Metric | Definition | Target |
-|---|---|---|
-| Human evaluation accuracy | 3 raters score each generated report for factual accuracy on a 1-5 scale. | Mean ≥ 4.0 |
-| Human evaluation clarity | 3 raters score report clarity and usefulness to a claim assessor. | Mean ≥ 4.0 |
+| **Metric** | **Definition** | **Target** |
+| --- | --- | --- |
+| Human evaluation - accuracy | 3 raters score each generated report for factual accuracy on a 1-5 scale. | Mean ≥ 4.0 |
+| Human evaluation - clarity | 3 raters score report clarity and usefulness to a claim assessor. | Mean ≥ 4.0 |
 | Ablation delta | mAP and report quality improvement of full system vs. baseline (ResNet50 classifier, no RAG, no LLM). | Positive across all metrics |
 | Severity accuracy | Agreement rate between model-assigned Minor/Moderate/Severe and human-assigned severity on a 30-image test set. | ≥ 0.75 |
+| BERTScore (F1) | Token-level semantic similarity between generated report text and a human-authored reference summary, measured using contextual BERT embeddings. Captures semantic fidelity beyond exact word match. | ≥ 0.80 F1 |
+
+> **Note on target values:** The mAP@50 >= 0.70 target is consistent with the threshold commonly accepted for production-grade automotive object detection and is achievable on VehiDE given the scale of the dataset and YOLO11's pretrained backbone. The Retrieval Precision@3 >= 0.80 target reflects performance reported by Lewis et al. on comparable document-retrieval tasks. The human evaluation Mean >= 4.0 threshold is set conservatively relative to the 5-point scale, ensuring it reflects genuine assessor utility rather than marginal acceptability. All targets will be revisited if dataset or compute constraints make them infeasible within the project timeline.
+
 
 ---
 
@@ -305,7 +312,7 @@ The final reports will be assessed for three key qualities:
 
 - **Clarity:** whether the report is understandable and useful for a claims assessor.
 
-These aspects will be evaluated through human assessment using a predefined scoring rubric.
+A sample of 20 generated reports will be independently scored by three evaluators: two team members who were not involved in generating the specific reports being evaluated, and one external reviewer with familiarity with insurance documents. Each evaluator will score each report on Accuracy (1-5), Faithfulness (1-5), and Clarity (1-5) using a fixed rubric provided in advance. The rubric defines each score point explicitly: for example, a Faithfulness score of 5 requires all coverage recommendations to be directly traceable to a retrieved clause, while a score of 1 indicates at least one fabricated entitlement. Evaluators will score reports independently and without seeing each other's ratings. Disagreements larger than one point on any dimension will be resolved through discussion and a majority vote. Inter-rater agreement will be reported using Cohen's kappa. BERTScore F1 will be computed automatically against a human-authored reference summary as an additional objective signal.
 
 Together, these evaluations will demonstrate the effectiveness of each individual component as well as the overall end-to-end claim assessment pipeline.
 
@@ -331,6 +338,8 @@ No public dataset of insurance policy documents paired with vehicle damage annot
 - Each policy will have coverage clauses mapped to all six damage classes so that the RAG pipeline can be evaluated against known ground-truth clause retrievals.
 
 - Fifty synthetic incident descriptions paired with test images, for end-to-end report quality evaluation.
+
+To ensure the synthetic policies are a reasonable approximation of real-world documents and do not make retrieval artificially easy, the following quality measures will be applied. First, the policies will be modelled on the structure and clause vocabulary of publicly available sample insurance policy documents from Indian general insurers, adapting clause phrasing without reproducing proprietary text. Second, each policy will include at least five distractor clauses per damage class: clauses that are semantically related but do not grant coverage, such as exclusion clauses, sub-limit clauses, and clauses conditioned on circumstances not present in the test scenarios. Third, clause phrasing will be deliberately varied across the five policies (synonyms, different sentence structures, negations) to stress-test the embedding model's ability to retrieve semantically equivalent clauses under surface variation. Finally, a team member not involved in writing the policies will verify that the retrieval task is non-trivial by attempting to match test queries to ground-truth clauses manually before running the automated RAG evaluation.0
 
 ---
 
