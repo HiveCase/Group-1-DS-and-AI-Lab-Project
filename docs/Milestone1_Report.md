@@ -85,7 +85,7 @@
 
 ### 1.1 What problem are we solving?
 
-Insurance claim processing for vehicle damage is a slow, labour-intensive, and inconsistent process. When a vehicle is damaged, a claim assessor must manually examine submitted photographs, cross-reference the relevant sections of the policyholder's insurance document, and produce a written preliminary assessment report - a workflow that is both time-consuming and susceptible to inter-assessor variability.
+Insurance claim processing for vehicle damage is a slow, labour-intensive, and inconsistent process. When a vehicle is damaged, a claim assessor must manually examine submitted photographs, cross-reference the relevant sections of the policyholder's insurance document, and produce a written preliminary assessment report, a workflow that is both time-consuming and susceptible to inter-assessor variability.
 
 This project builds an AI-powered decision-support system that automates the initial stage of this assessment pipeline.
 
@@ -161,6 +161,8 @@ YOLO-series models (You Only Look Once) have become the dominant architecture fo
 
 - **CarDD dataset paper:** The CarDD dataset (USTC, 2023) introduced pixel-level damage annotations across six damage categories and served as a benchmark for segmentation-based damage models.
 
+>Among single-stage and two-stage object detectors, Faster R-CNN (Ren et al. [19]), DETR (Carion et al. [20]), and SSD (Liu et al., [21]) were also considered as alternatives to YOLO. Faster R-CNN achieves higher precision on small objects through its region proposal network but is significantly slower at inference, making it unsuitable for a Gradio demo that must run on a CPU-basic Hugging Face Spaces instance within a reasonable response time. DETR offers a cleaner transformer-based detection formulation that eliminates hand-crafted anchors, but it is known to require substantially more training data and epochs to converge compared to convolutional detectors, a constraint given the eight-week project timeline and limited GPU hours. SSD achieves faster inference than Faster R-CNN but consistently reports lower mAP than YOLO on comparable object detection benchmarks, particularly on small and occluded objects. YOLO11 and YOLOv8 were therefore selected as the primary detector family, offering the best combination of detection accuracy, native segmentation head support, training speed on the available hardware, and a well-maintained deployment ecosystem via Ultralytics.
+
 ### 3.2 Retrieval-Augmented Generation (RAG) for Document Understanding
 
 Lewis et al. (2020, NeurIPS) introduced RAG as a framework for grounding LLM outputs in retrieved document context, reducing hallucination in knowledge-intensive tasks. Since then, RAG has been applied extensively to legal, medical, and financial document understanding domains closely analogous to insurance policy retrieval.
@@ -191,7 +193,7 @@ Recent multimodal Vision Language Models (VLMs) such as Florence-2 [15], Qwen2.5
 
 - **Separation of concerns and independent debuggability.** In a modular design, each component can be tested and diagnosed in isolation. If the final report is incorrect, it is possible to determine whether the fault lies in the detection stage, the retrieval stage, or the generation stage, and fix it independently. A monolithic VLM is a black box in this regard: a poor output provides little signal as to what went wrong, slowing down iteration significantly within a time-boxed academic project.
 
-- **Measurable, ground-truth-comparable detection.** YOLO produces precise, structured outputs - bounding boxes, class labels, and confidence scores - that can be directly evaluated against the annotated ground truth in datasets such as VehiDE using standard metrics (mAP@50, F1 per class). VLMs describe damage in natural language, which is not directly comparable to bounding-box annotations. Calibrated localisation and severity scoring from VLM outputs would require an additional post-processing step and would still be difficult to score reliably, undermining the evaluation framework defined in Section 4.1.
+- **Measurable, ground-truth-comparable detection.** YOLO produces precise, structured outputs (bounding boxes, class labels, and confidence scores) that can be directly evaluated against the annotated ground truth in datasets such as VehiDE using standard metrics (mAP@50, F1 per class). VLMs describe damage in natural language, which is not directly comparable to bounding-box annotations. Calibrated localisation and severity scoring from VLM outputs would require an additional post-processing step and would still be difficult to score reliably, undermining the evaluation framework defined in Section 4.1.
 
 - **Cost, latency, and deployment.** A fine-tuned YOLO small or nano variant runs on CPU or a small GPU and can be hosted on Hugging Face Spaces within the available memory and compute budget. Large VLMs require either paid API access or dedicated GPU memory that Spaces cannot reliably provide. The modular pipeline keeps each component lightweight and independently replaceable.
 
@@ -346,7 +348,7 @@ No public dataset of insurance policy documents paired with vehicle damage annot
 
 - Fifty synthetic incident descriptions paired with test images, for end-to-end report quality evaluation.
 
-To ensure the synthetic policies are a reasonable approximation of real-world documents and do not make retrieval artificially easy, the following quality measures will be applied. First, the policies will be modelled on the structure and clause vocabulary of publicly available sample insurance policy documents from Indian general insurers, adapting clause phrasing without reproducing proprietary text. Second, each policy will include at least five distractor clauses per damage class: clauses that are semantically related but do not grant coverage, such as exclusion clauses, sub-limit clauses, and clauses conditioned on circumstances not present in the test scenarios. Third, clause phrasing will be deliberately varied across the five policies (synonyms, different sentence structures, negations) to stress-test the embedding model's ability to retrieve semantically equivalent clauses under surface variation. Finally, a team member not involved in writing the policies will verify that the retrieval task is non-trivial by attempting to match test queries to ground-truth clauses manually before running the automated RAG evaluation.0
+To ensure the synthetic policies are a reasonable approximation of real-world documents and do not make retrieval artificially easy, the following quality measures will be applied. First, the policies will be modelled on the structure and clause vocabulary of publicly available sample insurance policy documents from Indian general insurers, adapting clause phrasing without reproducing proprietary text. Second, each policy will include at least five distractor clauses per damage class: clauses that are semantically related but do not grant coverage, such as exclusion clauses, sub-limit clauses, and clauses conditioned on circumstances not present in the test scenarios. Third, clause phrasing will be deliberately varied across the five policies (synonyms, different sentence structures, negations) to stress-test the embedding model's ability to retrieve semantically equivalent clauses under surface variation. Finally, a team member not involved in writing the policies will verify that the retrieval task is non-trivial by attempting to match test queries to ground-truth clauses manually before running the automated RAG evaluation.
 
 ---
 
@@ -435,7 +437,7 @@ All reports generated by the system will include a prominent disclaimer stating 
 
 [6] H. Scullen, "VehiDE: Vehicle Damage Detection Dataset," Kaggle, 2023. Available: [https://www.kaggle.com/datasets/hendrichscullen/vehide-dataset-automatic-vehicle-damage-detection](https://www.kaggle.com/datasets/hendrichscullen/vehide-dataset-automatic-vehicle-damage-detection)
 
-[7] G. Jocher et al., "Ultralytics YOLOv8," GitHub Repository, 2023. Available: [https://github.com/ultralytics/ultralytics](https://github.com/ultralytics/ultralytics)
+[7] G. Jocher et al., "YOLO by Ultralytics," Zenodo, 2023. doi:10.5281/zenodo.7347926.
 
 [8] "Advanced Car Damage Assessment Using YOLOv8: A Hybrid Approach to Detection and Masking," IEEE, 2024. doi:10.1109/ICCV.2025.10983960.
 
@@ -459,6 +461,12 @@ All reports generated by the system will include a prominent disclaimer stating 
 
 [18] OpenAI, "GPT-4 Technical Report," arXiv preprint, arXiv:2303.08774, 2023.
 
+[19] S. Ren, K. He, R. Girshick, and J. Sun, "Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks," in Advances in Neural Information Processing Systems (NeurIPS), vol. 28, 2015.
+
+[20] N. Carion, F. Massa, G. Synnaert, N. Usunier, A. Kirillov, and S. Zagoruyko, "End-to-End Object Detection with Transformers," in Proceedings of the European Conference on Computer Vision (ECCV), 2020, pp. 213-229.
+
+[21] W. Liu, D. Anguelov, D. Erhan, C. Szegedy, S. Reed, C.-Y. Fu, and A. C. Berg, "SSD: Single Shot MultiBox Detector," in Proceedings of the European Conference on Computer Vision (ECCV), 2016, pp. 21-37.
+
 
 ---
 
@@ -472,8 +480,5 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 |Pranab Kumar Manna | 02 July 2026| P.K.Manna|
 | Venkata Siva Kamal Guddanti | 02 July 2026 | Kamal G |
 | Anuj Gautam | 02 July 2026 | Anuj Gautam |
-| | | |
-
-
 
 ---
