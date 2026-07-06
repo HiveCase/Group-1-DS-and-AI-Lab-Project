@@ -49,6 +49,7 @@
   - [3.2 Retrieval-Augmented Generation (RAG) for Document Understanding](#32-retrieval-augmented-generation-rag-for-document-understanding)
   - [3.3 Multimodal Insurance AI - Industry and Academic Work](#33-multimodal-insurance-ai---industry-and-academic-work)
   - [3.4 Comparison of Modern VLMs and a Modular YOLO + RAG + LLM Architecture](#34-comparison-of-modern-vlms-and-a-modular-yolo--rag--llm-architecture)
+  - [3.5 Literature Comparison Summary](#35-literature-comparison-summary)
 - [4. Metrics and Success Definitions](#4-metrics-and-success-definitions)
   - [4.1 Vision Model Metrics](#41-vision-model-metrics)
   - [4.2 RAG Pipeline Metrics](#42-rag-pipeline-metrics)
@@ -189,6 +190,20 @@ Recent multimodal Vision Language Models (VLMs) such as Florence-2 [15], Qwen2.5
 - **Cost, latency, and deployment.** A fine-tuned YOLO small or nano variant runs on CPU or a small GPU and can be hosted on Hugging Face Spaces within the available memory and compute budget. Large VLMs require either paid API access or dedicated GPU memory that Spaces cannot reliably provide. The modular pipeline keeps each component lightweight and independently replaceable.
 
 Therefore, although modern VLMs offer an attractive end-to-end paradigm, the proposed modular pipeline better satisfies the project's requirements for interpretability, quantitative evaluation, computational efficiency, and iterative development.
+
+### 3.5 Literature Comparison Summary
+
+The table below provides a structured critical comparison of the key prior works reviewed, covering datasets, models, reported metrics, and limitations.
+
+| **Paper / System** | **Dataset** | **Model / Method** | **Metrics Reported** | **Key Limitations** |
+| --- | --- | --- | --- | --- |
+| Patil et al. (2017) | Custom small dataset | CNN (classification only) | Accuracy (binary) | No localisation; very small dataset; no severity estimation; no report generation |
+| He et al. Mask R-CNN (ICCV 2017) | COCO | Mask R-CNN | mAP (COCO) | High compute cost; requires pre-segmented vehicle; no insurance domain adaptation |
+| CarDD benchmark (USTC, 2023) | CarDD (pixel-level) | Various (benchmark evaluation) | mAP, segmentation IoU | Detection only; no downstream report generation; limited damage classes |
+| YOLOv8 damage segmentation (IEEE, 2024) | Custom 4k images, 21 part + 8 damage classes | YOLOv8-seg | mAP@50 (part and damage) | No policy integration; no structured report; severity not defined; proprietary dataset |
+| HL-YOLO (MDPI, 2025) | Custom vehicle dataset | YOLO11 + heterogeneous convolutions | Precision, Recall, mAP | Detection only; no NLP or policy component; severity not addressed |
+| Lewis et al. RAG (NeurIPS, 2020) | NaturalQuestions, TriviaQA | DPR + BART | Exact Match, F1 | Text-only; not applied to visual or insurance contexts; hallucination risk without strict grounding |
+| **This project (2026)** | **VehiDE + CarDD + synthetic policy PDFs** | **YOLO11 + FAISS RAG + GPT-4o** | **mAP@50, Retrieval P@3, MRR, Human Eval** | **Synthetic policies; bounding-box severity proxy; single-vehicle images only** |
 
 
 ---
