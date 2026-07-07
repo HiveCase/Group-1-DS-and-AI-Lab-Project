@@ -80,7 +80,7 @@ This change in system design does not change *which* underlying data the project
 
 ---
 
-## 2. Data Sources: Identification and Verification
+## 2. Dataset Identification
 
 ### 2.1 Primary Vision Dataset - VehiDE
 
@@ -118,7 +118,7 @@ Three supplementary datasets identified in Milestone 1 (Section 9.1) will be use
 
 ---
 
-## 3. Detailed Dataset Description
+## 3. Dataset Description
 
 ### 3.1 VehiDE - Structure and Feature Distribution
 
@@ -157,9 +157,17 @@ Prior to preprocessing, the following image-level attributes will be profiled in
 
 ---
 
-## 4. Dataset Quality Assessment
+## 4. Data Governance
 
-### 4.1 Missing and Corrupt Data
+---
+
+## 5. Exploratory Data Analysis (EDA)
+
+---
+
+## 6. Dataset Preprocessing
+
+### 6.1 Missing and Corrupt Data
 
 The following automated checks will be run over the full VehiDE image and annotation set before any training occurs:
 
@@ -168,7 +176,7 @@ The following automated checks will be run over the full VehiDE image and annota
 - **Corrupt files**: images that fail to open/decode (e.g., truncated JPEGs) will be identified with a batch integrity check and excluded.
 - **Empty/degenerate boxes**: bounding boxes with zero or negative width/height, or coordinates outside the image bounds, will be corrected where possible (clipped to image bounds) or discarded if not recoverable.
 
-### 4.2 Annotation Inconsistencies and Noise
+### 6.2 Annotation Inconsistencies and Noise
 
 Because VehiDE was annotated across multiple annotators to cover 8 damage categories at scale, some annotation noise is expected and will be characterised as follows:
 
@@ -177,7 +185,7 @@ Because VehiDE was annotated across multiple annotators to cover 8 damage catego
 - **Occlusion and multi-instance overlap**: overlapping bounding boxes for adjacent damage regions will be flagged, since these can destabilise non-max suppression during training if not handled consistently.
 - **Privacy-sensitive content**: any images containing legible license plates or bystander faces will be flagged; since the dataset is used only for offline model training (not redistributed as raw images), no additional masking is required for training, but any example images used in the public demo or in this report will be manually checked and, if necessary, blurred.
 
-### 4.3 Duplicate and Near-Duplicate Images
+### 6.3 Duplicate and Near-Duplicate Images
 
 Exact and near-duplicate images are a common issue in scraped/aggregated damage datasets and pose a direct data-leakage risk if a duplicate ends up in both the training and test splits. The following two-stage deduplication will be applied prior to splitting:
 
@@ -188,7 +196,7 @@ Any duplicate cluster identified will be collapsed to a single representative im
 
 ---
 
-## 5. Adequacy Evaluation and Augmentation Strategy
+## 7. Adequacy Evaluation and Augmentation Strategy
 
 With 13,945 images and 32,000+ instances, VehiDE is large enough to fine-tune a YOLOv8/YOLOv11 model to convergence for the 6 target classes, and is comparable in scale to datasets used in published YOLO-based vehicle-damage studies cited in Milestone 1 (Section 3.1). However, the adequacy assessment identifies two specific gaps:
 
@@ -201,9 +209,9 @@ If, after the class-level EDA, any target class has fewer than a workable minimu
 
 ---
 
-## 6. Train / Validation / Test Split Strategy
+## 9. Train / Validation / Test Split Strategy
 
-### 6.1 Splitting Approach
+### 9.1 Splitting Approach
 
 The deduplicated VehiDE image set will be split at the **image level** (not the instance level) into:
 
@@ -215,7 +223,7 @@ The deduplicated VehiDE image set will be split at the **image level** (not the 
 
 The split will be **stratified by damage class** so that the proportion of each of the 6 target classes is preserved across train/validation/test as closely as possible, given that many images contain multiple instances/classes simultaneously. Where an image contains multiple classes, a multi-label stratification approach (assigning the image to a split based on its full label set rather than a single dominant class) will be used to avoid systematically starving any split of a rare class.
 
-### 6.2 Leakage Checks
+### 9.2 Leakage Checks
 
 Because VehiDE may contain multiple photographs of the same physical vehicle/accident taken moments apart, image-level splitting alone is not sufficient to guarantee independence between splits. The following explicit leakage checks will be performed after the split is created:
 
@@ -339,7 +347,9 @@ To ensure every result in later milestones can be reproduced by any team member,
 Every step above will be implemented in version-controlled scripts/notebooks committed to the project's GitHub repository, with configuration values (split ratios, random seed, chunk size, overlap, k, state/tool schema version) stored in a single configuration file so that the entire data preparation pipeline can be re-run end-to-end from raw downloaded data to agent-ready artefacts.
 
 ---
+## 10.  Deliverables Produced
 
+---
 ## 11. Summary
 
 This milestone identified VehiDE as the primary, verified, and appropriately-licensed dataset for the Damage and Severity Agents, supplemented by CarDD, COCO Car Damage, and the Car Damage Severity dataset for targeted auxiliary purposes. A concrete data-quality assessment, deduplication, and leakage-safe stratified splitting strategy has been defined, including a deliberately-retained ambiguous subset for exercising the orchestrator's human-review escalation path. Because no public dataset exists for the Policy Agent's retrieval task, a fully synthetic, deliberately stress-tested policy corpus will be authored by the team, indexed into ChromaDB and served through a FastMCP tool contract. Moving to a multi-agent orchestration (LangGraph orchestrator, four specialist agents, Redis/ChromaDB memory, MCP-exposed tools) has not changed the underlying datasets required, but has added explicit interface-level requirements - a versioned orchestrator state schema and per-tool I/O contracts - that connect the vision and retrieval sub-tasks. Task-specific requirements for annotation, chunking/vector-store selection, prompt/context-length design, and agent memory schemas have been specified, and a fully scripted, versioned preprocessing pipeline has been laid out to guarantee reproducibility ahead of model training in the next milestone.
