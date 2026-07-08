@@ -9,7 +9,6 @@ This document outlines the contributions made by each group member of **Group 1*
 |--------------|--------------|---------|
 | **Satyajeet Kumar** | | |
 | **Pranab Kumar Manna** | | |
-| **Agnesh Kundu** | | |
 | **Venkata Siva Kamal Guddanti** | | |
 | **Anuj Gautam** | | |
 

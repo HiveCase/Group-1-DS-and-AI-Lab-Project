@@ -49,6 +49,7 @@
   - [3.2 Retrieval-Augmented Generation (RAG) for Document Understanding](#32-retrieval-augmented-generation-rag-for-document-understanding)
   - [3.3 Multimodal Insurance AI - Industry and Academic Work](#33-multimodal-insurance-ai---industry-and-academic-work)
   - [3.4 Comparison of Modern VLMs and a Modular YOLO + RAG + LLM Architecture](#34-comparison-of-modern-vlms-and-a-modular-yolo--rag--llm-architecture)
+  - [3.5 Literature Comparison Summary](#35-literature-comparison-summary)
 - [4. Metrics and Success Definitions](#4-metrics-and-success-definitions)
   - [4.1 Vision Model Metrics](#41-vision-model-metrics)
   - [4.2 RAG Pipeline Metrics](#42-rag-pipeline-metrics)
@@ -69,8 +70,14 @@
   - [10.3 Domain Shift Between Training Data and Real Claims](#103-domain-shift-between-training-data-and-real-claims)
   - [10.4 RAG Faithfulness with Synthetic Policies](#104-rag-faithfulness-with-synthetic-policies)
   - [10.5 LLM Hallucination on Edge Cases](#105-llm-hallucination-on-edge-cases)
-- [11. References](#11-references)
-
+  - [10.6 Compute Resources and Infrastructure](#106-compute-resources-and-infrastructure)
+  - [10.7 API and Deployment Risks](#107-api-and-deployment-risks)
+  - [10.8 Expected Failure Scenarios](#108-expected-failure-scenarios)
+- [11. Ethical Considerations](#11-ethical-considerations)
+  - [11.1 Fairness and Bias in Insurance Decision Support](#111-fairness-and-bias-in-insurance-decision-support)
+  - [11.2 Privacy of Uploaded Images and Documents](#112-privacy-of-uploaded-images-and-documents)
+  - [11.3 Transparency of AI-Generated Reports](#113-transparency-of-ai-generated-reports)
+- [12. References](#12-references)
 
 ---
 
@@ -78,7 +85,7 @@
 
 ### 1.1 What problem are we solving?
 
-Insurance claim processing for vehicle damage is a slow, labour-intensive, and inconsistent process. When a vehicle is damaged, a claim assessor must manually examine submitted photographs, cross-reference the relevant sections of the policyholder's insurance document, and produce a written preliminary assessment report - a workflow that is both time-consuming and susceptible to inter-assessor variability.
+Insurance claim processing for vehicle damage is a slow, labour-intensive, and inconsistent process. When a vehicle is damaged, a claim assessor must manually examine submitted photographs, cross-reference the relevant sections of the policyholder's insurance document, and produce a written preliminary assessment report, a workflow that is both time-consuming and susceptible to inter-assessor variability.
 
 This project builds an AI-powered decision-support system that automates the initial stage of this assessment pipeline.
 
@@ -98,7 +105,7 @@ This project builds an AI-powered decision-support system that automates the ini
 
 - Classification of damage into types: dent, scratch, crack, broken lamp, flat tyre, shattered glass.
 
-- Severity estimation per detected damage region, categorised as Minor, Moderate, or Severe, based on the proportion of the damaged area relative to the vehicle surface visible in the image.
+- Severity estimation per detected damage region, categorised as Minor, Moderate, or Severe, based on the proportion of the damaged area relative to the vehicle surface visible in the image. This is a practical approximation with known limitations (discussed in Section 10.2), which also evaluates alternative severity estimation approaches.
 
 - Retrieval of relevant insurance policy clauses from a user-provided policy PDF using a RAG pipeline.
 
@@ -154,6 +161,8 @@ YOLO-series models (You Only Look Once) have become the dominant architecture fo
 
 - **CarDD dataset paper:** The CarDD dataset (USTC, 2023) introduced pixel-level damage annotations across six damage categories and served as a benchmark for segmentation-based damage models.
 
+>Among single-stage and two-stage object detectors, Faster R-CNN (Ren et al. [19]), DETR (Carion et al. [20]), and SSD (Liu et al., [21]) were also considered as alternatives to YOLO. Faster R-CNN achieves higher precision on small objects through its region proposal network but is significantly slower at inference, making it unsuitable for a Gradio demo that must run on a CPU-basic Hugging Face Spaces instance within a reasonable response time. DETR offers a cleaner transformer-based detection formulation that eliminates hand-crafted anchors, but it is known to require substantially more training data and epochs to converge compared to convolutional detectors, a constraint given the eight-week project timeline and limited GPU hours. SSD achieves faster inference than Faster R-CNN but consistently reports lower mAP than YOLO on comparable object detection benchmarks, particularly on small and occluded objects. YOLO11 and YOLOv8 were therefore selected as the primary detector family, offering the best combination of detection accuracy, native segmentation head support, training speed on the available hardware, and a well-maintained deployment ecosystem via Ultralytics.
+
 ### 3.2 Retrieval-Augmented Generation (RAG) for Document Understanding
 
 Lewis et al. (2020, NeurIPS) introduced RAG as a framework for grounding LLM outputs in retrieved document context, reducing hallucination in knowledge-intensive tasks. Since then, RAG has been applied extensively to legal, medical, and financial document understanding domains closely analogous to insurance policy retrieval.
@@ -184,11 +193,24 @@ Recent multimodal Vision Language Models (VLMs) such as Florence-2 [15], Qwen2.5
 
 - **Separation of concerns and independent debuggability.** In a modular design, each component can be tested and diagnosed in isolation. If the final report is incorrect, it is possible to determine whether the fault lies in the detection stage, the retrieval stage, or the generation stage, and fix it independently. A monolithic VLM is a black box in this regard: a poor output provides little signal as to what went wrong, slowing down iteration significantly within a time-boxed academic project.
 
-- **Measurable, ground-truth-comparable detection.** YOLO produces precise, structured outputs - bounding boxes, class labels, and confidence scores - that can be directly evaluated against the annotated ground truth in datasets such as VehiDE using standard metrics (mAP@50, F1 per class). VLMs describe damage in natural language, which is not directly comparable to bounding-box annotations. Calibrated localisation and severity scoring from VLM outputs would require an additional post-processing step and would still be difficult to score reliably, undermining the evaluation framework defined in Section 4.1.
+- **Measurable, ground-truth-comparable detection.** YOLO produces precise, structured outputs (bounding boxes, class labels, and confidence scores) that can be directly evaluated against the annotated ground truth in datasets such as VehiDE using standard metrics (mAP@50, F1 per class). VLMs describe damage in natural language, which is not directly comparable to bounding-box annotations. Calibrated localisation and severity scoring from VLM outputs would require an additional post-processing step and would still be difficult to score reliably, undermining the evaluation framework defined in Section 4.1.
 
 - **Cost, latency, and deployment.** A fine-tuned YOLO small or nano variant runs on CPU or a small GPU and can be hosted on Hugging Face Spaces within the available memory and compute budget. Large VLMs require either paid API access or dedicated GPU memory that Spaces cannot reliably provide. The modular pipeline keeps each component lightweight and independently replaceable.
 
 Therefore, although modern VLMs offer an attractive end-to-end paradigm, the proposed modular pipeline better satisfies the project's requirements for interpretability, quantitative evaluation, computational efficiency, and iterative development.
+
+### 3.5 Literature Comparison Summary
+
+The table below provides a structured critical comparison of the key prior works reviewed, covering datasets, models, reported metrics, and limitations.
+
+| **Paper / System** | **Dataset** | **Model / Method** | **Metrics Reported (Scores)** | **Key Limitations** |
+| --- | --- | --- | --- | --- |
+| Patil et al. (2017) | Custom small dataset | CNN (classification only) | Binary accuracy: ~84% on held-out test set | No localisation; very small dataset; no severity estimation; no report generation |
+| He et al. Mask R-CNN (ICCV 2017) | COCO | Mask R-CNN | Box AP: 37.1, Mask AP: 35.7 on COCO test-dev | High compute cost; requires pre-segmented vehicle; no insurance domain adaptation |
+| CarDD benchmark (USTC, 2023) | CarDD (pixel-level) | Various (benchmark evaluation) | Best mAP@50: ~0.71 across evaluated models | Detection only; no downstream report generation; limited damage classes |
+| YOLOv8 damage segmentation (IEEE, 2024) | Custom 4k images, 21 part + 8 damage classes | YOLOv8-seg | mAP@50: ~0.73 for damage classes; part segmentation mAP@50: ~0.81 | No policy integration; no structured report; severity not defined; proprietary dataset |
+| HL-YOLO (MDPI, 2025) | Custom vehicle dataset | YOLO11 + heterogeneous convolutions | Precision: +2.5%, Recall: +5.8%, mAP: +3-4% over YOLO11 baseline; absolute mAP@50: ~0.79 | Detection only; no NLP or policy component; severity not addressed |
+| Lewis et al. RAG (NeurIPS, 2020) | NaturalQuestions, TriviaQA | DPR + BART | NQ Exact Match: 44.5; TriviaQA Exact Match: 56.8 | Text-only; not applied to visual or insurance contexts; hallucination risk without strict grounding |
 
 
 ---
@@ -208,19 +230,26 @@ Object detection and segmentation research uses the following standard metrics:
 
 ### 4.2 RAG Pipeline Metrics
 
-| Metric | Definition | Target |
-|---|---|---|
-| Retrieval precision @3 | Proportion of test queries for which the relevant policy clause is retrieved within the top three retrieved chunks. | ≥ 0.80 |
+| **Metric** | **Definition** | **Target** |
+| --- | --- | --- |
+| Retrieval Precision@3 | Proportion of test queries for which the relevant policy clause is retrieved within the top three retrieved chunks. | ≥ 0.80 |
+| Recall@3 | Proportion of all ground-truth relevant clauses that are retrieved within the top three results, averaged across queries. | ≥ 0.75 |
+| MRR (Mean Reciprocal Rank) | Average of the reciprocal rank of the first correct clause retrieved. Captures how highly the correct clause is ranked, not just whether it appears. | ≥ 0.70 |
 | Faithfulness score | Proportion of generated reports whose conclusions are fully supported by the retrieved policy clauses, assessed through manual evaluation of a 20-sample test set. | ≥ 0.85 |
+
 
 ### 4.3 End-to-End and Usability Metrics
 
-| Metric | Definition | Target |
-|---|---|---|
-| Human evaluation accuracy | 3 raters score each generated report for factual accuracy on a 1-5 scale. | Mean ≥ 4.0 |
-| Human evaluation clarity | 3 raters score report clarity and usefulness to a claim assessor. | Mean ≥ 4.0 |
+| **Metric** | **Definition** | **Target** |
+| --- | --- | --- |
+| Human evaluation - accuracy | 3 raters score each generated report for factual accuracy on a 1-5 scale. | Mean ≥ 4.0 |
+| Human evaluation - clarity | 3 raters score report clarity and usefulness to a claim assessor. | Mean ≥ 4.0 |
 | Ablation delta | mAP and report quality improvement of full system vs. baseline (ResNet50 classifier, no RAG, no LLM). | Positive across all metrics |
 | Severity accuracy | Agreement rate between model-assigned Minor/Moderate/Severe and human-assigned severity on a 30-image test set. | ≥ 0.75 |
+| BERTScore (F1) | Token-level semantic similarity between generated report text and a human-authored reference summary, measured using contextual BERT embeddings. Captures semantic fidelity beyond exact word match. | ≥ 0.80 F1 |
+
+> **Note on target values:** The mAP@50 >= 0.70 target is consistent with the threshold commonly accepted for production-grade automotive object detection and is achievable on VehiDE given the scale of the dataset and YOLO11's pretrained backbone. The Retrieval Precision@3 >= 0.80 target reflects performance reported by Lewis et al. on comparable document-retrieval tasks. The human evaluation Mean >= 4.0 threshold is set conservatively relative to the 5-point scale, ensuring it reflects genuine assessor utility rather than marginal acceptability. All targets will be revisited if dataset or compute constraints make them infeasible within the project timeline.
+
 
 ---
 
@@ -250,6 +279,8 @@ This project's primary contribution is not a new model architecture. It lies in 
 
 - **Pipeline integration:** The YOLO detection results will be converted into a structured format and provided to an LLM together with relevant policy information retrieved using RAG. This enables the LLM to generate responses that are accurate, grounded in policy, and easy for non-technical assessors to understand. The integration of YOLO-based object detection with a RAG-supported LLM forms the core of this project.
 
+- **Defined scope and reproducible benchmark:** This project draws a deliberate boundary around what a vision-based pipeline operating on photographs alone can reliably deliver at an academic scale. Capabilities such as repair cost estimation require vehicle-specific data (make, model, manufacturing year, local labour rates, spare-part prices) that lie outside the image, and integrating them is a separate engineering problem beyond the scope of this work. By restricting severity to three human-interpretable categories (Minor, Moderate, Severe), focusing on visible damage only, and grounding all report conclusions in retrieved policy clauses with a documented evaluation protocol, this project establishes a clearly scoped, reproducible benchmark for the preliminary claim assessment task. This scope definition is itself a contribution: it gives future work a well-defined baseline to build on and compare against. 
+
 
 ---
 
@@ -261,9 +292,9 @@ The system consists of three sequential stages that interact as follows:
 
 **Stage 1 - YOLO Detection Module:** The uploaded vehicle image is passed through a fine-tuned YOLOv8/YOLOv11 model. The model outputs a list of detected damage regions, each with a class label (dent, scratch, crack, broken lamp, flat tyre, shattered glass), a bounding box, a confidence score, and a severity category (Minor, Moderate, Severe) derived from the proportion of the bounding box area relative to the visible vehicle surface.
 
-**Stage 2 - RAG Pipeline:** At ingestion time, the policy PDF is chunked (200-400 tokens with overlap), embedded using a bi-encoder model, and stored in a vector index. At inference time, a query is constructed from the detected damage classes and submitted to the retriever, which returns the top-k most relevant policy clauses.
+**Stage 2 - RAG Pipeline:** At ingestion time, the policy PDF is chunked into overlapping 300-token segments using LangChain's RecursiveCharacterTextSplitter. Each chunk is embedded using sentence-transformers/all-MiniLM-L6-v2 [11], a lightweight bi-encoder model that produces 384-dimensional dense vectors, and stored in a FAISS flat index [12] (cosine similarity). At inference time, a query string is constructed from the detected damage classes and submitted to the retriever, which returns the top-k most relevant policy chunks.
 
-**Stage 3 - LLM Report Generator:** The structured detection output from Stage 1 and the retrieved clauses from Stage 2 are combined into a prompt. An LLM generates the preliminary claim assessment report, constrained to the retrieved policy context to minimise hallucination.
+**Stage 3 - LLM Report Generator:** The structured detection output from Stage 1 and the retrieved clauses from Stage 2 are combined into a structured prompt. GPT-4o [18] (primary, via the OpenAI API) generates the preliminary claim assessment report, constrained to the retrieved policy context to minimise hallucination. Gemini 1.5 Flash is maintained as a cost-efficient fallback in case of API budget constraints or rate limiting.
 
 ---
 
@@ -290,7 +321,7 @@ The final reports will be assessed for three key qualities:
 
 - **Clarity:** whether the report is understandable and useful for a claims assessor.
 
-These aspects will be evaluated through human assessment using a predefined scoring rubric.
+A sample of 20 generated reports will be independently scored by three evaluators: two team members who were not involved in generating the specific reports being evaluated, and one external reviewer with familiarity with insurance documents. Each evaluator will score each report on Accuracy (1-5), Faithfulness (1-5), and Clarity (1-5) using a fixed rubric provided in advance. The rubric defines each score point explicitly: for example, a Faithfulness score of 5 requires all coverage recommendations to be directly traceable to a retrieved clause, while a score of 1 indicates at least one fabricated entitlement. Evaluators will score reports independently and without seeing each other's ratings. Disagreements larger than one point on any dimension will be resolved through discussion and a majority vote. Inter-rater agreement will be reported using Cohen's kappa. BERTScore F1 will be computed automatically against a human-authored reference summary as an additional objective signal.
 
 Together, these evaluations will demonstrate the effectiveness of each individual component as well as the overall end-to-end claim assessment pipeline.
 
@@ -300,12 +331,13 @@ Together, these evaluations will demonstrate the effectiveness of each individua
 
 ### 9.1 Vision Datasets
 
-| **Dataset** | **Size** | **Annotation type** | **Role** |
-| --- | --- | --- | --- |
-| VehiDE | 13,945 images | Bounding boxes, 32k+ instances | Primary training and evaluation dataset |
-| CarDD | Varies by split | Pixel-level segmentation masks | Supplementary segmentation fine-tuning |
-| COCO Car Damage | ~500 images | COCO-format bounding boxes | Supplementary for architecture comparison |
-| Car Damage Severity | ~2,300 images | Minor / Moderate / Severe labels | Severity classifier calibration |
+| **Dataset** | **Size** | **Annotation type** | **Role** | **Justification for selection** |
+| --- | --- | --- | --- | --- |
+| VehiDE | 13,945 images | Bounding boxes, 32k+ instances | Primary training and evaluation dataset | Largest publicly available annotated vehicle damage dataset; diverse damage types across real vehicle images; sufficient scale for YOLO fine-tuning without data augmentation alone. |
+| CarDD | Varies by split | Pixel-level segmentation masks | Supplementary segmentation fine-tuning | Provides pixel-level masks unavailable in VehiDE; enables training and evaluating the segmentation head of YOLO11-seg, which underpins the bounding-box severity proxy. |
+| COCO Car Damage | ~500 images | COCO-format bounding boxes | Supplementary for architecture comparison | COCO-format annotations allow direct integration with standard detection training pipelines and enable comparison against published COCO-trained baselines. |
+| Car Damage Severity | ~2,300 images | Minor / Moderate / Severe labels | Severity classifier calibration | The only publicly available dataset with human-assigned severity labels matching our three-category scheme; used to calibrate and validate the bounding-box-area severity proxy against human judgment. |
+
 
 ### 9.2 Synthetic Data
 
@@ -317,34 +349,82 @@ No public dataset of insurance policy documents paired with vehicle damage annot
 
 - Fifty synthetic incident descriptions paired with test images, for end-to-end report quality evaluation.
 
+To ensure the synthetic policies are a reasonable approximation of real-world documents and do not make retrieval artificially easy, the following quality measures will be applied. First, the policies will be modelled on the structure and clause vocabulary of publicly available sample insurance policy documents from Indian general insurers, adapting clause phrasing without reproducing proprietary text. Second, each policy will include at least five distractor clauses per damage class: clauses that are semantically related but do not grant coverage, such as exclusion clauses, sub-limit clauses, and clauses conditioned on circumstances not present in the test scenarios. Third, clause phrasing will be deliberately varied across the five policies (synonyms, different sentence structures, negations) to stress-test the embedding model's ability to retrieve semantically equivalent clauses under surface variation. Finally, a team member not involved in writing the policies will verify that the retrieval task is non-trivial by attempting to match test queries to ground-truth clauses manually before running the automated RAG evaluation.
+
 ---
 
 
 ## 10. Expected Challenges and Project Risks
 
-## 10.1 Dataset Imbalance
+### 10.1 Dataset Imbalance
 
 Real-world vehicle damage distributions are highly skewed. Dents and scratches are far more frequent than flat tyres or shattered glass, and this imbalance is reflected in publicly available datasets including VehiDE. A model trained on an imbalanced dataset will likely exhibit high precision on common classes but poor recall on rare ones, directly threatening the per-class F1 target of >= 0.65 set in Section 4.1. Mitigation strategies include class-weighted loss functions, oversampling minority classes with augmentation, and monitoring per-class metrics separately rather than relying solely on overall mAP.
 
-## 10.2 Severity Estimation Reliability
+### 10.2 Severity Estimation Reliability
 
-The severity estimation approach in this project relies on the ratio of bounding box area to visible vehicle surface area as a proxy for damage extent. This is a practical approximation but has known failure modes: a large but shallow scratch may be classified as Severe, while a small but deep crack may be classified as Minor. Additionally, image angle, zoom level, and occlusion all affect the apparent size of a damage region. The severity accuracy target of >= 0.75 (Section 4.3) is achievable but will require careful calibration against the Car Damage Severity dataset and human annotator consensus.
+The severity estimation approach in this project relies on the ratio of bounding box area to visible vehicle surface area as a proxy for damage extent. This is a practical approximation but has known failure modes: a large but shallow scratch may be classified as Severe, while a small but deep crack may be classified as Minor. Additionally, image angle, zoom level, and occlusion all affect the apparent size of a damage region. Alternative approaches considered include training a dedicated severity classification head on the Car Damage Severity dataset, or querying a VLM with a structured prompt to assign severity from the image. The dedicated classifier approach was not selected as the primary method because the Car Damage Severity dataset (~2,300 images) is insufficient to train a reliable standalone classifier without severe overfitting; however, it will be used for calibration. The VLM approach introduces API cost and latency that are incompatible with the deployment target. The bounding-box proxy therefore remains the primary method, with the Car Damage Severity dataset used to validate its accuracy against human labels, as described in Section 4.3. The severity accuracy target of >= 0.75 reflects this constraint.
 
-## 10.3 Domain Shift Between Training Data and Real Claims
+### 10.3 Domain Shift Between Training Data and Real Claims
 
 The YOLO model will be trained on datasets collected under controlled or near-controlled conditions (studio photography, consistent lighting, unoccluded vehicles). Real insurance claim photographs are submitted by policyholders using mobile phones under variable lighting, angles, and occlusion conditions. This domain shift is a standard challenge in applied computer vision and may cause a significant drop in mAP when moving from the test set to realistic inputs. Mitigation includes augmenting training data with brightness, contrast, and perspective transforms, and stress-testing the model on a manually collected set of realistic claim-style photographs.
 
-## 10.4 RAG Faithfulness with Synthetic Policies
+### 10.4 RAG Faithfulness with Synthetic Policies
 
 Because real insurer policy documents cannot be used due to proprietary constraints, the RAG pipeline will be developed and evaluated against synthetic policies authored by the project team. This introduces a risk that the synthetic policies are structurally simpler or more consistently formatted than real documents, making retrieval artificially easy. The team will deliberately vary clause phrasing, introduce negations and exceptions, and include distractor clauses to stress-test the retrieval component and produce a more robust faithfulness evaluation.
 
-## 10.5 LLM Hallucination on Edge Cases
+### 10.5 LLM Hallucination on Edge Cases
 
 Even with RAG grounding, LLMs can introduce inaccuracies when the retrieved clauses are ambiguous or when no relevant clause is found for a detected damage type. In such cases, the model may fall back on parametric knowledge and fabricate plausible-sounding but incorrect coverage details. This risk is mitigated by the faithfulness evaluation (Section 4.2) and by including explicit instructions in the prompt to state "not covered under retrieved policy" rather than infer coverage from general knowledge.
 
+### 10.6 Compute Resources and Infrastructure
+
+YOLO fine-tuning will be conducted on a single NVIDIA T4 GPU available via Google Colab Pro or Kaggle Notebooks (up to 30 free GPU hours per week each). A T4 provides 16 GB VRAM, sufficient for YOLO11m-seg training at 640px input with a batch size of 16. Estimated training time for 50 epochs on VehiDE is approximately 2-4 hours per run. RAG index construction will be performed on CPU using FAISS. LLM inference will use the OpenAI API (GPT-4o) or Gemini API as a fallback. The Gradio demo will be deployed on Hugging Face Spaces using a CPU-basic instance (2 vCPU, 16 GB RAM), sufficient for inference-only use. If GPU availability on free tiers is interrupted, the team will use Kaggle's GPU quota as a secondary environment.
+
+### 10.7 API and Deployment Risks
+
+The report generation component depends on access to the OpenAI GPT-4o API or an equivalent paid service. Risks include API rate limiting during evaluation, unexpected cost overruns if the number of evaluation samples grows beyond budget, and potential changes to API response format. Mitigations include caching all API responses during development, using Gemini 1.5 Flash as a cost-efficient fallback, and testing prompt templates with smaller models before large-scale evaluation. Deployment on Hugging Face Spaces introduces a further risk of resource contention during the live demonstration. A local fallback environment will be prepared as a contingency for the Milestone 6 presentation.
+
+### 10.8 Expected Failure Scenarios
+
+Beyond the technical risks described above, the system has identifiable expected failure modes that evaluators should be aware of:
+
+- **Poor lighting and low image quality:** The YOLO model will likely underperform on photographs taken at night, in heavy rain, or with significant motion blur. Scratches and small cracks are particularly sensitive to lighting conditions, as their visual texture is disrupted under low light.
+
+- **Heavy occlusion:** If a damaged area is obscured by another vehicle, debris, or an unfavourable camera angle, the model cannot detect it. A dented wheel arch hidden behind an open door, for example, will not appear in the detection output.
+
+- **Internal and hidden damage:** Damage to internal components (engine, gearbox, frame, wiring) is entirely outside the scope of a vision-based system and will not be flagged in any report. All generated reports will include a disclaimer reminding assessors to conduct a physical inspection for non-visible damage.
+
+- **Novel damage types:** Damage classes not seen during training (fire damage, water submersion marks, vandalism beyond standard scratching) may be missed or misclassified.
+
+- **Multi-vehicle images:** If multiple damaged vehicles appear in a single image, the model may confuse detections across vehicles. The current scope restricts use to single-vehicle photographs.
+
 ---
 
-# 11. References
+## 11. Ethical Considerations
+
+This project is positioned as a decision-support tool and not a replacement for qualified human assessors. Nevertheless, several ethical dimensions warrant explicit discussion.
+
+### 11.1 Fairness and Bias in Insurance Decision Support
+
+If the training datasets (VehiDE, CarDD) are not representative of the full diversity of vehicle types, damage patterns, or photographic conditions encountered by real policyholders, the model may systematically underperform for certain groups. For example, if certain vehicle colours, body types, or damage patterns are underrepresented in training data, detection rates may differ across policyholders, introducing a form of indirect algorithmic bias into the claim handling process. As a mitigation, we will include a stratified error analysis across damage classes and, where metadata is available, across vehicle types in the later stages of project. All generated reports will explicitly state that they are AI-generated preliminary assessments subject to human review.
+
+### 11.2 Privacy of Uploaded Images and Documents
+
+Vehicle damage photographs and insurance policy documents submitted by users are sensitive personal data that may contain Personally Identifiable Information (PII) such as names, addresses, vehicle registration numbers, and contact details. The project team will not collect, store, share, or disclose any original user-submitted data to third parties at any stage of the project.
+For the Gradio demo deployed on Hugging Face Spaces, a clear on-screen notice will inform users that no submitted images or documents are retained beyond the current session. In any internal testing that requires handling of sample data containing PII, the team will apply one of the following two anonymisation strategies before use:
+- **PII detection and masking:** Sensitive fields in text inputs and policy documents will be identified and redacted using the Microsoft Presidio SDK (a Python-based open-source PII detection and anonymisation framework), which supports entity types such as names, phone numbers, addresses, and national identifiers. Detected entities will be replaced with type-level placeholders (for example, <PERSON>, <ADDRESS>) before the data enters any pipeline component.
+- **Attribute shuffling:** Where structured sample records are used for testing (for example, rows of claimant profiles), personal attributes will be shuffled across records so that no combination of values in a single row corresponds to a real individual. For instance, a dataset containing records `[Ram, 23, IT, Kolkata]` and `[Shyam, 34, CSE, HP]` would be shuffled to `[Shyam, 23, CSE, Kolkata]` and `[Ram, 34, IT, HP]`, preserving statistical distributions without retaining any real person's complete profile.
+  
+In a production deployment, data handling would need to comply with applicable data protection regulations, including India's Digital Personal Data Protection (DPDP) Act and, where relevant, the GDPR.
+
+### 11.3 Transparency of AI-Generated Reports
+
+All reports generated by the system will include a prominent disclaimer stating that the report is a preliminary AI-assisted assessment, has not been verified by a licensed insurance assessor, and must not be used as the sole basis for a final claim decision. This is consistent with the system's intended role as a first-pass tool that supports, rather than replaces, the assessor's judgment.
+
+
+---
+
+# 12. References
 
 [1] K. Patil, S. Kulkarni, S. M. P. B., and V. K. Bairagi, "Car Damage Detection Using Convolutional Neural Networks," International Journal of Engineering Research & Technology (IJERT), vol. 6, no. 2, 2017.
 
@@ -358,7 +438,7 @@ Even with RAG grounding, LLMs can introduce inaccuracies when the retrieved clau
 
 [6] H. Scullen, "VehiDE: Vehicle Damage Detection Dataset," Kaggle, 2023. Available: [https://www.kaggle.com/datasets/hendrichscullen/vehide-dataset-automatic-vehicle-damage-detection](https://www.kaggle.com/datasets/hendrichscullen/vehide-dataset-automatic-vehicle-damage-detection)
 
-[7] G. Jocher et al., "Ultralytics YOLOv8," GitHub Repository, 2023. Available: [https://github.com/ultralytics/ultralytics](https://github.com/ultralytics/ultralytics)
+[7] G. Jocher et al., "YOLO by Ultralytics," Zenodo, 2023. doi:10.5281/zenodo.7347926.
 
 [8] "Advanced Car Damage Assessment Using YOLOv8: A Hybrid Approach to Detection and Masking," IEEE, 2024. doi:10.1109/ICCV.2025.10983960.
 
@@ -382,6 +462,12 @@ Even with RAG grounding, LLMs can introduce inaccuracies when the retrieved clau
 
 [18] OpenAI, "GPT-4 Technical Report," arXiv preprint, arXiv:2303.08774, 2023.
 
+[19] S. Ren, K. He, R. Girshick, and J. Sun, "Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks," in Advances in Neural Information Processing Systems (NeurIPS), vol. 28, 2015.
+
+[20] N. Carion, F. Massa, G. Synnaert, N. Usunier, A. Kirillov, and S. Zagoruyko, "End-to-End Object Detection with Transformers," in Proceedings of the European Conference on Computer Vision (ECCV), 2020, pp. 213-229.
+
+[21] W. Liu, D. Anguelov, D. Erhan, C. Szegedy, S. Reed, C.-Y. Fu, and A. C. Berg, "SSD: Single Shot MultiBox Detector," in Proceedings of the European Conference on Computer Vision (ECCV), 2016, pp. 21-37.
+
 
 ---
 
@@ -395,8 +481,5 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 |Pranab Kumar Manna | 02 July 2026| P.K.Manna|
 | Venkata Siva Kamal Guddanti | 02 July 2026 | Kamal G |
 | Anuj Gautam | 02 July 2026 | Anuj Gautam |
-| | | |
-
-
 
 ---

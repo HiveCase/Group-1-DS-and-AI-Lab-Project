@@ -24,3 +24,11 @@
 ## Team Responsibilities
 
 TODO: Add team members and ownership areas.
+### Contribution Table
+
+| Group Member | Contribution Percentage | Ownership Area | Remarks |
+|--------------|--------------|---------|---------|
+| **Satyajeet Kumar** | | | |
+| **Pranab Kumar Manna** | | | |
+| **Venkata Siva Kamal Guddanti** | | | |
+| **Anuj Gautam** | | | |
