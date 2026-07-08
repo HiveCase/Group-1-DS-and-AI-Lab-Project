@@ -88,7 +88,7 @@ The three primary objectives of this milestone are:
 2. **Vision data preparation**: Assess quality, preprocess, augment, and split the VehiDE dataset and supplementary vision datasets into training-ready artefacts for the Damage and Severity Agents.
 3. **Policy corpus construction**: Author, review, chunk, embed, and index the synthetic insurance policy document corpus for the Policy Agent, using publicly available IRDAI-registered policy wordings as structural references.
 
-By the end of this milestone, any team member with repository access should be able to begin YOLO fine-tuning immediately by running `yolo train data=damage.yaml model=yolo11m-seg.pt epochs=50` without performing any additional data preparation.
+By the end of this milestone, any team member with repository access should be able to begin training without performing any additional data preparation.
 
 ### 1.3 Relationship Between Datasets and Project Goals
 
@@ -114,36 +114,34 @@ By the end of this milestone, any team member with repository access should be a
 | Dataset name | VehiDE: Vehicle Damage Detection Dataset |
 | Source | Kaggle: [hendrichscullen/vehide-dataset-automatic-vehicle-damage-detection](https://www.kaggle.com/datasets/hendrichscullen/vehide-dataset-automatic-vehicle-damage-detection) |
 | Download method | `kaggle datasets download hendrichscullen/vehide-dataset-automatic-vehicle-damage-detection` |
-| License | Non-commercial research and educational use (per dataset card and companion paper [2]) |
+| License | **Apache-2.0** |
 | Purpose in this project | Primary training and evaluation dataset for the Damage Agent |
-| Why selected | Largest publicly available annotated vehicle damage dataset (13,945 images, 32k+ instances); peer-reviewed construction paper; covers all 6 target damage classes; supports detection, segmentation, and salient object detection tasks |
-| Alternatives considered | Stanford Cars: classification only, no damage annotations. EMSCAD: job fraud domain, not vehicle damage. Raw web scrapes: no consistent annotation standard, no peer-reviewed quality verification. VehiDE was the only dataset combining scale, annotation quality, and peer-reviewed provenance. |
+| Why selected | Largest publicly available annotated vehicle damage dataset (13,945 images, 36,081 instances); peer-reviewed construction paper; covers all 7 damage classes; supports detection, segmentation, and salient object detection tasks |
 
-#### Supplementary Vision Datasets
+#### Alternative Vision Datasets
 
-| **Dataset** | **Download Link** | **License** | **Purpose** | **Why selected** | **Alternatives considered** |
+| **Dataset** | **Download Link** | **License** | **Purpose** | **Why selected** |
 | --- | --- | --- | --- | --- | --- |
-| CarDD | [cardd-ustc.github.io](https://cardd-ustc.github.io/) | Academic research use | Pixel-level segmentation masks for irregularly shaped damage (scratches, cracks) not well-represented by bounding boxes alone | Only public dataset with pixel-level damage segmentation across 6 damage categories with a peer-reviewed benchmark | None found with comparable segmentation quality |
-| COCO Car Damage | [kaggle.com/datasets/lplenka/coco-car-damage-detection-dataset](https://www.kaggle.com/datasets/lplenka/coco-car-damage-detection-dataset) | Community (Kaggle) | Architecture comparison and pipeline sanity-checking | COCO format allows direct benchmark comparison against published COCO-trained baselines | Not applicable for this auxiliary role |
-| Car Damage Severity | [kaggle.com/datasets/prajwalbhamere/car-damage-severity-dataset](https://www.kaggle.com/datasets/prajwalbhamere/car-damage-severity-dataset) | Community (Kaggle) | Calibrating the Severity Agent\'s bounding-box area-ratio proxy against human-labelled severity | Only public dataset with human-assigned Minor/Moderate/Severe labels matching our three-category scheme | None found with human severity labels |
+| CarDD | [cardd-ustc.github.io](https://cardd-ustc.github.io/) | Academic research use | Pixel-level segmentation masks for irregularly shaped damage (scratches, cracks) not well-represented by bounding boxes alone | Only public dataset with pixel-level damage segmentation across 6 damage categories with a peer-reviewed benchmark |
+| COCO Car Damage | [kaggle.com/datasets/lplenka/coco-car-damage-detection-dataset](https://www.kaggle.com/datasets/lplenka/coco-car-damage-detection-dataset) | Community (Kaggle) | Architecture comparison and pipeline sanity-checking | COCO format allows direct benchmark comparison against published COCO-trained baselines |
+| Car Damage Severity | [kaggle.com/datasets/prajwalbhamere/car-damage-severity-dataset](https://www.kaggle.com/datasets/prajwalbhamere/car-damage-severity-dataset) | Community (Kaggle) | Calibrating the Severity Agent\'s bounding-box area-ratio proxy against human-labelled severity | Only public dataset with human-assigned Minor/Moderate/Severe labels matching our three-category scheme |
 
 ### 2.2 Policy and Text Datasets
 
-No public dataset of insurance policy documents paired with vehicle damage annotations exists. The policy corpus is therefore synthetic, authored by the team. Two publicly available IRDAI-registered policy wording documents were used as structural reference:
+Two publicly available IRDAI-registered policy wording documents were used as structural reference, these documents are publicly available IRDAI-registered policy wordings, not proprietary schedules or individual policyholder documents. There is also one sythetically generated policy document with alternative phrasing of similar clauses.
+
 | **Document** | **Insurer** | **UIN** | **Pages** | **Role in this project** |
 | --- | --- | --- | --- | --- |
 | Motor Private Car 3 Years Policy Wordings | Universal Sompo General Insurance Co. Ltd | IRDAN134RP0003V01201819 | 23 | Primary structural reference for synthetic policy design; clause vocabulary and section structure |
 | Private Car Standalone Own Damage Policy | United India Insurance Company Limited | IRDAN545RP0001V01201920 | 4 | Secondary structural reference; alternative phrasing of similar clauses |
-
-These documents are publicly available IRDAI-registered policy wordings, not proprietary schedules or individual policyholder documents. No clause text from either document is reproduced verbatim in the synthetic corpus.
-
+| ClearPath Synthetic Motor Insurance Policy | None | Nill | Syhtetic structural reference |
 
 
 ### 2.3 Ownership, Licensing, and Usage Constraints
 
 | **Dataset** | **Ownership** | **Permitted use** | **Restrictions** |
 | --- | --- | --- | --- |
-| VehiDE | Dataset authors (Scullen et al.) | Non-commercial research and education | No commercial use; attribution required |
+| VehiDE | Dataset authors (Scullen et al.) | **Apache-2.0** | Commercial use permitted under Apache-2.0; standard attribution |
 | CarDD | USTC research group | Academic research | Attribution to original paper required |
 | COCO Car Damage | Kaggle community uploader | Community use | Cite dataset page |
 | Car Damage Severity | Kaggle community uploader | Community use | Cite dataset page |
