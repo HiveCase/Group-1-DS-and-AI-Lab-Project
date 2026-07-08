@@ -156,49 +156,72 @@ Two publicly available IRDAI-registered policy wording documents were used as st
 
 ### 3.1 VehiDE: Structure, Schema, and Sample Records
 
-VehiDE is structured as paired image-annotation sets. Each sample consists of a high-resolution RGB `.jpg` photograph and a corresponding `.txt` annotation file in YOLO format.
+**Dataset annotation schema:**
 
-**Annotation file schema (one row per damage instance):**
+```json
+{
+  "<filename>.jpg": {
+    "regions": [
+      {"all_x": [...], "all_y": [...], "class": "rach"},
+      ...
+    ]
+  },
+  ...
+}
+```
 
-| **Field** | **Type** | **Range** | **Description** | **Example** |
-| --- | --- | --- | --- | --- |
-| `class_id` | int | 0-7 | Damage class index (VehiDE native 8-class taxonomy) | 0 |
-| `x_center` | float | 0.0-1.0 | Bounding box centre x, normalised to image width | 0.4823 |
-| `y_center` | float | 0.0-1.0 | Bounding box centre y, normalised to image height | 0.3917 |
-| `width` | float | 0.0-1.0 | Bounding box width, normalised to image width | 0.2140 |
-| `height` | float | 0.0-1.0 | Bounding box height, normalised to image height | 0.1862 |
+Bounding boxes used were derived from each region's polygon extent (min/max of `all_x`/`all_y`), producing an absolute-pixel `[x, y, width, height]`. 
+The traget classes were present in Vietnamese which had to be mapped to english translation.
 
-**Sample records (5 rows from annotation DataFrame):**
+**Native class vocabulary (Vietnamese → English):**
 
-| **source_file** | **class_id** | **x_center** | **y_center** | **width** | **height** | **bbox_area** |
-| --- | --- | --- | --- | --- | --- | --- |
-| img_00347.txt | 0 | 0.4823 | 0.3917 | 0.2140 | 0.1862 | 0.03984 |
-| img_00347.txt | 1 | 0.7201 | 0.5503 | 0.0891 | 0.0742 | 0.00661 |
-| img_01204.txt | 2 | 0.3155 | 0.6280 | 0.1470 | 0.1230 | 0.01808 |
-| img_02891.txt | 3 | 0.5640 | 0.4430 | 0.1820 | 0.1540 | 0.02803 |
-| img_04512.txt | 0 | 0.2310 | 0.7100 | 0.3250 | 0.2780 | 0.09035 |
+| **Vietnamese (raw)** | **English (mapped)** |
+| --- | --- |
+| `tray_son` | paint_scratches |
+| `mop_lom` | dents |
+| `rach` | torn_body |
+| `mat_bo_phan` | lost_parts |
+| `be_den` | broken_lamp |
+| `thung` | puncture |
+| `vo_kinh` | broken_glass |
+
+
+
 
 **Top-level dataset statistics:**
 
 | **Attribute** | **Value** |
 | --- | --- |
 | Total images | 13,945 |
-| Total annotated instances | 32,174 |
-| Average instances per image | 2.31 |
-| Max instances in a single image | 11 |
+| Total annotated instances | 36,081 |
+| Average instances per image | 2.59 |
+| Max instances in a single image | 20 |
 | Image format | JPEG (.jpg) |
-| Annotation format | YOLO .txt (one file per image) |
-| Native damage classes | 8 |
-| Project target classes | 6 (after remapping) |
+| Annotation format | 2 VIA-format JSON files (VGG Image Annotator), Vietnamese class labels, polygon regions |
+| Native damage classes | 7 |
 | Annotation types supported | Bounding box, instance segmentation polygon |
+
+**Class distribution:**
+
+| **Class (English)** | **% of instances** |
+| --- | --- |
+| paint_scratches | 40.6% |
+| dents | 15.8% |
+| torn_body | 15.3% |
+| lost_parts | 7.8% |
+| broken_lamp | 7.7% |
+| puncture | 6.7% |
+| broken_glass | 6.2% |
+
+Imbalance ratio (largest/smallest): **6.59:1** (`paint_scratches` vs `broken_glass`)
 
 ### 3.2 Supplementary Vision Datasets
 
 | **Dataset** | **Images** | **Instances / Labels** | **Format** | **Target variable** |
 | --- | --- | --- | --- | --- |
-| CarDD | 4,000 (approx., varies by split) | Pixel-level segmentation masks | COCO-format JSON + PNG masks | Damage class (6 categories matching project taxonomy) |
-| COCO Car Damage | ~500 | ~1,200 bounding box instances | COCO JSON | Damage present/type |
-| Car Damage Severity | ~2,300 | Image-level severity label per image | Folder-organised JPEG | Severity: Minor / Moderate / Severe |
+| CarDD | 4,000  | Pixel-level segmentation masks | COCO-format JSON + PNG masks | Damage class (6 categories matching project taxonomy) |
+| COCO Car Damage | 70 | 379 annotated instances | COCO JSON | Not "damage present/type." The 6 categories are 5 parts and one generic damage class. This does not match the project's requirements |
+| Car Damage Severity | 1631 | Image-level severity label per image | Folder-organised JPEG | Severity: Minor / Moderate / Severe |
 
 ### 3.3 Policy Document Corpus
 
@@ -219,8 +242,8 @@ The Universal Sompo document (23 pages, IRDAN134RP0003V01201819) contains the fo
 
 | **Attribute** | **Value** |
 | --- | --- |
-| Number of documents | 5 synthetic PDFs |
-| Pages per document | 8-12 |
+| Number of documents | 1 synthetic PDF |
+| Pages per document | 9 |
 | Total chunks produced (after splitting) | ~420 chunks across 5 documents |
 | Chunk size | 300 tokens with 40-token overlap |
 | Embedding model | sentence-transformers/all-MiniLM-L6-v2 |
@@ -240,15 +263,7 @@ No dataset used in this project is owned by the team or by IIT Madras. All are t
 
 ### 4.2 Privacy
 
-**VehiDE images:** Vehicle damage photographs may incidentally capture visible license plates and faces. A manual inspection of 100 randomly sampled images was conducted. Results:
-
-| **PII type** | **Found in sample (100 images)** | **Action taken** |
-| --- | --- | --- |
-| Readable license plates | 7 images | Bounding-box-based blur applied using OpenCV before training |
-| Human faces | 2 images | Gaussian blur applied to face regions |
-| No PII detected | 91 images | No action required |
-
-All blurring was applied to local copies only. The original downloaded dataset is retained unmodified with a SHA-256 hash recorded for reproducibility.
+**VehiDE images:** Vehicle damage photographs may incidentally capture visible license plates and faces. All blurring was applied to local copies only. The original downloaded dataset is retained unmodified with a SHA-256 hash recorded for reproducibility.
 
 **Policy documents:** The two reference policy documents (Universal Sompo, United India) contain no personal policyholder data. They are regulatory-approved template wordings. The synthetic policy PDFs contain no real names, vehicle registration numbers, or financial data.
 
@@ -271,11 +286,11 @@ The following automated checks were run as part of the preprocessing pipeline (`
 
 | **Metric** | **Before** | **After** |
 | --- | --- | --- |
-| Total images | 13,945 | 13,860 |
-| Total instances | 32,174 | 31,989 |
-| Corrupt / unreadable files | 3 | 0 |
-| Orphan images | 12 | 0 |
-| Exact duplicates | 47 | 0 |
+| Total images | 13,945 | 13,942 |
+| Total instances | 36,081 | 36,072 |
+| Corrupt / unreadable files | 0 | 0 |
+| Orphan images | 0 | 0 |
+| Exact duplicates | 6 | 0 |
 | Near duplicates removed | 23 | 0 |
 
 ### 4.4 Ethics and Bias
@@ -305,14 +320,13 @@ All EDA was conducted in `notebooks/Milestone2_EDA.ipynb`, committed to the proj
 
 | **Statistic** | **Value** |
 | --- | --- |
-| Total images (after QC) | 13,860 |
-| Total annotated instances (after QC) | 31,989 |
-| Mean instances per image | 2.31 |
+| Total images (after QC) | 13,942 |
+| Total annotated instances (after QC) | 36,072 |
+| Mean instances per image | 2.59 |
 | Median instances per image | 2.0 |
-| Max instances per image | 11 |
-| Images with a single instance | 3,214 (23.2%) |
-| Images with 4 or more instances | 2,891 (20.9%) |
-| Unique class IDs present | 8 (VehiDE native) |
+| Max instances per image | 20 |
+| Images with a single instance | ~25% |
+| Unique class IDs present | 7 |
 | Project classes after remapping | 6 |
 
 ### 5.2 Class Distribution and Imbalance
