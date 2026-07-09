@@ -861,7 +861,7 @@ A held-out subset of ~100 images will be deliberately selected from the test spl
 | Validation annotations | 2,048 .txt files | YOLO normalised bbox | `data/vehide/labels/val/` | Ready |
 | Test images | 2,049 images | JPEG 640x640, letterboxed | `data/vehide/images/test/` | Ready |
 | Test annotations | 2,049 .txt files | YOLO normalised bbox | `data/vehide/labels/test/` | Ready |
-| Escalation test subset | 127 images + annotations | JPEG 640x640 | `data/vehide/escalation_test/` | Ready |
+| Escalation test subset | ~100 images + annotations | JPEG 640x640 | `data/vehide/escalation_test/` | To be selected once the model is trained and low confidence images are selected |
 | YOLO config | 1 file | YAML | `data/damage.yaml` | Ready |
 | Augmentation config | 1 file | YAML | `configs/augmentation.yaml` | Ready |
 | Class remap lookup | 1 file | JSON | `configs/class_remap.json` | Ready |
