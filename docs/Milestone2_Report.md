@@ -867,7 +867,9 @@ A held-out subset of ~100 images will be deliberately selected from the test spl
 | Class remap lookup | 1 file | JSON | `configs/class_remap.json` | Ready |
 | Split file lists | 3 .txt files | Plain text (one path per line) | `data/splits/` | Ready |
 
->Note: Due to repository size constraints, the full image dataset is not included. Only a small subset of sample images is available at the locations specified above. These samples are >provided for reference and may not be representative of the overall dataset distribution.
+> **Note:** Due to repository size constraints, the complete image dataset and the full set of label (`.txt`) files are not included in this repository. Instead, only a small subset of sample images and a separate subset of label (`.txt`) files is provided at the locations specified above for reference. These samples are intended solely to illustrate the dataset structure and may not be representative of the overall dataset distribution. The sample images and label files are not guaranteed to correspond to one another.
+
+
 
 ### 10.2 Policy Corpus Summary
 
