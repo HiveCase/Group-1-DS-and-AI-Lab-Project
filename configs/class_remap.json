@@ -17,7 +17,7 @@
     "flat_tyre"
   ],
   "notes": {
-    "mat_bo_phan": "Excluded — lost/missing parts is not a detectable visual damage class.",
+    "mat_bo_phan": "Excluded as lost/missing parts are not a detectable visual damage class and hence out of scope of this project.",
     "rach_and_tray_son": "Both map to scratch (class 1). rach means torn body surface, tray_son means paint scratches — treated as the same damage class."
   }
 }
