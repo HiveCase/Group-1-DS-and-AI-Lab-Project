@@ -1,0 +1,23 @@
+{
+  "vn_to_project_class_id": {
+    "tray_son":    1,
+    "rach":        1,
+    "mop_lom":     0,
+    "be_den":      3,
+    "thung":       5,
+    "vo_kinh":     4,
+    "mat_bo_phan": -1
+  },
+  "project_class_names": [
+    "dent",
+    "scratch",
+    "crack",
+    "broken_lamp",
+    "shattered_glass",
+    "flat_tyre"
+  ],
+  "notes": {
+    "mat_bo_phan": "Excluded — lost/missing parts is not a detectable visual damage class.",
+    "rach_and_tray_son": "Both map to scratch (class 1). rach means torn body surface, tray_son means paint scratches — treated as the same damage class."
+  }
+}
