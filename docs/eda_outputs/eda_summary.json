@@ -1,0 +1,59 @@
+{
+  "dataset": "VehiDE",
+  "total_images_found": 13945,
+  "total_annotation_files": 13945,
+  "paired_images": 13945,
+  "orphan_images": 0,
+  "orphan_annotations": 0,
+  "total_instances_raw": 33262,
+  "total_instances_retained": 33262,
+  "excluded_instances": 0,
+  "class_distribution": {
+    "dent": 5681,
+    "scratch": 14646,
+    "crack": 5509,
+    "broken_lamp": 2782,
+    "shattered_glass": 2221,
+    "flat_tyre": 2423
+  },
+  "imbalance_ratio": 6.59,
+  "severity_proxy_distribution": {
+    "Minor": 13720,
+    "Moderate": 8238,
+    "Severe": 11304
+  },
+  "bbox_area_stats": {
+    "count": 33262.0,
+    "mean": 0.120055,
+    "std": 0.197696,
+    "min": 2.1e-05,
+    "25%": 0.007034,
+    "50%": 0.033206,
+    "75%": 0.134654,
+    "max": 1.0
+  },
+  "instances_per_image": {
+    "mean": 2.58,
+    "median": 2.0,
+    "max": 20,
+    "images_with_1_instance": 5559,
+    "images_with_2_instances": 2481,
+    "images_with_3_instances": 1689,
+    "images_with_4plus": 3180
+  },
+  "image_resolution_sample": {
+    "sample_size": 1000,
+    "width_mean": 1383.9,
+    "width_median": 1632.0,
+    "width_min": 204,
+    "width_max": 2164,
+    "height_mean": 1033.7,
+    "height_median": 1224.0,
+    "height_min": 153,
+    "height_max": 2176
+  },
+  "duplicates": {
+    "duplicate_groups": 18,
+    "redundant_copies": 18
+  }
+}
