@@ -986,7 +986,7 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 
 | Name | Date of Review | Sign |
 |---|---|---|
-| Satyajeet Kumar | |  |
+| Satyajeet Kumar | 09-07-2026 | S.K. |
 | Pranab Kumar Manna | 09-07-2026  | Pk Manna |
 | Venkata Siva Kamal Guddanti |  |  |
 | Anuj Gautam |  |  |
