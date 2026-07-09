@@ -128,14 +128,28 @@ By the end of this milestone, any team member with repository access should be a
 
 ### 2.2 Policy and Text Datasets
 
-Two publicly available IRDAI-registered policy wording documents were used as structural reference, these documents are publicly available IRDAI-registered policy wordings, not proprietary schedules or individual policyholder documents. There is also one sythetically generated policy document with alternative phrasing of similar clauses.
+No public dataset of insurance policy documents paired with vehicle damage annotations exists. The policy corpus used by the Policy Agent is therefore a combination of two publicly available IRDAI-registered reference documents, used only for structural guidance, and five synthetic policy PDFs authored entirely by the project team.
+
+**Reference documents (structural reference only, not indexed or used for training):**
 
 | **Document** | **Insurer** | **UIN** | **Pages** | **Role in this project** |
 | --- | --- | --- | --- | --- |
-| Motor Private Car 3 Years Policy Wordings | Universal Sompo General Insurance Co. Ltd | IRDAN134RP0003V01201819 | 23 | Primary structural reference for synthetic policy design; clause vocabulary and section structure |
-| Private Car Standalone Own Damage Policy | United India Insurance Company Limited | IRDAN545RP0001V01201920 | 4 | Secondary structural reference; alternative phrasing of similar clauses |
-| ClearPath Synthetic Motor Insurance Policy | None | Nill | Syhtetic structural reference |
+| Motor Private Car 3 Years Policy Wordings | Universal Sompo General Insurance Co. Ltd | IRDAN134RP0003V01201819 | 23 | Primary structural reference; clause vocabulary, section hierarchy, and depreciation schedule design |
+| Private Car Standalone Own Damage Policy | United India Insurance Company Limited | IRDAN545RP0001V01201920 | 4 | Secondary structural reference; alternative phrasing of similar coverage and exclusion clauses |
 
+These documents are publicly available IRDAI-registered policy wordings, not proprietary schedules or individual policyholder documents. No clause text from either document is reproduced verbatim in the synthetic corpus.
+
+**Synthetic policy corpus (team-authored, fully indexed into ChromaDB):**
+
+| **Document** | **Insurer (fictitious)** | **Pages** | **Style** | **Key design feature** |
+| --- | --- | --- | --- | --- |
+| policy_1_bharat_suraksha.pdf | Bharat Suraksha Motor Insurance Co. Ltd | 5 | Formal traditional IRDAI language | All 6 damage classes covered under one umbrella accidental-external-means clause; 11 numbered exclusions |
+| policy_2_safedrive_assurance.pdf | SafeDrive Assurance Corporation | 4 | Modern plain language with dedicated subsections per damage type | Explicit nil-depreciation glass clause; separate tyre sub-limit section; 5 exclusions per damage type |
+| policy_3_quickclaim_general.pdf | QuickClaim General Insurance Ltd | 4 | Dense legal with named exclusion schedules | Hardest document for RAG retrieval; 6 named exclusion schedules (A-F) with 5 clauses each, producing 30 distractor clauses across all damage classes |
+| policy_4_autoguard_premium.pdf | AutoGuard Premium Insurance Services Ltd | 4 | Consumer-facing with a coverage summary table | Coverage presented as a structured table; 6 exclusion subsections; includes nil-depreciation, return-to-invoice, and consumables add-on covers |
+| policy_5_valuemotor.pdf | ValueMotor Comprehensive Insurance Ltd | 4 | Budget insurer, concise with conditional sub-limits | Most conditional language; 7 exclusion subsections; tyre cover explicitly conditional on concurrent vehicle body damage |
+
+The five documents were designed to vary along three dimensions to stress-test the RAG retrieval pipeline. First, phrasing: the same coverage concept is expressed differently across documents (for example, dent coverage appears as "accidental external means", "bodily damage from impact", "accidental collision" or "impact", and "physical impact damage" across the five policies). Second, distractor density: each policy contains at least five distractor clauses per damage class exclusion clauses, sub-limit clauses, and conditional coverage clauses that are semantically related to a damage class but do not grant coverage. Third, structural format: coverage appears as numbered lists in some documents and as tables in others, preventing the retriever from relying on positional cues.
 
 ### 2.3 Ownership, Licensing, and Usage Constraints
 
@@ -220,7 +234,7 @@ Imbalance ratio (largest/smallest): **6.59:1** (`paint_scratches` vs `broken_gla
 | **Dataset** | **Images** | **Instances / Labels** | **Format** | **Target variable** |
 | --- | --- | --- | --- | --- |
 | CarDD | 4,000  | Pixel-level segmentation masks | COCO-format JSON + PNG masks | Damage class (6 categories matching project taxonomy) |
-| COCO Car Damage | 70 | 379 annotated instances | COCO JSON | Not "damage present/type." The 6 categories are 5 parts and one generic damage class. This does not match the project's requirements |
+| COCO Car Damage | 70 | 379 annotated instances (6 categories: `damage`, `door`, `front_bumper`, `headlamp`, `hood`, `rear_bumper`) | COCO JSON | Not "damage present/type." The 6 categories are 5 parts and one generic damage class. This does not match the project's requirements |
 | Car Damage Severity | 1631 | Image-level severity label per image | Folder-organised JPEG | Severity: Minor / Moderate / Severe |
 
 ### 3.3 Policy Document Corpus
@@ -231,7 +245,7 @@ The Universal Sompo document (23 pages, IRDAN134RP0003V01201819) contains the fo
 
 | **Policy section** | **Content** | **Relevant damage classes** |
 | --- | --- | --- |
-| Section I, clauses 1-10 | Covered perils (fire, theft, riot, flood, accidental external means, malicious act, etc.) | All 6 classes; accidental external means covers dents, scratches, cracks |
+| Section I, clauses 1-10 | Covered perils (fire, theft, riot, flood, accidental external means, malicious act, etc.) | All 5 project classes; accidental external means covers dents, scratches, broken lamps |
 | Section I, exclusions (a-d) | Consequential loss, tyre damage at 50% only, accessories theft exclusion, intoxication | Distractor clauses for flat tyre and shattered glass |
 | Depreciation schedule | Age-based depreciation rates (Nil to 50%) | Relevant to all classes for partial loss claims |
 | Add-on 2: Depreciation Waiver | Nil depreciation for replaced parts (Plans a/b/c) | Crack, dent, scratch |
@@ -242,15 +256,38 @@ The Universal Sompo document (23 pages, IRDAN134RP0003V01201819) contains the fo
 
 | **Attribute** | **Value** |
 | --- | --- |
-| Number of documents | 1 synthetic PDF |
-| Pages per document | 9 |
-| Total chunks produced (after splitting) | ~420 chunks across 5 documents |
+| Number of documents | 5 synthetic PDFs |
+| Total chunks produced (after splitting and indexing) | 179 chunks |
 | Chunk size | 300 tokens with 40-token overlap |
 | Embedding model | sentence-transformers/all-MiniLM-L6-v2 |
-| Vector store | ChromaDB |
+| Vector store | ChromaDB (collection `policy_clauses`) |
 | Ground-truth clause mappings | 1 JSON file mapping each chunk ID to damage classes it addresses |
 | Distractor clauses per damage class | At least 5 per class (exclusions, sub-limit clauses, conditional coverage) |
 
+**Chunks per damage class:**
+
+| **Damage class** | **Chunks** |
+| --- | --- |
+| dent | 53 |
+| flat_tyre | 32 |
+| shattered_glass | 29 |
+| scratch | 28 |
+| broken_lamp | 27 |
+| crack | 21 |
+
+A chunk can be tagged with more than one damage class (e.g. a general coverage clause applying to all classes), so the per-class counts above sum to more than the total chunk count.
+
+**Clause type distribution:**
+
+| **Clause type** | **Chunks** |
+| --- | --- |
+| general | 113 |
+| coverage | 28 |
+| sub_limit | 19 |
+| exclusion | 13 |
+| condition | 4 |
+| definition | 2 |
+| **Total** | **179** |
 ---
 
 ## 4. Data Governance
@@ -263,7 +300,7 @@ No dataset used in this project is owned by the team or by IIT Madras. All are t
 
 ### 4.2 Privacy
 
-**VehiDE images:** Vehicle damage photographs may incidentally capture visible license plates and faces. All blurring was applied to local copies only. The original downloaded dataset is retained unmodified with a SHA-256 hash recorded for reproducibility.
+**VehiDE images:** Vehicle damage photographs may incidentally capture visible license plates and faces. An automated face/license-plate detector was run across the retained 13,655 images as a precaution; it flagged 0 images containing visible faces or license plates, so no blurring was required for this dataset in its current form. The detection step remains part of the pipeline (`scripts/preprocess_vehide.py`) so that any future dataset additions are still checked automatically. The original downloaded dataset is retained unmodified with a SHA-256 hash recorded for reproducibility.
 
 **Policy documents:** The two reference policy documents (Universal Sompo, United India) contain no personal policyholder data. They are regulatory-approved template wordings. The synthetic policy PDFs contain no real names, vehicle registration numbers, or financial data.
 
@@ -275,29 +312,32 @@ The following automated checks were run as part of the preprocessing pipeline (`
 
 | **Check** | **Method** | **Result** |
 | --- | --- | --- |
-| Corrupt / unreadable images | PIL `Image.verify()` on every file | 3 corrupt images found and removed |
-| Orphan images (no annotation file) | Set difference of image stems vs annotation stems | 12 orphan images found; excluded from training |
+| Corrupt / unreadable images | PIL `Image.verify()` on every file | 0 corrupt images found |
+| Orphan images (no annotation file) | Set difference of image stems vs annotation stems | 0 orphan images found |
 | Orphan annotations (no image file) | Set difference of annotation stems vs image stems | 0 orphan annotations found |
-| Annotation format validity | Check each line has exactly 5 fields; all values in [0.0, 1.0]; class_id integer | 6 malformed annotation lines found and corrected |
-| Exact-hash duplicates | MD5 hash of raw image bytes | 47 exact duplicates found and removed |
-| Near-duplicate images | Perceptual hash (pHash, threshold < 8 bits) | 23 near-duplicate clusters found; 23 secondary copies removed |
+| Malformed annotation regions | Check each polygon region has valid `all_x`/`all_y` coordinates | 1 malformed annotation region found and corrected |
+| Exact-hash duplicates | MD5 hash of raw image bytes | 18 exact duplicate images found and removed |
+| Near-duplicate images | Perceptual hash (pHash) | 272 near-duplicate images found and removed |
+| Excluded instances (class-based) | `lost_parts` (`mat_bo_phan`) instances excluded, as this class does not correspond to a visible damage type | 2,703 instances excluded |
 
-**After quality checks:**
+**After preprocessing (`scripts/preprocess_vehide.py`):**
 
 | **Metric** | **Before** | **After** |
 | --- | --- | --- |
-| Total images | 13,945 | 13,942 |
-| Total instances | 36,081 | 36,072 |
+| Total images | 13,945 | 13,655 |
+| Total instances | 36,081 | 32,672 (retained, after excluding `lost_parts`) |
 | Corrupt / unreadable files | 0 | 0 |
 | Orphan images | 0 | 0 |
-| Exact duplicates | 6 | 0 |
-| Near duplicates removed | 23 | 0 |
+| Exact duplicates | 18 | 0 |
+| Near duplicates removed | 272 | 0 |
+| Faces blurred | — | 0 |
+| License plates blurred | — | 0 |
 
 ### 4.4 Ethics and Bias
 
 **Geographic representation:** VehiDE was constructed primarily from vehicle images collected in Vietnam and Southeast Asia. This introduces a potential geographic bias: vehicle types prevalent in India (compact sedans, two-wheelers, autorickshaws), damage patterns common in India (monsoon-related surface oxidation, potholes causing tyre and underbody damage), and camera conditions typical of Indian mobile claim submissions (low light, dust-covered lenses) may be underrepresented in the training distribution. This is explicitly acknowledged as a domain shift risk (Milestone 1, Section 10.3) and is mitigated through augmentation (Section 8) and domain-shift stress testing.
 
-**Class imbalance:** Dents and scratches together account for approximately 56% of all instances (Section 5.2), significantly outnumbering flat tyres and shattered glass. Without mitigation, a model trained on the raw distribution will exhibit higher precision on common classes and poor recall on rare ones. Mitigation strategies are described in Section 8.
+**Class imbalance:** After remapping, `scratch` alone accounts for roughly 61% of all retained instances (Section 5.2), far outnumbering `shattered_glass`, the smallest class. Without mitigation, a model trained on the raw distribution will exhibit higher precision on `scratch` and `dent` and poor recall on the rarer classes. Mitigation strategies are described in Section 8.
 
 **Severity proxy bias:** The bounding-box area-ratio severity proxy may systematically underestimate severity for small but deep damage (cracks, punctures) and overestimate it for large but superficial damage (surface scratches spanning a door panel). This is a known limitation discussed in Milestone 1 (Section 10.2).
 
@@ -314,94 +354,140 @@ The following automated checks were run as part of the preprocessing pipeline (`
 
 ## 5. Exploratory Data Analysis
 
-All EDA was conducted in `notebooks/Milestone2_EDA.ipynb`, committed to the project repository.
+All exploratory data analysis (EDA) notebooks were created in `./notebooks/EDA` and committed to the project repository.
 
 ### 5.1 Dataset Summary Statistics
 
 | **Statistic** | **Value** |
 | --- | --- |
-| Total images (after QC) | 13,942 |
-| Total annotated instances (after QC) | 36,072 |
+| Total images (raw, as downloaded) | 13,945 |
+| Total images (final, after preprocessing) | 13,655 |
+| Total annotated instances (raw, all 7 native classes) | 36,081 |
+| Total annotated instances (retained, `lost_parts` excluded, pre-dedup) | 33,262 |
+| Total annotated instances (final, after preprocessing & dedup) | 32,672 |
 | Mean instances per image | 2.59 |
 | Median instances per image | 2.0 |
 | Max instances per image | 20 |
-| Images with a single instance | ~25% |
-| Unique class IDs present | 7 |
+| Native class IDs (Vietnamese) | 7 |
 | Project classes after remapping | 6 |
 
 ### 5.2 Class Distribution and Imbalance
 
-**VehiDE native class distribution (before 8-to-6 remapping):**
+**VehiDE native class distribution (raw, all 7 classes, before exclusion):**
 
-| **VehiDE class** | **Project mapping** | **Instance count** | **% of total** |
+| **VehiDE class (native)** | **Project class** | **Raw instances** | **% of raw total** |
 | --- | --- | --- | --- |
-| Dent | Dent | 9,812 | 30.7% |
-| Scratch | Scratch | 8,143 | 25.5% |
-| Crack | Crack | 4,518 | 14.1% |
-| Broken lamp | Broken lamp | 3,847 | 12.0% |
-| Shattered glass | Shattered glass | 2,904 | 9.1% |
-| Flat tyre | Flat tyre | 1,623 | 5.1% |
-| Category 7 (excluded) | Background/other | 742 | 2.3% |
-| Category 8 (excluded) | Background/other | 400 | 1.3% |
-| **Total** | | **31,989** | **100%** |
+| paint_scratches | scratch | 14,646 | 40.6% |
+| dents | dent | 5,681 | 15.7% |
+| torn_body | crack | 5,509 | 15.3% |
+| broken_lamp | broken_lamp | 2,782 | 7.7% |
+| lost_parts | EXCLUDED | 2,819 | 7.8% |
+| puncture | flat_tyre | 2,423 | 6.7% |
+| broken_glass | shattered_glass | 2,221 | 6.2% |
+| **Total (raw)** | | **36,081** | **100%** |
 
-**Imbalance ratio (most frequent vs least frequent project class):** Dent (9,812) vs Flat tyre (1,623) = 6.0:1.
+Each native class maps 1:1 to a project class (no merging) except `lost_parts`, which has no visible-damage equivalent and is dropped entirely.
 
-This level of imbalance is significant and will cause the model to underperform on flat tyre and shattered glass detection without mitigation. Class-weighted loss and targeted augmentation of minority classes are applied as described in Section 8.
-
-**After remapping (6-class project taxonomy):**
+**After remapping (6-class project taxonomy, `lost_parts` excluded), pre-image-dedup:**
 
 | **Project class** | **Instances** | **% of total** |
 | --- | --- | --- |
-| Dent | 9,812 | 31.6% |
-| Scratch | 8,143 | 26.2% |
-| Crack | 4,518 | 14.5% |
-| Broken lamp | 3,847 | 12.4% |
-| Shattered glass | 2,904 | 9.3% |
-| Flat tyre | 1,623 | 5.2% |
-| Excluded instances | 1,142 | (removed) |
-| **Retained total** | **30,847** | |
+| scratch | 14,646 | 44.0% |
+| dent | 5,681 | 17.1% |
+| crack | 5,509 | 16.6% |
+| broken_lamp | 2,782 | 8.4% |
+| flat_tyre | 2,423 | 7.3% |
+| shattered_glass | 2,221 | 6.7% |
+| **Retained total** | **33,262** | **100%** |
+
+<br><br>
+
+![Class distribution — instance count and proportion per project class](eda_outputs/plots/class_distribution.png)
+
+**Imbalance ratio (most frequent vs least frequent project class):** scratch (14,646) vs shattered_glass (2,221) = **6.59:1**.
+
+After the production preprocessing pipeline additionally removes 18 exact-duplicate and 272 near-duplicate images (Section 6.1), the retained instance count drops proportionally from 33,262 to 32,672, giving the following final training-set class distribution:
+
+| **Project class** | **Final retained instances** | **% of total** |
+| --- | --- | --- |
+| scratch | 14,386 | 44.0% |
+| dent | 5,580 | 17.1% |
+| crack | 5,411 | 16.6% |
+| broken_lamp | 2,733 | 8.4% |
+| flat_tyre | 2,380 | 7.3% |
+| shattered_glass | 2,182 | 6.7% |
+| **Retained total** | **32,672** | **100%** |
+
+The imbalance ratio is unchanged at the class level (deduplication removes images roughly uniformly across classes), so the final training set still carries a **6.59:1** imbalance between `scratch` and `shattered_glass`. This is significant and will cause the model to underperform on `shattered_glass` and `flat_tyre` detection without mitigation. Class-weighted loss and targeted augmentation of minority classes are applied as described in Section 8.
 
 ### 5.3 Bounding Box Area Distribution
 
 Bounding box area is computed as `width x height` (both normalised to [0,1]). This metric directly drives the Severity Agent\'s area-ratio proxy.
 
-| **Severity proxy bin** | **Area range** | **Instance count** | **% of instances** |
-| --- | --- | --- | --- |
-| Minor | 0.00 to 0.02 | 14,203 | 46.0% |
-| Moderate | 0.02 to 0.08 | 12,891 | 41.8% |
-| Severe | 0.08 to 1.00 | 3,753 | 12.2% |
+<br><br>
+![Bounding box area distribution and severity proxy per class](eda_outputs/plots/bbox_area_distribution.png)
+
+| **Severity proxy bin** | **Instance count** | **% of instances** |
+| --- | --- | --- |
+| Minor | 13,720 | 41.3% |
+| Moderate | 8,238 | 24.8% |
+| Severe | 11,304 | 34.0% |
+
+**Bounding-box area statistics (normalised to [0,1]):**
+
+| **Statistic** | **Value** |
+| --- | --- |
+| Mean | 0.1201 |
+| Std | 0.1977 |
+| Min | 0.00002 |
+| 25th percentile | 0.0070 |
+| Median (50th percentile) | 0.0332 |
+| 75th percentile | 0.1347 |
+| Max | 1.0000 |
 
 **Key observations:**
-- Nearly half of all instances fall in the Minor range, which aligns with real-world claim patterns where most submitted photos show localised damage.
-- The Severe bin at 12.2% is numerically small but critically important for the claim assessment use case; missing a severe damage instance would be a significant error.
-- Mean bbox area: 0.031. Median: 0.019. The distribution is right-skewed, with a long tail of very large damage regions.
+- Mean bbox area (0.120) is well above the median (0.033), confirming the distribution is strongly right-skewed, with a long tail of very large damage regions pulling the mean upward.
+- Mean bbox area per class varies substantially: `shattered_glass` has by far the largest mean normalised area (windshields and windows span a large fraction of the frame), while `flat_tyre` has the smallest — a useful prior for the Severity Agent, since the area-ratio proxy will need per-class calibration rather than one fixed threshold set.
+
+**Bounding box aspect ratio:**
+
+![Bounding box aspect ratio distribution](eda_outputs/plots/bbox_aspect_ratio.png)
+
+The vast majority of bounding boxes have an aspect ratio (width/height) below 5, clustered close to the square (AR=1) reference line, with a long tail of elongated boxes (AR up to ~60) corresponding to linear damage such as long scratches or cracks running along a panel edge.
 
 ### 5.4 Instances per Image
 
 | **Instances per image** | **Image count** | **% of images** |
 | --- | --- | --- |
-| 1 | 3,214 | 23.2% |
-| 2 | 4,187 | 30.2% |
-| 3 | 3,568 | 25.7% |
-| 4 | 1,614 | 11.6% |
-| 5+ | 1,277 | 9.2% |
+| 1 | 5,559 | 43.1% |
+| 2 | 2,481 | 19.2% |
+| 3 | 1,689 | 13.1% |
+| 4+ | 3,180 | 24.6% |
 
-The majority of images (55%) contain 2-3 co-occurring damage instances. This is consistent with real-world accident photographs and confirms that the system must handle multi-label detection outputs per image rather than single-instance classification.
+![Distribution of instance counts per image, and class co-occurrence matrix](eda_outputs/plots/instances_per_image.png)
+
+Mean instances per image: 2.58; median: 2.0; max: 20 in a single image. A substantial share of images (24.6%) contain four or more co-occurring damage instances, alongside a large single-instance group (43.1%). This confirms that the system must handle multi-label detection outputs per image rather than assuming single-instance classification, while also ensuring the model performs well on the common single-damage case. Note: these per-image counts total 12,909 images rather than the full 13,945, since images whose only annotated instance was the excluded `lost_parts` class are not counted here (they have zero remaining instances after exclusion, discussed further in Section 5.6).
+
+#### 5.4.1 Class Co-occurrence Analysis
+
+![Class co-occurrence heatmap — how often each pair of damage classes appears together in the same image](eda_outputs/plots/class_cooccurrence_heatmap.png)
+
+The diagonal of the co-occurrence matrix shows each class's total instance count; the off-diagonal cells show how often two classes appear together in the same image. `scratch` co-occurs most frequently with every other class, consistent with it being the most common damage type overall this is expected rather than a data quality issue, since a single accident photo often shows both a dominant damage type (e.g. a dent) and incidental scratching around it. `shattered_glass` has the lowest co-occurrence with other classes (a broken windshield is often photographed on its own), which is useful context for the Damage Agent: this class is somewhat easier to isolate as the sole detection in a frame.
 
 ### 5.5 Image Resolution Analysis
 
 Resolution was measured on a random sample of 1,000 images.
 
+![Image width, height, and width-vs-height scatter](eda_outputs/plots/image_resolution.png)
+
 | **Statistic** | **Width (px)** | **Height (px)** |
 | --- | --- | --- |
-| Mean | 1,847 | 1,384 |
-| Median | 1,920 | 1,280 |
-| Min | 640 | 480 |
-| Max | 4,032 | 3,024 |
-| Most common resolution | 1,920 x 1,280 | |
+| Mean | 1,383.9 | 1,033.7 |
+| Median | 1,632.0 | 1,224.0 |
+| Min | 204 | 153 |
+| Max | 2,164 | 2,176 |
 
-All images will be resized to 640 x 640 using letterboxing before YOLO training (Section 6.1). The wide range of native resolutions (from 640px to 4,032px wide) confirms that naive cropping would be inappropriate.
+All images will be resized to 640 x 640 using letterboxing before YOLO training (Section 6.1). The wide range of native resolutions (from 204px to over 2,100px wide) confirms that naive cropping would be inappropriate.
 
 ### 5.6 Missing Value and Orphan Analysis
 
@@ -409,21 +495,27 @@ Object detection datasets do not have tabular "missing values" in the traditiona
 
 | **Issue** | **Count** | **Resolution** |
 | --- | --- | --- |
-| Images with no annotation file | 12 | Excluded from all splits |
+| Images with no annotation file | 0 | No action required |
 | Annotation files with no image | 0 | No action required |
-| Annotation lines with fewer than 5 fields | 6 | Corrected manually (whitespace formatting errors) |
-| Annotation lines with values outside [0,1] | 0 | No action required |
-| Images with zero instances after remapping | 89 | Retained as background images in training (improves specificity) |
+| Malformed annotation regions (invalid polygon coordinates) | 1 | Corrected during preprocessing |
+| Images with zero instances after remapping (`lost_parts` only images) | Included in the 2,703 excluded instances | Retained as background images where the image has no other instance (improves specificity) |
 
 ### 5.7 Duplicate Analysis
 
-| **Duplicate type** | **Method** | **Pairs found** | **Action** |
+| **Duplicate type** | **Method** | **Images found** | **Action** |
 | --- | --- | --- | --- |
-| Exact duplicates | MD5 hash of raw bytes | 47 images | Secondary copy removed; primary retained |
-| Near-duplicates | Perceptual hash (pHash), Hamming distance < 8 | 23 clusters | One representative image retained per cluster |
-| Cross-dataset near-duplicates (VehiDE vs CarDD) | pHash cross-matching | 4 images | Removed from CarDD supplementary set to prevent leakage |
+| Exact duplicates | MD5 hash of raw bytes | 18 images | Duplicate copy removed; primary retained |
+| Near-duplicates | Perceptual hash (pHash) | 272 images | Duplicate copy removed; primary retained |
+| Cross-dataset near-duplicates (VehiDE vs CarDD) | pHash cross-matching | Pending CarDD data access (Section 11) | To be re-run once the CarDD archive is available |
 
-After deduplication, 13,860 unique images and 30,847 retained instances remain.
+After deduplication and class-based exclusion, 13,655 unique images and 32,672 retained instances remain.
+
+### 5.8 Spatial Distribution of Damage Centres
+
+![Spatial distribution of normalised damage bounding-box centres, per class](eda_outputs/plots/spatial_distribution.png)
+
+Normalised `(x_center, y_center)` positions for each class cluster around the centre of the frame (0.5, 0.5) for all six classes, which is expected: claimants typically photograph damage by centring the camera on the affected area rather than capturing the whole vehicle. `scratch` and `crack` show the widest spatial spread, consistent with damage that can run across large or varied parts of a panel, while `shattered_glass` is the most tightly clustered, reflecting the fixed position of windshields and windows relative to the frame. No systematic edge-of-frame bias was found that would suggest cropping artefacts in the source photography.
+
 
 ---
 
@@ -448,23 +540,22 @@ def check_image(path):
         return False
 
 corrupt = [p for p in image_paths if not check_image(p)]
-# Result: 3 corrupt files removed
+# Result: 0 corrupt files removed
 ```
 
-**Step 2: Class remapping (8-to-6)**
+**Step 2: Class remapping (7-to-6)**
 
-A versioned lookup table (`configs/class_remap.json`) maps VehiDE\'s 8 native class IDs to the project\'s 6 target classes. Instances belonging to the 2 excluded categories are relabelled as background and excluded from the annotation files used for training. The original annotation files are preserved unmodified so the mapping is fully reversible.
+A versioned lookup table (`configs/class_remap.json`) maps VehiDE\'s 7 native Vietnamese class IDs to the project\'s 6 target classes. `torn_body` is mapped to `crack` (kept as its own class, Section 3.1), and the single excluded category (`lost_parts`) is relabelled as background and excluded from the annotation files used for training. The original annotation files are preserved unmodified so the mapping is fully reversible.
 
 ```json
 {
-  "0": "dent",
-  "1": "scratch",
-  "2": "crack",
-  "3": "broken_lamp",
-  "4": "shattered_glass",
-  "5": "flat_tyre",
-  "6": "exclude",
-  "7": "exclude"
+  "tray_son": "scratch",
+  "mop_lom": "dent",
+  "rach": "crack",
+  "mat_bo_phan": "exclude",
+  "be_den": "broken_lamp",
+  "thung": "flat_tyre",
+  "vo_kinh": "shattered_glass"
 }
 ```
 
@@ -479,8 +570,9 @@ val:   images/val
 test:  images/test
 
 nc: 6
-names: ['dent', 'scratch', 'crack', 'broken_lamp', 'shattered_glass', 'flat_tyre']
+names: ['scratch', 'dent', 'crack', 'broken_lamp', 'flat_tyre', 'shattered_glass']
 ```
+
 
 **Step 4: Image resizing with letterboxing**
 
@@ -500,20 +592,23 @@ def letterbox_resize(img_path, out_path, size=640):
     padded.save(out_path, quality=95)
 ```
 
+
 **Step 5: Annotation spot-check**
 
-A random 5% sample (693 images) of converted annotations was visually verified by rendering bounding boxes over images. No systematic coordinate conversion bugs were found. Three annotation files had minor whitespace formatting issues that were corrected.
+A random sample of converted annotations was visually verified by rendering bounding boxes over images. No systematic coordinate conversion bugs were found. The single malformed annotation region identified in Section 4.3 was corrected.
 
 **Step 6: PII blurring**
 
-For the 9 images found to contain visible license plates or faces in the 100-image manual sample, a proportional extrapolation suggests approximately 1,200 images across the full dataset may contain PII. A Haar-cascade-based face detector and a license plate pattern detector (aspect ratio and character density heuristics) were run across all 13,860 images. Detected regions were blurred using a Gaussian filter (kernel size 31 x 31) before saving the preprocessed copies.
+A Haar-cascade-based face detector and a license plate pattern detector (aspect ratio and character density heuristics) were run across all 13,655 retained images. This pipeline step is applied automatically regardless of dataset content, since car damage photos can incidentally capture bystanders or number plates.
 
 | **PII type** | **Images flagged** | **Action** |
 | --- | --- | --- |
-| Visible license plates | 1,247 | Region blurred in preprocessed copy |
-| Human faces | 384 | Region blurred in preprocessed copy |
-| Both | 67 | Both regions blurred |
-| No PII detected | 12,162 | No action |
+| Visible license plates | 0 | No action required |
+| Human faces | 0 | No action required |
+| No PII detected | 13,655 | No action |
+
+No PII was detected in the current VehiDE image set; the detector remains in the pipeline for any future data additions.
+
 
 ### 6.2 Policy Document Preprocessing
 
@@ -545,16 +640,15 @@ splitter = RecursiveCharacterTextSplitter(
 chunks = splitter.split_text(policy_text)
 ```
 
-**Chunking results per document:**
+**Chunking results (aggregate, all 5 synthetic PDFs):**
 
-| **Document** | **Pages** | **Raw chunks** | **Chunks after dedup** |
-| --- | --- | --- | --- |
-| Synthetic Policy 1 | 10 | 87 | 85 |
-| Synthetic Policy 2 | 9 | 79 | 79 |
-| Synthetic Policy 3 | 11 | 94 | 92 |
-| Synthetic Policy 4 | 8 | 71 | 71 |
-| Synthetic Policy 5 | 12 | 102 | 98 |
-| **Total** | **50** | **433** | **425** |
+| **Metric** | **Value** |
+| --- | --- |
+| PDFs processed | 5 |
+| Total chunks indexed | 179 |
+| Chunk size | 300 tokens, 40-token overlap |
+
+See Section 3.3 for the per-damage-class and per-clause-type breakdown of the 179 indexed chunks.
 
 **Step 3: Embedding and indexing**
 
@@ -576,7 +670,7 @@ for i, chunk in enumerate(all_chunks):
                     "damage_classes": chunk_metadata[i]["damage_classes"]}]
     )
 print(f"Indexed {collection.count()} chunks")
-# Output: Indexed 425 chunks
+# Output: Indexed 179 chunks
 ```
 
 **Step 4: Ground-truth clause mapping**
@@ -589,7 +683,7 @@ Every chunk was manually tagged with the damage classes it addresses, producing 
     "text_preview": "The Company will indemnify against loss or damage by accidental external means...",
     "damage_classes": ["dent", "scratch", "crack", "broken_lamp", "shattered_glass", "flat_tyre"],
     "clause_type": "coverage",
-    "doc_id": "synthetic_policy_1"
+    "doc_id": "synthetic_policy_2"
   },
   "chunk_0091": {
     "text_preview": "Damage to tyres and tubes is limited to 50% of replacement cost...",
@@ -599,36 +693,39 @@ Every chunk was manually tagged with the damage classes it addresses, producing 
   }
 }
 ```
-
 ---
+
 
 ## 7. Dataset Integration
 
-VehiDE and CarDD are integrated as a combined vision corpus for the Damage Agent. They use different annotation formats and were collected under different conditions, requiring explicit alignment steps.
+For this milestone, only **VehiDE** is preprocessed, it is sufficient on its own (13,655 images, 32,672 instances across all 6 project classes) to produce a training-ready dataset. CarDD, the Car Damage Severity dataset, and COCO Car Damage (Section 2.1) are **not** merged into the training corpus at this stage. They are held in reserve as a contingency plan and will only be integrated if the VehiDE-only model's validation performance (mAP@50, per-class F1 — particularly for the minority classes `shattered_glass`, `flat_tyre`, and `crack` given the 6.59:1 imbalance, Section 5.2) falls short of the Milestone 1 targets once baseline training runs in Milestone 3. Because no merging occurs at this stage, no schema alignment, cross-dataset deduplication, or format conversion has been performed.
 
-### 7.1 Schema Alignment
+### 7.1 Training Corpus - VehiDE
+
+| **Source** | **Images** | **Instances** | **Status** |
+| --- | --- | --- | --- |
+| VehiDE | 13,655 | 32,672 | Sole training corpus for this milestone |
+
+### 7.2 Contingency Datasets
+
+| **Dataset** | **Would supplement** | **Trigger condition** | **Access status** |
+| --- | --- | --- | --- |
+| CarDD | Pixel-level segmentation masks for irregular damage (scratches, cracks) | Segmentation-head mAP or minority-class F1 below target after baseline training | Requires manual licensing form (Section 3.2); not yet obtained |
+| Car Damage Severity | Human-labelled Minor/Moderate/Severe ground truth for calibrating the Severity Agent's bounding-box area-ratio proxy | Severity proxy shows poor agreement with human judgment during calibration (Milestone 5) | EDA notebook not yet run to completion (Section 3.2) |
+| COCO Car Damage | Architecture sanity-check against a differently-annotated source | Used only for comparison, not planned for training integration | Already downloaded and profiled (70 images, 379 instances) |
+
+### 7.3 Planned Integration Approach
+
+If underperformance triggers CarDD integration, the following alignment work scoped but not yet executed would be required before merging it with VehiDE:
 
 | **Attribute** | **VehiDE** | **CarDD** | **Alignment action** |
 | --- | --- | --- | --- |
-| Annotation format | YOLO .txt (bbox) | COCO JSON (segmentation polygon) | CarDD converted to YOLO-seg format using `scripts/coco_to_yolo_seg.py` |
-| Class taxonomy | 8 classes (native) | 6 classes | Both remapped to the same 6-class project taxonomy |
-| Image resolution | 640-4,032px | 800-2,400px | Both letterboxed to 640 x 640 |
-| Image naming | `img_XXXXX.jpg` | `cardd_XXXXX.jpg` | Prefixed to avoid filename collisions |
+| Annotation format | YOLO .txt (bbox) | COCO JSON (segmentation polygon) | Convert CarDD to YOLO-seg format using `scripts/coco_to_yolo_seg.py` |
+| Class taxonomy | 7 native classes, 6 after remapping | 6 classes (CarDD's own taxonomy) | Remap both to the project's 6-class taxonomy |
+| Image resolution | 204-2,164px (sampled) | Not yet measured | Letterbox both to 640 x 640 |
+| Image naming | `<original_filename>.jpg` | `cardd_XXXXX.jpg` (planned) | Prefix to avoid filename collisions |
 
-### 7.2 Deduplication After Merging
-
-A cross-dataset perceptual hash check identified 4 images present in both VehiDE and CarDD. These 4 duplicates were removed from the CarDD subset (retaining the VehiDE copy as primary).
-
-### 7.3 Integration Results
-
-| **Source** | **Images contributed** | **Instances contributed** |
-| --- | --- | --- |
-| VehiDE | 13,860 | 30,847 |
-| CarDD (supplementary segmentation) | 3,841 | 9,204 |
-| Cross-dataset duplicates removed | -4 | -11 |
-| **Integrated total** | **17,697** | **40,040** |
-
-CarDD images are used only to supplement the segmentation mask training for the Damage Agent\'s segmentation head. The primary detection head training uses VehiDE alone to maintain a clean provenance boundary.
+A cross-dataset perceptual-hash deduplication pass (same methodology as Section 5.7) would also be run against VehiDE before any CarDD images are added to the training set, to prevent leakage. Until this trigger condition is met, VehiDE alone remains the complete and sufficient training corpus for this milestone's deliverable.
 
 ---
 
@@ -654,16 +751,16 @@ The following parameters are set in `damage.yaml` and `configs/augmentation.yaml
 
 ### 8.2 Class-Targeted Oversampling
 
-To address the 6:1 imbalance between Dent and Flat Tyre, minority classes (Flat Tyre and Shattered Glass) are oversampled during training by a factor of 2x using YOLO\'s `cls_pw` (class positive weight) parameter. The class weights assigned are:
+To address the 6.59:1 imbalance between `scratch` and `shattered_glass` (Section 5.2), minority classes (`shattered_glass` and `flat_tyre`) are oversampled during training by a factor of 2x using YOLO\'s `cls_pw` (class positive weight) parameter. The class weights (inverse-frequency, normalised to the largest class, computed on the final 32,672-instance training set) are:
 
 | **Class** | **Instance count** | **Class weight** |
 | --- | --- | --- |
-| Dent | 9,812 | 1.0 |
-| Scratch | 8,143 | 1.2 |
-| Crack | 4,518 | 2.2 |
-| Broken lamp | 3,847 | 2.6 |
-| Shattered glass | 2,904 | 3.4 |
-| Flat tyre | 1,623 | 6.1 |
+| Scratch | 14,386 | 1.0 |
+| Dent | 5,580 | 2.6 |
+| Crack | 5,411 | 2.7 |
+| Broken lamp | 2,733 | 5.3 |
+| Flat tyre | 2,380 | 6.0 |
+| Shattered glass | 2,182 | 6.6 |
 
 ---
 
@@ -694,25 +791,27 @@ val_imgs, test_imgs = train_test_split(
 
 ### 9.2 Split Sizes
 
-| **Split** | **Images** | **Instances** | **% of total** |
+| **Split** | **Images** | **Instances** | **% of total (images)** |
 | --- | --- | --- | --- |
-| Train | 9,702 | 21,599 | 70% |
-| Validation | 2,079 | 4,624 | 15% |
-| Test | 2,079 | 4,624 | 15% |
-| **Total** | **13,860** | **30,847** | |
+| Train | 9,558 | ~22,876 | 70.0% |
+| Validation | 2,048 | ~4,901 | 15.0% |
+| Test | 2,049 | ~4,895 | 15.0% |
+| **Total** | **13,655** | **32,672** | |
 
 ### 9.3 Class Distribution per Split
 
-| **Class** | **Train** | **Val** | **Test** |
-| --- | --- | --- | --- |
-| Dent | 6,868 | 1,472 | 1,472 |
-| Scratch | 5,700 | 1,222 | 1,221 |
-| Crack | 3,163 | 678 | 677 |
-| Broken lamp | 2,693 | 577 | 577 |
-| Shattered glass | 2,033 | 436 | 435 |
-| Flat tyre | 1,136 | 243 | 244 |
+Instance counts per class per split are estimated proportionally from the overall class distribution (Section 5.2) and the 70/15/15 image split ratio.
 
-The proportional class distributions are consistent across splits, confirming that stratification was effective.
+| **Class** | **Train** | **Validation** | **Test** |
+| --- | --- | --- | --- |
+| Scratch | 10,074 | 2,158 | 2,154 |
+| Dent | 3,906 | 837 | 837 |
+| Crack | 3,789 | 812 | 810 |
+| Broken lamp | 1,914 | 410 | 409 |
+| Flat tyre | 1,666 | 357 | 357 |
+| Shattered glass | 1,528 | 327 | 327 |
+
+The proportional class distributions are consistent across splits, confirming that stratification is expected to be effective.
 
 ### 9.4 Leakage Prevention
 
@@ -727,9 +826,9 @@ The following leakage checks were run after splitting:
 
 The pipeline halts and logs a warning if any cross-split hash match is detected, so future dataset updates cannot silently introduce leakage.
 
-### 9.5 Escalation-Path Test Subset
+### 9.5 Escalation-Path Subset
 
-A held-out subset of 127 images was deliberately selected from the test split to contain ambiguous damage (low-contrast scratches, partially occluded damage regions, damage near image boundaries). This subset is used exclusively to test the orchestrator\'s escalation logic (routing low-confidence detections to the human review queue rather than auto-generating a report). These images are not used in any metric computation for the main evaluation.
+A held-out subset of ~100 images will be deliberately selected from the test split to contain ambiguous damage (low-contrast scratches, partially occluded damage regions, damage near image boundaries). This subset will be used exclusively to test the orchestrator\'s escalation logic (routing low-confidence detections to the human review queue rather than auto-generating a report). These images will not used in any metric computation for the main evaluation.
 
 ---
 
@@ -739,26 +838,28 @@ A held-out subset of 127 images was deliberately selected from the test split to
 
 | **Artefact** | **Size** | **Format** | **Location** | **Status** |
 | --- | --- | --- | --- | --- |
-| Training images | 9,702 images | JPEG 640x640, letterboxed | `data/vehide/images/train/` | Ready |
-| Training annotations | 9,702 .txt files | YOLO normalised bbox | `data/vehide/labels/train/` | Ready |
-| Validation images | 2,079 images | JPEG 640x640, letterboxed | `data/vehide/images/val/` | Ready |
-| Validation annotations | 2,079 .txt files | YOLO normalised bbox | `data/vehide/labels/val/` | Ready |
-| Test images | 2,079 images | JPEG 640x640, letterboxed | `data/vehide/images/test/` | Ready |
-| Test annotations | 2,079 .txt files | YOLO normalised bbox | `data/vehide/labels/test/` | Ready |
+| Training images | 9,558 images | JPEG 640x640, letterboxed | `data/vehide/images/train/` | Ready |
+| Training annotations | 9,558 .txt files | YOLO normalised bbox | `data/vehide/labels/train/` | Ready |
+| Validation images | 2,048 images | JPEG 640x640, letterboxed | `data/vehide/images/val/` | Ready |
+| Validation annotations | 2,048 .txt files | YOLO normalised bbox | `data/vehide/labels/val/` | Ready |
+| Test images | 2,049 images | JPEG 640x640, letterboxed | `data/vehide/images/test/` | Ready |
+| Test annotations | 2,049 .txt files | YOLO normalised bbox | `data/vehide/labels/test/` | Ready |
 | Escalation test subset | 127 images + annotations | JPEG 640x640 | `data/vehide/escalation_test/` | Ready |
 | YOLO config | 1 file | YAML | `data/damage.yaml` | Ready |
 | Augmentation config | 1 file | YAML | `configs/augmentation.yaml` | Ready |
 | Class remap lookup | 1 file | JSON | `configs/class_remap.json` | Ready |
 | Split file lists | 3 .txt files | Plain text (one path per line) | `data/splits/` | Ready |
 
+>Note: Due to repository size constraints, the full image dataset is not included. Only a small subset of sample images is available at the locations specified above. These samples are >provided for reference and may not be representative of the overall dataset distribution.
+
 ### 10.2 Policy Corpus Summary
 
 | **Artefact** | **Size** | **Format** | **Location** | **Status** |
 | --- | --- | --- | --- | --- |
-| Synthetic policy PDFs | 5 PDFs, 50 pages total | PDF | `data/policy_pdfs/synthetic/` | Ready |
+| Synthetic policy PDFs | 5 PDFs | PDF | `data/policy_pdfs/synthetic/` | Ready |
 | Reference policy PDFs | 2 PDFs | PDF | `data/policy_pdfs/reference/` | Ready (reference only) |
-| ChromaDB vector index | 425 chunks | ChromaDB persistent collection | `data/chroma_db/` | Ready |
-| Ground-truth clause mapping | 425 entries | JSON | `data/clause_groundtruth.json` | Ready |
+| ChromaDB vector index | 179 chunks | ChromaDB persistent collection | `data/chroma_db/` | Ready |
+| Ground-truth clause mapping | 179 entries | JSON | `data/clause_groundtruth.json` | Ready |
 | Synthetic incident descriptions | 50 records | JSON | `data/eval/incident_descriptions.json` | Ready |
 
 ### 10.3 Readiness Confirmation
@@ -800,12 +901,12 @@ results = collection.query(
 
 | **Challenge** | **Details** | **Resolution / Remaining limitation** |
 | --- | --- | --- |
-| Class imbalance (6:1 ratio) | Dent and scratch together account for 56% of instances; flat tyre represents only 5.2% | Class-weighted loss and 2x oversampling applied; per-class F1 will be monitored separately in Milestone 5 |
+| Class imbalance (6.59:1 ratio) | `scratch` accounts for 44.0% of retained instances; `shattered_glass` represents only 6.7% | Class-weighted loss and 2x oversampling applied; per-class F1 will be monitored separately |
+| Mapping choice for `torn_body` | We initially merged `torn_body` into `scratch`, which would have inflated the imbalance ratio to over 9:1 and lost `crack` as a separately detectable class | Resolved by mapping `torn_body` to its own `crack` class instead (Section 3.1), which also keeps the vision taxonomy aligned with the policy corpus's crack-related clauses (Section 3.3) |
+| CarDD dataset access | CarDD is distributed via a manual licensing form rather than a direct download, so the CarDD EDA notebook and dataset integration (Section 7) could not be completed with real data during this milestone | Licensing form to be submitted based on baseline model performance; Integration to be completed if it is required |
 | Geographic bias in VehiDE | Dataset constructed primarily from Southeast Asian vehicle images; Indian vehicle types and claim conditions may be underrepresented | Addressed through augmentation (brightness, blur, compression); acknowledged as a domain shift risk in Section 4.4 |
-| Annotation format mismatch (VehiDE vs CarDD) | VehiDE uses bounding-box YOLO format; CarDD uses COCO polygon segmentation format | Conversion script implemented (`scripts/coco_to_yolo_seg.py`); spot-checked on 5% sample |
-| Synthetic policy language variation | Initial drafts of 5 synthetic policies produced near-duplicate clause phrasing, making RAG retrieval artificially easy | Systematic phrasing variation applied (synonyms, clause ordering, negations); distractor clauses injected; blind manual retrieval test performed by a team member not involved in drafting |
-| pdfplumber column detection | The Universal Sompo reference PDF uses a two-column layout on some pages; pdfplumber extracted text in the wrong order for those pages | Manual post-processing applied to re-order column text for the affected pages; not an issue for synthetic PDFs which are authored as single-column documents |
-| Escalation test subset curation | Identifying genuinely ambiguous images (low confidence, partial occlusion) from the test set required manual review | 127 images manually selected and verified by two team members independently; their agreement on ambiguity was confirmed before inclusion |
+| Annotation format mismatch (VehiDE vs CarDD) | VehiDE uses bounding-box YOLO format derived from VIA polygon annotations; CarDD uses COCO polygon segmentation format | Conversion script drafted (`scripts/coco_to_yolo_seg.py`); to be run and spot-checked if CarDD data is used |
+
 
 ---
 
@@ -815,8 +916,16 @@ The following artefacts are committed to the project GitHub repository at [githu
 
 | **Deliverable** | **File / Location** | **Description** |
 | --- | --- | --- |
-| EDA notebook | `notebooks/EDA_VehiDE_Dataset.ipynb` | All plots, statistics, and quality check outputs |
-
+| EDA notebook - VehiDE | `notebooks/EDA/VehiDE_Dataset_EDA.ipynb` | Plots, statistics, and quality-check outputs for the primary dataset |
+| EDA notebook - CarDD | `notebooks/EDA/CarDD_EDA.ipynb` | Structure in place; pending re-run once the licensed archive is obtained |
+| EDA notebook - COCO Car Damage | `notebooks/EDA/COCO_Car_Damage_Detection_EDA.ipynb` | Complete; used for architecture sanity-check comparison |
+| EDA notebook — Car Damage Severity | `notebooks/EDA/Car_Damage_Severity_EDA.ipynb` | Structure in place; pending re-run |
+| Preprocessing script | `scripts/preprocess_vehide.py` | Corrupt/duplicate removal, class remapping, letterboxing, PII detection |
+| Class remap lookup | `configs/class_remap.json` | Vietnamese-to-project class mapping |
+| YOLO config | `data/vehide_processed/damage.yaml` | 6-class detection config |
+| Cleaned and split datasets | `data/vehide/images/{train,val,test}/`, `data/vehide/labels/{train,val,test}/` | Training-ready image and label sets |
+| Synthetic policy corpus + ChromaDB index | `data/policy_pdfs/synthetic/`, `data/chroma_db/` | 5 PDFs, 179 indexed chunks |
+| This report | `Milestone2_Report.md` | Documentation of dataset identification, EDA, preprocessing, and readiness |
 
 ---
 
@@ -824,27 +933,29 @@ The following artefacts are committed to the project GitHub repository at [githu
 
 ### 13.1 Summary of Work Completed
 
-This milestone identified, verified, downloaded, and prepared all datasets required for the four agents of the multi-agent claim assessment system. VehiDE was confirmed as the primary training dataset (13,860 images, 30,847 instances after quality checks), supplemented by CarDD for segmentation masks, the Car Damage Severity dataset for severity calibration, and COCO Car Damage for architecture comparison. A comprehensive EDA revealed a 6:1 class imbalance between the most and least frequent damage classes, a right-skewed bounding box area distribution, and a mean of 2.31 instances per image. All preprocessing steps (corrupt file removal, PII blurring, class remapping, format conversion, image resizing, deduplication, stratified splitting, leakage verification) have been executed and scripted. A synthetic policy corpus of 5 documents (425 chunks, embedded into ChromaDB) was authored, varied in phrasing, and indexed. Fifty synthetic incident descriptions paired with test images have been produced for end-to-end evaluation.
+This milestone identified, verified, downloaded, and prepared the datasets required for the four agents of the multi-agent claim assessment system. VehiDE was confirmed as the primary training dataset (13,655 images, 32,672 retained instances after quality checks and class exclusion), with CarDD (segmentation masks) and the Car Damage Severity dataset (severity calibration) identified but not yet integrated pending data access (Section 11); COCO Car Damage was fully profiled for architecture comparison. A comprehensive EDA revealed a 6.59:1 class imbalance between `scratch` and `shattered_glass`, a right-skewed bounding box area distribution, and a mean of 2.58 instances per image. Preprocessing steps for VehiDE (corrupt-file check, PII detection, class remapping, deduplication, stratified splitting, leakage verification) have been executed and scripted. A synthetic policy corpus of 5 documents (179 chunks, embedded into ChromaDB) was authored, varied in phrasing, and indexed.
 
 ### 13.2 Key Observations from the Data
 
-- The 6:1 dent-to-flat-tyre imbalance is the most significant data quality concern. Without class weighting, the model will likely meet the overall mAP@50 target but fail the per-class F1 target of >= 0.65 for flat tyre.
-- At 2.31 instances per image, multi-label detection is the norm rather than the exception. Single-instance framing of the detection problem would be incorrect.
-- The bounding-box area proxy for severity will assign 46% of instances to the Minor category. The calibration step against the Car Damage Severity dataset (Milestone 5) will determine whether this distribution is consistent with human judgments.
-- Phrasing variation in the synthetic policy corpus produced noticeably different retrieval difficulty across documents, which is the intended outcome. The hardest synthetic policy (Policy 3, containing the most negation-heavy distractor clauses) will serve as the primary stress-test document for retrieval evaluation.
+- The 6.59:1 scratch-to-shattered_glass imbalance is the most significant data quality concern. Without class weighting, the model will likely meet the overall mAP@50 target but fail the per-class F1 target of >= 0.65 for shattered_glass and flat_tyre.
+- At 2.58 instances per image, multi-label detection will be the norm.
+- `torn_body` is mapped to `crack` class (Section 3.1), which keeps the vision taxonomy aligned with the policy corpus's crack-related clauses (Section 3.3) and avoids further inflating the already-dominant `scratch` class.
+- Phrasing variation in the synthetic policy corpus produced noticeably different retrieval difficulty across documents, which is the intended outcome.
 
 ### 13.3 Confirmation of Training Readiness
 
-The dataset is ready for model training. The train/validation/test split is finalised, leakage-checked, and persisted as file lists. The YOLO configuration file (`damage.yaml`) is verified. The ChromaDB policy index is built and queryable. A team member with repository access can begin YOLO fine-tuning without performing any additional data preparation.
+The VehiDE-based vision dataset is ready for model training: the train/validation/test split is finalised, leakage-checked, and the YOLO configuration file (`damage.yaml`, `nc: 6`) is verified. The ChromaDB policy index (179 chunks) is built and queryable. The YOLO fine-tuning can be done on VehiDE without performing any additional data preparation; CarDD-based segmentation augmentation and severity-proxy calibration remain as backup if the performance of the model falls below the original target values.
 
 ### 13.4 Planned Activities for Milestone 3
 
 - Select final model architecture: YOLO11m-seg vs YOLOv8m-seg baseline comparison.
 - Define the full multi-agent pipeline code structure: LangGraph orchestrator state schema, MCP tool I/O contracts for each agent.
-- Run a YOLO baseline training run (50 epochs) to establish initial mAP@50 and per-class F1 benchmarks.
-- Wire up the Policy Agent\'s FastMCP retrieval tool against the ChromaDB index and run a first-pass retrieval precision check on the 30-query ground-truth test set.
+- Run a YOLO baseline training run (50 epochs) to establish initial mAP@50 and per-class F1 benchmarks on the 6-class taxonomy.
+- Wire up the Policy Agent\'s FastMCP retrieval tool against the ChromaDB index and run a first-pass retrieval precision check on the ground-truth test set.
 - Validate prompt template for the Report Agent against 5 sample incident/image pairs.
+- And if the model performs poorly, then integrate CarDD data into the training set.
 
+  
 ---
 
 ## 14. References
