@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-07-09T12:11:18.960037",
+  "embedding_model": "all-MiniLM-L6-v2",
+  "collection_name": "policy_clauses",
+  "db_path": "./data/chroma_db",
+  "chunk_size": 300,
+  "chunk_overlap": 40,
+  "total_chunks_indexed": 179,
+  "documents": [
+    {
+      "doc_id": "policy_1_bharat_suraksha",
+      "raw_chars": 9443,
+      "chunks_raw": 45,
+      "chunks_kept": 45,
+      "dups_removed": 0
+    },
+    {
+      "doc_id": "policy_2_safedrive_assurance",
+      "raw_chars": 7398,
+      "chunks_raw": 36,
+      "chunks_kept": 36,
+      "dups_removed": 0
+    },
+    {
+      "doc_id": "policy_3_quickclaim_general",
+      "raw_chars": 7956,
+      "chunks_raw": 33,
+      "chunks_kept": 33,
+      "dups_removed": 0
+    },
+    {
+      "doc_id": "policy_4_autoguard_premium",
+      "raw_chars": 7024,
+      "chunks_raw": 29,
+      "chunks_kept": 29,
+      "dups_removed": 0
+    },
+    {
+      "doc_id": "policy_5_valuemotor",
+      "raw_chars": 8156,
+      "chunks_raw": 36,
+      "chunks_kept": 36,
+      "dups_removed": 0
+    }
+  ],
+  "coverage_by_damage_class": {
+    "broken_lamp": 27,
+    "dent": 53,
+    "scratch": 28,
+    "crack": 21,
+    "shattered_glass": 29,
+    "flat_tyre": 32
+  },
+  "clause_type_distribution": {
+    "general": 113,
+    "coverage": 28,
+    "definition": 2,
+    "sub_limit": 19,
+    "condition": 4,
+    "exclusion": 13
+  },
+  "smoke_test_summary": {
+    "dent": "coverage",
+    "scratch": "general",
+    "crack": "general",
+    "broken_lamp": "coverage",
+    "shattered_glass": "general",
+    "flat_tyre": "coverage"
+  }
+}
