@@ -1,0 +1,12 @@
+vehide:
+  download_date: "2026-07-09"
+  source: "kaggle/hendrichscullen/vehide-dataset"
+  version: "1"
+cardd:
+  download_date: "2026-07-09"
+  source: "cardd-ustc.github.io"
+  version: "1.0"
+car_damage_severity:
+  download_date: "2026-07-09"
+  source: "kaggle/prajwalbhamere/car-damage-severity-dataset"
+  version: "1"
