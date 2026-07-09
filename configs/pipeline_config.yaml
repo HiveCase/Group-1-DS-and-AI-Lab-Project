@@ -1,0 +1,9 @@
+seed: 42
+split_ratios: [0.70, 0.15, 0.15]
+img_size: 640
+chunk_size: 300
+chunk_overlap: 40
+embedding_model: all-MiniLM-L6-v2
+phash_threshold: 8
+dedup_threshold: 0.90
+n_incidents: 50
