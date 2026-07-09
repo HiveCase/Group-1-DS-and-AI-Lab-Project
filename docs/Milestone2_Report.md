@@ -120,8 +120,8 @@ By the end of this milestone, any team member with repository access should be a
 
 #### Alternative Vision Datasets
 
-| **Dataset** | **Download Link** | **License** | **Purpose** | **Why selected** |
-| --- | --- | --- | --- | --- | --- |
+| **Dataset** | **Download Link** | **License** | **Purpose** | **Why selected**|
+| --- | --- | --- | --- | --- |
 | CarDD | [cardd-ustc.github.io](https://cardd-ustc.github.io/) | Academic research use | Pixel-level segmentation masks for irregularly shaped damage (scratches, cracks) not well-represented by bounding boxes alone | Only public dataset with pixel-level damage segmentation across 6 damage categories with a peer-reviewed benchmark |
 | COCO Car Damage | [kaggle.com/datasets/lplenka/coco-car-damage-detection-dataset](https://www.kaggle.com/datasets/lplenka/coco-car-damage-detection-dataset) | Community (Kaggle) | Architecture comparison and pipeline sanity-checking | COCO format allows direct benchmark comparison against published COCO-trained baselines |
 | Car Damage Severity | [kaggle.com/datasets/prajwalbhamere/car-damage-severity-dataset](https://www.kaggle.com/datasets/prajwalbhamere/car-damage-severity-dataset) | Community (Kaggle) | Calibrating the Severity Agent\'s bounding-box area-ratio proxy against human-labelled severity | Only public dataset with human-assigned Minor/Moderate/Severe labels matching our three-category scheme |
