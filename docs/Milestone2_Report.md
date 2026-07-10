@@ -112,9 +112,6 @@ By the end of this milestone, any team member with repository access should be a
 | **Dataset** | **Agent it feeds** | **What it enables** |
 | --- | --- | --- |
 | VehiDE (primary) | Damage Agent + Severity Agent | YOLO fine-tuning for 6-class damage detection and severity calibration |
-| CarDD | Damage Agent (supplementary) | Pixel-level segmentation masks for irregularly shaped damage |
-| Car Damage Severity Dataset | Severity Agent (calibration) | Human-labelled Minor/Moderate/Severe ground truth |
-| COCO Car Damage | Damage Agent (comparison) | Architecture sanity-check against a differently-annotated source |
 | Synthetic policy PDFs | Policy Agent | RAG retrieval corpus for claim coverage determination |
 | Synthetic incident descriptions | Report Agent + Evaluation | Ground-truth incident/report pairs prepared for later end-to-end evaluation |
 
@@ -135,13 +132,6 @@ By the end of this milestone, any team member with repository access should be a
 | Purpose in this project | Primary training and evaluation dataset for the Damage Agent |
 | Why selected | Largest publicly available annotated vehicle damage dataset (13,945 images, 36,081 instances); peer-reviewed construction paper; covers all 7 damage classes; supports detection, segmentation, and salient object detection tasks |
 
-#### Alternative Vision Datasets
-
-| **Dataset** | **Download Link** | **License** | **Purpose** | **Why selected**|
-| --- | --- | --- | --- | --- |
-| CarDD | [cardd-ustc.github.io](https://cardd-ustc.github.io/) | Academic research use | Pixel-level segmentation masks for irregularly shaped damage (scratches, cracks) not well-represented by bounding boxes alone | Only public dataset with pixel-level damage segmentation across 6 damage categories with a peer-reviewed benchmark |
-| COCO Car Damage | [kaggle.com/datasets/lplenka/coco-car-damage-detection-dataset](https://www.kaggle.com/datasets/lplenka/coco-car-damage-detection-dataset) | Community (Kaggle) | Architecture comparison and pipeline sanity-checking | COCO format allows direct benchmark comparison against published COCO-trained baselines |
-| Car Damage Severity | [kaggle.com/datasets/prajwalbhamere/car-damage-severity-dataset](https://www.kaggle.com/datasets/prajwalbhamere/car-damage-severity-dataset) | Community (Kaggle) | Calibrating the Severity Agent\'s bounding-box area-ratio proxy against human-labelled severity | Only public dataset with human-assigned Minor/Moderate/Severe labels matching our three-category scheme |
 
 ### 2.2 Policy and Text Datasets
 
@@ -173,9 +163,6 @@ The five documents were designed to vary along three dimensions to stress-test t
 | **Dataset** | **Ownership** | **Permitted use** | **Restrictions** |
 | --- | --- | --- | --- |
 | VehiDE | Dataset authors (Scullen et al.) | **Apache-2.0** | Commercial use permitted under Apache-2.0; standard attribution |
-| CarDD | USTC research group | Academic research | Attribution to original paper required |
-| COCO Car Damage | Kaggle community uploader | Community use | Cite dataset page |
-| Car Damage Severity | Kaggle community uploader | Community use | Cite dataset page |
 | Universal Sompo policy | Universal Sompo General Insurance Co. Ltd | Publicly available IRDAI filing | Used as structural reference only; no verbatim reproduction |
 | United India Insurance policy | United India Insurance Co. Ltd | Publicly available IRDAI filing | Used as structural reference only; no verbatim reproduction |
 | Synthetic policy PDFs | This project team | Fully team-owned | No restrictions |
@@ -972,7 +959,6 @@ The VehiDE-based vision dataset is ready for model training: the train/validatio
 - Run a YOLO baseline training run (50 epochs) to establish initial mAP@50 and per-class F1 benchmarks on the 6-class taxonomy.
 - Wire up the Policy Agent\'s FastMCP retrieval tool against the ChromaDB index and run a first-pass retrieval precision check on the ground-truth test set.
 - Validate prompt template for the Report Agent against 5 sample incident/image pairs.
-- And if the model performs poorly, then integrate CarDD data into the training set.
 
   
 ---
