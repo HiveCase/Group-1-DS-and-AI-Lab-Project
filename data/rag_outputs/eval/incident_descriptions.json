@@ -1,0 +1,509 @@
+[
+  {
+    "incident_id": "INC_0001",
+    "image_id": "img_0001",
+    "damage_classes": [
+      "dent"
+    ],
+    "incident_date": "2026-01-01",
+    "location": "Mumbai",
+    "description": "While parking, the vehicle was struck by an adjacent car door, leaving a noticeable dent on the front left door panel."
+  },
+  {
+    "incident_id": "INC_0002",
+    "image_id": "img_0002",
+    "damage_classes": [
+      "dent"
+    ],
+    "incident_date": "2026-02-02",
+    "location": "Delhi",
+    "description": "A reversing vehicle backed into the front bumper in a parking lot, causing a significant dent."
+  },
+  {
+    "incident_id": "INC_0003",
+    "image_id": "img_0003",
+    "damage_classes": [
+      "dent"
+    ],
+    "incident_date": "2026-03-03",
+    "location": "Bengaluru",
+    "description": "The car sustained a dent on the rear quarter panel after a minor collision at a junction."
+  },
+  {
+    "incident_id": "INC_0004",
+    "image_id": "img_0004",
+    "damage_classes": [
+      "dent"
+    ],
+    "incident_date": "2026-04-04",
+    "location": "Hyderabad",
+    "description": "Hailstorm left multiple small dents across the bonnet and roof of the vehicle."
+  },
+  {
+    "incident_id": "INC_0005",
+    "image_id": "img_0005",
+    "damage_classes": [
+      "dent"
+    ],
+    "incident_date": "2026-05-05",
+    "location": "Chennai",
+    "description": "During a slow-speed collision on a highway slip road, the driver-side door received a deep dent."
+  },
+  {
+    "incident_id": "INC_0006",
+    "image_id": "img_0006",
+    "damage_classes": [
+      "dent"
+    ],
+    "incident_date": "2026-06-06",
+    "location": "Kolkata",
+    "description": "A shopping trolley rolled into the vehicle in a supermarket car park, creating a dent on the rear door."
+  },
+  {
+    "incident_id": "INC_0007",
+    "image_id": "img_0007",
+    "damage_classes": [
+      "dent"
+    ],
+    "incident_date": "2026-07-07",
+    "location": "Pune",
+    "description": "The vehicle was sideswiped by a truck, leaving a long dent along the passenger-side panels."
+  },
+  {
+    "incident_id": "INC_0008",
+    "image_id": "img_0008",
+    "damage_classes": [
+      "dent"
+    ],
+    "incident_date": "2026-08-08",
+    "location": "Jaipur",
+    "description": "Heavy debris falling from a construction site overhead caused multiple dents on the vehicle roof."
+  },
+  {
+    "incident_id": "INC_0009",
+    "image_id": "img_0009",
+    "damage_classes": [
+      "scratch"
+    ],
+    "incident_date": "2026-09-09",
+    "location": "Ahmedabad",
+    "description": "A vandal keyed the vehicle overnight in the apartment parking, leaving deep scratches on both side doors."
+  },
+  {
+    "incident_id": "INC_0010",
+    "image_id": "img_0010",
+    "damage_classes": [
+      "scratch"
+    ],
+    "incident_date": "2026-01-10",
+    "location": "Lucknow",
+    "description": "The insured accidentally scraped a concrete pillar in an underground car park, scratching the front bumper."
+  },
+  {
+    "incident_id": "INC_0011",
+    "image_id": "img_0011",
+    "damage_classes": [
+      "scratch"
+    ],
+    "incident_date": "2026-02-11",
+    "location": "Mumbai",
+    "description": "A motorcyclist clipped the vehicle while overtaking, leaving a paint scratch on the rear quarter panel."
+  },
+  {
+    "incident_id": "INC_0012",
+    "image_id": "img_0012",
+    "damage_classes": [
+      "scratch"
+    ],
+    "incident_date": "2026-03-12",
+    "location": "Delhi",
+    "description": "Tree branches during a storm dragged across the bonnet, leaving multiple surface scratches."
+  },
+  {
+    "incident_id": "INC_0013",
+    "image_id": "img_0013",
+    "damage_classes": [
+      "scratch"
+    ],
+    "incident_date": "2026-04-13",
+    "location": "Bengaluru",
+    "description": "Improper car wash brush caused fine circular scratches across the entire vehicle body."
+  },
+  {
+    "incident_id": "INC_0014",
+    "image_id": "img_0014",
+    "damage_classes": [
+      "scratch"
+    ],
+    "incident_date": "2026-05-14",
+    "location": "Hyderabad",
+    "description": "The vehicle was scratched on the door sill area when luggage was being loaded at an airport."
+  },
+  {
+    "incident_id": "INC_0015",
+    "image_id": "img_0015",
+    "damage_classes": [
+      "scratch"
+    ],
+    "incident_date": "2026-06-15",
+    "location": "Chennai",
+    "description": "A cyclist lost control and their handlebar scraped the passenger door, causing a paint scratch."
+  },
+  {
+    "incident_id": "INC_0016",
+    "image_id": "img_0016",
+    "damage_classes": [
+      "scratch"
+    ],
+    "incident_date": "2026-07-16",
+    "location": "Kolkata",
+    "description": "During an attempted break-in, the lock area of the driver door was deeply scratched."
+  },
+  {
+    "incident_id": "INC_0017",
+    "image_id": "img_0017",
+    "damage_classes": [
+      "crack"
+    ],
+    "incident_date": "2026-08-17",
+    "location": "Pune",
+    "description": "A large stone thrown up by an oncoming lorry cracked the front bumper assembly."
+  },
+  {
+    "incident_id": "INC_0018",
+    "image_id": "img_0018",
+    "damage_classes": [
+      "crack"
+    ],
+    "incident_date": "2026-09-18",
+    "location": "Jaipur",
+    "description": "The vehicle's plastic bumper cracked after a low-speed collision with a pavement edge."
+  },
+  {
+    "incident_id": "INC_0019",
+    "image_id": "img_0019",
+    "damage_classes": [
+      "crack"
+    ],
+    "incident_date": "2026-01-19",
+    "location": "Ahmedabad",
+    "description": "Extreme temperature differential caused the dashboard trim to crack along its seam."
+  },
+  {
+    "incident_id": "INC_0020",
+    "image_id": "img_0020",
+    "damage_classes": [
+      "crack"
+    ],
+    "incident_date": "2026-02-20",
+    "location": "Lucknow",
+    "description": "A rear-end shunt in traffic cracked the tail-light housing and the bumper below it."
+  },
+  {
+    "incident_id": "INC_0021",
+    "image_id": "img_0021",
+    "damage_classes": [
+      "crack"
+    ],
+    "incident_date": "2026-03-21",
+    "location": "Mumbai",
+    "description": "A heavy object fell onto the vehicle from a building balcony, cracking the roof panel and the A-pillar trim."
+  },
+  {
+    "incident_id": "INC_0022",
+    "image_id": "img_0022",
+    "damage_classes": [
+      "crack"
+    ],
+    "incident_date": "2026-04-22",
+    "location": "Delhi",
+    "description": "Side impact from another vehicle cracked the door skin at the pressed crease line."
+  },
+  {
+    "incident_id": "INC_0023",
+    "image_id": "img_0023",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "incident_date": "2026-05-23",
+    "location": "Bengaluru",
+    "description": "The headlight assembly was shattered when the vehicle was rear-ended at a red light."
+  },
+  {
+    "incident_id": "INC_0024",
+    "image_id": "img_0024",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "incident_date": "2026-06-24",
+    "location": "Hyderabad",
+    "description": "A reversing incident in a parking lot broke the left indicator unit completely."
+  },
+  {
+    "incident_id": "INC_0025",
+    "image_id": "img_0025",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "incident_date": "2026-07-25",
+    "location": "Chennai",
+    "description": "Vandals smashed both tail light assemblies while the vehicle was parked on a public road overnight."
+  },
+  {
+    "incident_id": "INC_0026",
+    "image_id": "img_0026",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "incident_date": "2026-08-26",
+    "location": "Kolkata",
+    "description": "The front fog light was struck and broken when the vehicle went over an unmarked speed breaker at speed."
+  },
+  {
+    "incident_id": "INC_0027",
+    "image_id": "img_0027",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "incident_date": "2026-09-27",
+    "location": "Pune",
+    "description": "A side collision broke the rear reflector and the adjacent tail lamp housing."
+  },
+  {
+    "incident_id": "INC_0028",
+    "image_id": "img_0028",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "incident_date": "2026-01-28",
+    "location": "Jaipur",
+    "description": "The right headlight cluster was completely destroyed when the vehicle clipped a concrete divider."
+  },
+  {
+    "incident_id": "INC_0029",
+    "image_id": "img_0029",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "incident_date": "2026-02-01",
+    "location": "Ahmedabad",
+    "description": "Flying debris from roadworks shattered the driver-side fog lamp during highway driving."
+  },
+  {
+    "incident_id": "INC_0030",
+    "image_id": "img_0030",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "incident_date": "2026-03-02",
+    "location": "Lucknow",
+    "description": "The windscreen shattered after a large stone was projected by a passing truck on the expressway."
+  },
+  {
+    "incident_id": "INC_0031",
+    "image_id": "img_0031",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "incident_date": "2026-04-03",
+    "location": "Mumbai",
+    "description": "Break-in attempt resulted in the driver-side window being completely smashed."
+  },
+  {
+    "incident_id": "INC_0032",
+    "image_id": "img_0032",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "incident_date": "2026-05-04",
+    "location": "Delhi",
+    "description": "A high-speed impact with a road barrier shattered both the windscreen and the passenger window."
+  },
+  {
+    "incident_id": "INC_0033",
+    "image_id": "img_0033",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "incident_date": "2026-06-05",
+    "location": "Bengaluru",
+    "description": "Hailstones cracked and shattered the rear windscreen while the vehicle was parked in the open."
+  },
+  {
+    "incident_id": "INC_0034",
+    "image_id": "img_0034",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "incident_date": "2026-07-06",
+    "location": "Hyderabad",
+    "description": "A vehicle rollover on a mountain road caused the sunroof glass panel to shatter completely."
+  },
+  {
+    "incident_id": "INC_0035",
+    "image_id": "img_0035",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "incident_date": "2026-08-07",
+    "location": "Chennai",
+    "description": "Vandals smashed the rear window of the vehicle during a public disturbance event."
+  },
+  {
+    "incident_id": "INC_0036",
+    "image_id": "img_0036",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "incident_date": "2026-09-08",
+    "location": "Kolkata",
+    "description": "A falling tree branch during a storm shattered the windscreen and cracked the driver-side glass."
+  },
+  {
+    "incident_id": "INC_0037",
+    "image_id": "img_0037",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "incident_date": "2026-01-09",
+    "location": "Pune",
+    "description": "A nail embedded in the road punctured the rear left tyre, causing a sudden blowout on the highway."
+  },
+  {
+    "incident_id": "INC_0038",
+    "image_id": "img_0038",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "incident_date": "2026-02-10",
+    "location": "Jaipur",
+    "description": "The right front tyre burst after the vehicle drove over sharp debris at a construction site."
+  },
+  {
+    "incident_id": "INC_0039",
+    "image_id": "img_0039",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "incident_date": "2026-03-11",
+    "location": "Ahmedabad",
+    "description": "Both tyres on the driver side were slashed by vandals while the vehicle was parked."
+  },
+  {
+    "incident_id": "INC_0040",
+    "image_id": "img_0040",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "incident_date": "2026-04-12",
+    "location": "Lucknow",
+    "description": "A deep pothole ruptured the inner sidewall of the rear tyre, resulting in a flat."
+  },
+  {
+    "incident_id": "INC_0041",
+    "image_id": "img_0041",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "incident_date": "2026-05-13",
+    "location": "Mumbai",
+    "description": "A slow puncture developed in the front left tyre after encountering loose gravel."
+  },
+  {
+    "incident_id": "INC_0042",
+    "image_id": "img_0042",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "incident_date": "2026-06-14",
+    "location": "Delhi",
+    "description": "The tyre valve was damaged during a kerb strike, causing air loss and a flat."
+  },
+  {
+    "incident_id": "INC_0043",
+    "image_id": "img_0043",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "incident_date": "2026-07-15",
+    "location": "Bengaluru",
+    "description": "Exposure to a sharp piece of metal on a rural road caused a blowout to the rear right tyre."
+  },
+  {
+    "incident_id": "INC_0044",
+    "image_id": "img_0044",
+    "damage_classes": [
+      "dent",
+      "scratch"
+    ],
+    "incident_date": "2026-08-16",
+    "location": "Hyderabad",
+    "description": "A side-swipe collision left a dent and paint scratches along the entire passenger-side door."
+  },
+  {
+    "incident_id": "INC_0045",
+    "image_id": "img_0045",
+    "damage_classes": [
+      "crack",
+      "broken_lamp"
+    ],
+    "incident_date": "2026-09-17",
+    "location": "Chennai",
+    "description": "A low-speed front collision cracked the front bumper and shattered the right headlight assembly."
+  },
+  {
+    "incident_id": "INC_0046",
+    "image_id": "img_0046",
+    "damage_classes": [
+      "shattered_glass",
+      "dent"
+    ],
+    "incident_date": "2026-01-18",
+    "location": "Kolkata",
+    "description": "A vehicle rolled over a road divider at speed, shattering the windscreen and causing roof dents."
+  },
+  {
+    "incident_id": "INC_0047",
+    "image_id": "img_0047",
+    "damage_classes": [
+      "flat_tyre",
+      "scratch"
+    ],
+    "incident_date": "2026-02-19",
+    "location": "Pune",
+    "description": "Driving through debris on a flooded road caused a tyre puncture and road rash scratches on the lower sill."
+  },
+  {
+    "incident_id": "INC_0048",
+    "image_id": "img_0048",
+    "damage_classes": [
+      "broken_lamp",
+      "crack",
+      "dent"
+    ],
+    "incident_date": "2026-03-20",
+    "location": "Jaipur",
+    "description": "A three-vehicle pileup caused front dents, cracked bumper panels, and broken headlight units."
+  },
+  {
+    "incident_id": "INC_0049",
+    "image_id": "img_0049",
+    "damage_classes": [
+      "scratch",
+      "crack"
+    ],
+    "incident_date": "2026-04-21",
+    "location": "Ahmedabad",
+    "description": "Someone backed into the parked vehicle, scratching the boot lid and cracking the rear bumper moulding."
+  },
+  {
+    "incident_id": "INC_0050",
+    "image_id": "img_0001",
+    "damage_classes": [
+      "dent"
+    ],
+    "incident_date": "2026-01-01",
+    "location": "Mumbai",
+    "description": "While parking, the vehicle was struck by an adjacent car door, leaving a noticeable dent on the front left door panel."
+  }
+]

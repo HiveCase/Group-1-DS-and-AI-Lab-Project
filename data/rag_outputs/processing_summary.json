@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-09T12:11:18.960037",
+  "generated_at": "2026-07-12T11:01:36.021945",
   "embedding_model": "all-MiniLM-L6-v2",
   "collection_name": "policy_clauses",
   "db_path": "./data/chroma_db",
   "chunk_size": 300,
   "chunk_overlap": 40,
-  "total_chunks_indexed": 179,
+  "total_chunks_indexed": 185,
   "documents": [
     {
       "doc_id": "policy_1_bharat_suraksha",
@@ -16,9 +16,9 @@
     },
     {
       "doc_id": "policy_2_safedrive_assurance",
-      "raw_chars": 7398,
-      "chunks_raw": 36,
-      "chunks_kept": 36,
+      "raw_chars": 7399,
+      "chunks_raw": 39,
+      "chunks_kept": 39,
       "dups_removed": 0
     },
     {
@@ -30,7 +30,7 @@
     },
     {
       "doc_id": "policy_4_autoguard_premium",
-      "raw_chars": 7024,
+      "raw_chars": 7011,
       "chunks_raw": 29,
       "chunks_kept": 29,
       "dups_removed": 0
@@ -38,33 +38,33 @@
     {
       "doc_id": "policy_5_valuemotor",
       "raw_chars": 8156,
-      "chunks_raw": 36,
-      "chunks_kept": 36,
+      "chunks_raw": 39,
+      "chunks_kept": 39,
       "dups_removed": 0
     }
   ],
   "coverage_by_damage_class": {
-    "broken_lamp": 27,
-    "dent": 53,
-    "scratch": 28,
+    "dent": 31,
+    "scratch": 26,
     "crack": 21,
-    "shattered_glass": 29,
-    "flat_tyre": 32
+    "broken_lamp": 18,
+    "shattered_glass": 30,
+    "flat_tyre": 38
   },
   "clause_type_distribution": {
-    "general": 113,
-    "coverage": 28,
-    "definition": 2,
-    "sub_limit": 19,
-    "condition": 4,
-    "exclusion": 13
+    "general": 25,
+    "coverage": 44,
+    "definition": 1,
+    "sub_limit": 17,
+    "condition": 2,
+    "exclusion": 96
   },
   "smoke_test_summary": {
     "dent": "coverage",
-    "scratch": "general",
-    "crack": "general",
-    "broken_lamp": "coverage",
-    "shattered_glass": "general",
-    "flat_tyre": "coverage"
+    "scratch": "exclusion",
+    "crack": "coverage",
+    "broken_lamp": "exclusion",
+    "shattered_glass": "exclusion",
+    "flat_tyre": "exclusion"
   }
 }

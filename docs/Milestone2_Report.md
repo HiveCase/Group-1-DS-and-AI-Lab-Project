@@ -144,7 +144,7 @@ No public dataset of insurance policy documents paired with vehicle damage annot
 | Motor Private Car 3 Years Policy Wordings | Universal Sompo General Insurance Co. Ltd | IRDAN134RP0003V01201819 | 23 | Primary structural reference; clause vocabulary, section hierarchy, and depreciation schedule design |
 | Private Car Standalone Own Damage Policy | United India Insurance Company Limited | IRDAN545RP0001V01201920 | 4 | Secondary structural reference; alternative phrasing of similar coverage and exclusion clauses |
 
-These documents are publicly available IRDAI-registered policy wordings, not proprietary schedules or individual policyholder documents. No clause text from either document is reproduced verbatim in the synthetic corpus.
+These documents are publicly available IRDAI-registered policy wordings, not proprietary schedules or individual policyholder documents. An 8-word n-gram overlap check of all 185 synthetic-corpus chunks against both reference documents found that 41 chunks (22%) share at least one 8-or-more-word run with the reference text, with the longest runs reaching 20 words. Inspecting these overlaps shows they fall into two categories: (a) IRDAI-standard depreciation percentage tables, whose age-bracket wording ("not exceeding 6 months... exceeding 6 months but not exceeding 1 year...") is regulatory boilerplate common to virtually all Indian motor policies, and (b) formulaic legal openings ("The Company shall not be liable to make any payment in respect of...", "will indemnify the insured against loss or damage...") that are standard-form phrasing across the Indian motor insurance industry rather than language unique to Universal Sompo or United India. No distinctively-worded coverage or exclusion clause was found copied wholesale from either reference document. (The percentage is higher than an earlier pass on this same corpus, 18% at 179 chunks, purely because chunks now carry a prepended section-heading breadcrumb, Section 6.2 Step 2 — a heading such as "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED" is counted against every chunk it is prepended to, not because any additional content was copied.) **[Completed]**
 
 **Synthetic policy corpus (team-authored, fully indexed into ChromaDB):**
 
@@ -157,6 +157,8 @@ These documents are publicly available IRDAI-registered policy wordings, not pro
 | policy_5_valuemotor.pdf | ValueMotor Comprehensive Insurance Ltd | 4 | Budget insurer, concise with conditional sub-limits | Most conditional language; 7 exclusion subsections; tyre cover explicitly conditional on concurrent vehicle body damage |
 
 The five documents were designed to vary along three dimensions to stress-test the RAG retrieval pipeline. First, phrasing: the same coverage concept is expressed differently across documents (for example, dent coverage appears as "accidental external means", "bodily damage from impact", "accidental collision" or "impact", and "physical impact damage" across the five policies). Second, distractor density: each policy contains at least five distractor clauses per damage class exclusion clauses, sub-limit clauses, and conditional coverage clauses that are semantically related to a damage class but do not grant coverage. Third, structural format: coverage appears as numbered lists in some documents and as tables in others, preventing the retriever from relying on positional cues.
+
+**Corpus validation.** Three checks were run to confirm the corpus is fit for retrieval evaluation, detailed in Section 6.2 Step 5: the verbatim-overlap check described above, a per-document near-duplicate pass (0 near-duplicate chunks found across all 5 documents), and a retrieval smoke test (one query per damage class against the live index, top-1 result topically correct for all 6 classes). **[Completed]**
 
 ### 2.3 Ownership, Licensing, and Usage Constraints
 
@@ -261,44 +263,44 @@ The Universal Sompo document (23 pages, IRDAN134RP0003V01201819) contains the fo
 | **Attribute** | **Value** |
 | --- | --- |
 | Number of documents | 5 synthetic PDFs |
-| Total chunks produced (after splitting and indexing) | 179 chunks |
-| Chunk size | 300 tokens with 40-token overlap |
-| Embedding model | sentence-transformers/all-MiniLM-L6-v2 |
-| Vector store | ChromaDB (collection `policy_clauses`) |
-| Ground-truth clause mappings | 1 JSON file mapping each chunk ID to damage classes it addresses |
+| Total chunks produced (after splitting and indexing) | 185 chunks |
+| Chunk size | 300 characters with 40-character overlap (`RecursiveCharacterTextSplitter`, `length_function=len`; roughly 55-65 tokens per chunk at this corpus's register), plus a prepended section-heading breadcrumb (mean realised chunk length 247.6 characters including the breadcrumb — see Section 6.2 for the sizing and heading-prepending rationale) |
+| Embedding model | sentence-transformers/all-MiniLM-L6-v2 (benchmarked against alternatives, Section 6.2; Precision@3 = 1.00 on this corpus) |
+| Vector store | ChromaDB (collection `policy_clauses`; benchmarked against FAISS, Section 6.2) |
+| Ground-truth clause mappings | 1 JSON file mapping each chunk ID to damage classes, clause type, and the governing section heading; produced directly by the preprocessing pipeline (`scripts/preprocess_policy_pdfs.py`), auto-tagged against heading + body text (Section 6.2, Step 4) |
 | Distractor clauses per damage class | At least 5 per class (exclusions, sub-limit clauses, conditional coverage) |
 
 **Chunks per damage class:**
 
 | **Damage class** | **Chunks** |
 | --- | --- |
-| dent | 53 |
-| flat_tyre | 32 |
-| shattered_glass | 29 |
-| scratch | 28 |
-| broken_lamp | 27 |
+| flat_tyre | 38 |
+| dent | 31 |
+| shattered_glass | 30 |
+| scratch | 26 |
 | crack | 21 |
+| broken_lamp | 18 |
 
-A chunk can be tagged with more than one damage class (e.g. a general coverage clause applying to all classes), so the per-class counts above sum to more than the total chunk count.
+A chunk can be tagged with more than one damage class (e.g. a general coverage clause applying to all classes), so the per-class counts above sum to more than the total chunk count. 71 of 185 chunks (38%) carry no damage-class tag; manual review confirms these are legitimately class-agnostic content (definitions, administrative clauses, claim procedure, NCB tables) rather than missed tags.
 
 **Clause type distribution:**
 
 | **Clause type** | **Chunks** |
 | --- | --- |
-| general | 113 |
-| coverage | 28 |
-| sub_limit | 19 |
-| exclusion | 13 |
-| condition | 4 |
-| definition | 2 |
-| **Total** | **179** |
+| exclusion | 96 |
+| coverage | 44 |
+| general | 25 |
+| sub_limit | 17 |
+| condition | 2 |
+| definition | 1 |
+| **Total** | **185** |
 ---
 
 ## 4. Data Governance
 
 ### 4.1 Data Source and Licensing
 
-All datasets are used strictly within their permitted scope. VehiDE is used for non-commercial academic research under the terms stated by the dataset authors. CarDD is used under academic research terms with attribution. The two IRDAI policy wording documents are publicly available regulatory filings used only as structural references: no clause text is reproduced verbatim in any project output. The synthetic policy PDFs are entirely team-authored and carry no third-party licensing constraints.
+All datasets are used strictly within their permitted scope. VehiDE is used for non-commercial academic research under the terms stated by the dataset authors. CarDD is used under academic research terms with attribution. The two IRDAI policy wording documents are publicly available regulatory filings used only as structural references. A corpus-wide verbatim-overlap check (Section 2.2) confirms that no distinctively-worded coverage or exclusion clause was copied wholesale from either document; the short overlaps that do exist are confined to IRDAI-standard regulatory tables and industry-wide formulaic legal phrasing, detailed in Section 2.2. The synthetic policy PDFs are entirely team-authored and carry no third-party licensing constraints.
 
 No dataset used in this project is owned by the team or by IIT Madras. All are third-party datasets used under their respective research or educational licenses.
 
@@ -623,15 +625,16 @@ Both reference PDFs and all 5 synthetic PDFs were parsed using `pdfplumber`, whi
 ```python
 import pdfplumber
 
-def extract_policy_text(pdf_path):
+def extract_pdf_text(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
-        pages = [page.extract_text() or "" for page in pdf.pages]
-    return "\n".join(pages)
+        return "\n\n".join(page.extract_text() or "" for page in pdf.pages)
 ```
 
-**Step 2: Section-aware chunking**
+**Extraction bug found and fixed.** An earlier version of this function tried to auto-detect two-column layouts: it bisected each page at `width/2`, extracted the left and right halves separately, and used that split instead of the full-page text whenever the split produced more words (a "> 1.05x" threshold, intended to catch genuine multi-column articles). Inspecting the corpus directly showed none of the 5 synthetic PDFs are actually laid out in two columns — they are single-column business documents, some with wide tables. On 3 of 21 pages (policy_1 page 5, policy_2 page 2, policy_4 page 1) the word-count check tripped anyway, from incidental noise at the bisection line (e.g. 285 words vs. a 283.5-word threshold on policy_4 page 1), and the resulting left/right split cut straight through single-column text and table cells: it split "INSURANCE" into "I" / "SURANCE", and truncated words like "lightning" to "lightnin" and "housebreaking" to "housebreakin". This produced chunks such as *"Event Coverage detail Fire and allied perils Fire, explosion, lightnin Theft Burglary, housebreakin..."* that are close to unembeddable regardless of chunk size — no amount of chunk-size or overlap tuning would fix corrupted source text. The heuristic was removed entirely; `pdfplumber`'s default full-page extraction reads all 21 pages correctly, including the table on policy_4 page 1 (confirmed by comparing against `page.extract_tables()`). A targeted word-boundary check (`\blightnin\b`, `\bhousebreakin\b`, `\bSURANCE\b`) across the rebuilt corpus confirms zero remaining truncated-word artifacts. **[Completed]**
 
-A heading-aware splitter was implemented to ensure chunk boundaries respect clause boundaries. Section headings matching patterns such as `SECTION I`, numbered items (`1.`, `2.`), and lettered sub-items (`a)`, `b)`) are treated as natural chunk delimiters before applying the token-length splitter.
+**Step 2: Structure-aware chunking with heading context**
+
+A splitter distinguishes two tiers of structural markers rather than treating every boundary the same way. **Headings** (`SECTION I`, `PART A.`, `CHAPTER 1.`, lettered sub-sections like `A. Exclusions Relating to Panel and Body Damage`, numbered sub-headings like `3.1 Panel and Dent Exclusions`) update a running "current heading" breadcrumb. **List items** (`1.`, `2.`, `a)`) still force their own chunk boundary — so each exclusion or coverage item stays an atomic chunk — but do not overwrite the current heading, since a bare list item is not itself a new section. `RecursiveCharacterTextSplitter` then runs within each resulting section as before.
 
 ```python
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -641,18 +644,31 @@ splitter = RecursiveCharacterTextSplitter(
     chunk_overlap=40,
     separators=["\\n\\n", "\\n", ". ", " "]
 )
-chunks = splitter.split_text(policy_text)
+# sections is a list of {"text": ..., "is_heading": bool}, produced by
+# splitting on both heading and list-item markers (see split_into_sections
+# in scripts/preprocess_policy_pdfs.py); current_heading updates only
+# when is_heading is True.
+for section in sections:
+    if section["is_heading"]:
+        current_heading = section["text"].splitlines()[0][:90]
+    for sub_chunk in splitter.split_text(section["text"]):
+        chunks.append((current_heading, sub_chunk))
 ```
+
+**Why this matters, not just chunk size.** A manual review of the original 179-chunk corpus (before this fix) found that individual exclusion/coverage items were frequently split away from the heading that governs them — e.g. "1. Consequential loss, depreciation, wear and tear..." carried no textual signal that it was an *exclusion*, because the heading "The Company shall not be liable to make any payment in respect of:" lived in a separate chunk. This is a retrieval problem, not just a metadata problem: the embedded text itself contained no exclusion language, so a query like "is gradual wear excluded?" would match poorly regardless of how the chunk was tagged. Each chunk's stored and embedded text now carries its governing heading as a bracketed prefix (`contextualize()`, Step 3), so the chunk that reaches the embedding model is, for example, `"[The Company shall not be liable to make any payment in respect of:] 1. Consequential loss, depreciation, wear and tear..."` rather than the bare item text — this is what actually improved retrieval precision (Step 3 benchmark below), not the 300/40 chunk-size numbers themselves.
 
 **Chunking results (aggregate, all 5 synthetic PDFs):**
 
 | **Metric** | **Value** |
 | --- | --- |
 | PDFs processed | 5 |
-| Total chunks indexed | 179 |
-| Chunk size | 300 tokens, 40-token overlap |
+| Total chunks indexed | 185 |
+| Chunk size | 300 characters, 40-character overlap, plus a prepended heading breadcrumb |
+| Mean chunk length (actual, including breadcrumb) | 247.6 characters (range 44-379) |
 
-See Section 3.3 for the per-damage-class and per-clause-type breakdown of the 179 indexed chunks.
+See Section 3.3 for the per-damage-class and per-clause-type breakdown of the 185 indexed chunks.
+
+**Why 300 characters / 40-character overlap.** `RecursiveCharacterTextSplitter`'s `chunk_size` parameter measures characters (`length_function=len`), not tokens — 300 characters is roughly 55-65 English tokens for this corpus's legal register. This size was chosen by inspecting the source documents: individual numbered exclusion items and coverage bullets across all 5 policies run 60-300 characters (e.g. "Scratch damage resulting from routine washing and cleaning activities of the vehicle, classified under fair wear and tear." is 125 characters), so a 300-character limit keeps the large majority of atomic clauses intact within a single chunk rather than splitting mid-sentence; the 40-character overlap (~13% of chunk size) preserves context across the boundary for the minority of clauses that do exceed it. Tuning this number up or down was considered a lower-leverage change than the two fixes above: a larger chunk size risks mixing coverage and exclusion clauses into one embedding (hurting precision), and a smaller one would worsen the heading-context loss that Step 2 addresses directly. **[Completed]**
 
 **Step 3: Embedding and indexing**
 
@@ -664,39 +680,59 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 client = chromadb.PersistentClient(path="./data/chroma_db")
 collection = client.get_or_create_collection("policy_clauses")
 
-for i, chunk in enumerate(all_chunks):
-    embedding = model.encode(chunk).tolist()
+for i, (heading, chunk) in enumerate(chunks_dedup):
+    ctx_text = contextualize(heading, chunk)   # prepends the heading breadcrumb, Step 2
+    embedding = model.encode(ctx_text).tolist()
     collection.add(
-        documents=[chunk],
+        documents=[ctx_text],
         embeddings=[embedding],
-        ids=[f"chunk_{i:04d}"],
-        metadatas=[{"doc_id": chunk_metadata[i]["doc_id"],
-                    "damage_classes": chunk_metadata[i]["damage_classes"]}]
+        ids=[f"chunk_{i:05d}"],
+        metadatas=[{"doc_id": doc_id, "heading": heading,
+                    "damage_classes": ",".join(damage_classes)}]
     )
 print(f"Indexed {collection.count()} chunks")
-# Output: Indexed 179 chunks
+# Output: Indexed 185 chunks
 ```
+
+**Why all-MiniLM-L6-v2 and ChromaDB.** MiniLM was benchmarked against BAAI/bge-small-en-v1.5 (the closest same-size-class alternative to the other commonly-cited sentence-embedding options, BGE/MPNet/E5) on the actual 185-chunk corpus: both models embedded every chunk, and the 6 smoke-test queries (Step 5, below) were run against each resulting index. MiniLM (22.7M parameters, 384-dim) reached a **perfect mean Precision@3 of 1.00** across all 6 damage classes on the rebuilt corpus, versus 0.94 for BGE-small (33.4M parameters, same 384-dim, still lagging on `crack` at 0.67) — while both embed the full corpus in under a second, so encoding speed is not the deciding factor at this corpus scale. (Before the Step 1/2 fixes, on the original 179-chunk corpus, MiniLM scored 0.94 and BGE-small 0.89 — the extraction fix and heading-prepending are what closed that gap, not a change of embedding model.) Larger models in this family (MPNet-base and E5-base, both ~110M parameters) are known from published benchmarks to offer only marginal general-purpose retrieval gains over MiniLM-class models at 3-5x the parameter count and latency, which is not justified for a corpus this size and adds deployment weight for the no-GPU Hugging Face Spaces demo target. ChromaDB was compared against a FAISS `IndexFlatIP` index built from the same embeddings: across repeated runs, FAISS consistently answered a query in under 0.01ms versus roughly 0.5ms for ChromaDB — a ~50-60x gap driven by ChromaDB's in-process call/serialisation overhead, not raw search cost — and both returned identical top-1 content for all 6 test queries (6/6 exact match) on every run. At this corpus size FAISS's raw speed advantage is not operationally meaningful; ChromaDB was retained because it provides persistent storage, per-chunk metadata (`doc_id`, `heading`, `damage_classes`, `clause_type`) and metadata-filtered queries out of the box, which FAISS would require building separately. **[Completed]**
 
 **Step 4: Ground-truth clause mapping**
 
-Every chunk was manually tagged with the damage classes it addresses, producing a JSON ground-truth file used for Retrieval Precision@3 and MRR evaluation (Milestone 1, Section 4.2):
+Every chunk is auto-tagged directly by the preprocessing pipeline (`scripts/preprocess_policy_pdfs.py`), scoring the *contextualized* chunk (heading + body) against per-class damage keywords and per-type clause keywords, rather than the bare item text. A manual, chunk-by-chunk review against the source PDFs — repeated after each fix below — found and corrected five systematic tagging errors, the first three in the damage-class keyword lists and the last two in clause-type scoring:
+
+1. the `broken_lamp` keyword "light" substring-matched inside "lightning" (a fire peril, unrelated to lamps);
+2. the `flat_tyre` keyword "wheel" substring-matched inside "wheel arch" (a body panel term, not a tyre);
+3. the bare keyword "glass" matched both genuine window/windscreen glass and "fibre glass" (a body panel material) — fixed with a negative-lookbehind exclusion and more specific compound phrases (`windscreen`, `laminated glass`, `glass damage`, etc.);
+4. `clause_type` was originally scored per-chunk in isolation, so itemised exclusion and coverage lists whose individual bullet items don't repeat the section's own trigger phrase (e.g. "Consequential loss..." under a "shall not be liable" heading) defaulted to a generic "general" tag — fixed by Step 2's heading-prepending, which puts the heading's own trigger words directly into the scored text;
+5. even with heading-prepending, several exclusion items explain what is *not* covered by contrasting it against "...a specific identifiable accidental event **covered** under this policy" — that body-level "covered" mention tied against the heading's own "shall not be liable" signal, and a naive combined score resolved the tie to `coverage` by dict order every time. Fixed by scoring the heading first: if the heading itself carries any clause-type signal, it wins outright over body-only wording (`tag_clause_type` in `scripts/preprocess_policy_pdfs.py`).
+
+The corrected pipeline moved the `clause_type` distribution from the original `{general: 113, coverage: 28, exclusion: 13, sub_limit: 19, condition: 4, definition: 2}` (179 chunks) to `{exclusion: 96, coverage: 44, general: 25, sub_limit: 17, condition: 2, definition: 1}` (185 chunks; full tables in Section 3.3). The ground-truth file (`data/clause_groundtruth.json`) is regenerated directly by this pipeline — there is no separate patch step — and is used for Retrieval Precision@3 and MRR evaluation (Milestone 1, Section 4.2):
 
 ```json
 {
-  "chunk_0042": {
-    "text_preview": "The Company will indemnify against loss or damage by accidental external means...",
-    "damage_classes": ["dent", "scratch", "crack", "broken_lamp", "shattered_glass", "flat_tyre"],
-    "clause_type": "coverage",
-    "doc_id": "synthetic_policy_2"
-  },
-  "chunk_0091": {
-    "text_preview": "Damage to tyres and tubes is limited to 50% of replacement cost...",
-    "damage_classes": ["flat_tyre"],
-    "clause_type": "sub_limit",
-    "doc_id": "synthetic_policy_1"
+  "chunk_00013": {
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 1. Consequential loss, depreciation, wear and tear, or mechanical and electrical ",
+    "damage_classes": [],
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   }
 }
 ```
+**[Completed]**
+
+**Step 5: Corpus validation**
+
+Three checks were run to confirm the corpus is fit for retrieval evaluation:
+
+| **Check** | **Method** | **Result** |
+| --- | --- | --- |
+| Chunk-level near-duplicates | Jaccard trigram similarity >= 0.90, applied per document | 0 near-duplicate chunks found in any of the 5 synthetic documents |
+| Verbatim overlap vs. reference documents | 8-word n-gram overlap between synthetic chunks and both IRDAI reference PDFs | 41 of 185 chunks (22%) share an 8+ word run; longest runs (up to 20 words) are confined to IRDAI-standard depreciation tables and formulaic legal openings common industry-wide, not distinctively-worded coverage/exclusion language copied from either reference insurer (Section 2.2) |
+| Retrieval smoke test | One query per damage class against the live ChromaDB index (Section 10.3) | Top-1 result is topically correct and explicitly self-describing for all 6 classes (e.g. the `flat_tyre` query's top hit is `"[The following are excluded from this policy:] 9. Any claim where the vehicle was driven with a tyre already known to be flat..."` — the exclusion is now legible from the retrieved text itself, not just its metadata tag); full results in `data/rag_outputs/eval/retrieval_smoke_test.json` |
+
+**[Completed]**
+
 ---
 
 
@@ -864,8 +900,8 @@ A held-out subset of ~100 images will be deliberately selected from the test spl
 | --- | --- | --- | --- | --- |
 | Synthetic policy PDFs | 5 PDFs | PDF | `data/policy_pdfs/synthetic/` | Ready |
 | Reference policy PDFs | 2 PDFs | PDF | `data/policy_pdfs/reference/` | Ready (reference only) |
-| ChromaDB vector index | 179 chunks | ChromaDB persistent collection | `data/chroma_db/` | Ready |
-| Ground-truth clause mapping | 179 entries | JSON | `data/clause_groundtruth.json` | Ready |
+| ChromaDB vector index | 185 chunks | ChromaDB persistent collection | `data/chroma_db/` | Ready |
+| Ground-truth clause mapping | 185 entries | JSON | `data/clause_groundtruth.json` | Ready |
 | Synthetic incident descriptions | 50 records | JSON | `data/eval/incident_descriptions.json` | Ready |
 
 ### 10.3 Readiness Confirmation
@@ -901,6 +937,8 @@ results = collection.query(
 )
 ```
 
+**Status:** the ChromaDB index itself is built, queryable, and validated (Section 6.2, Step 5) — **[Completed]**. Wiring this query interface into the Policy Agent's FastMCP tool and the LangGraph orchestrator, and running a first-pass retrieval precision check against the ground-truth test set, are **[Planned for Milestone 3]** (Section 13.4).
+
 ---
 
 ## 11. Challenges Encountered
@@ -930,7 +968,7 @@ The following artefacts are committed to the project GitHub repository at [githu
 | Class remap lookup | `configs/class_remap.json` | Vietnamese-to-project class mapping |
 | YOLO config | `data/vehide_processed/damage.yaml` | 6-class detection config |
 | Cleaned and split datasets | `data/vehide/images/{train,val,test}/`, `data/vehide/labels/{train,val,test}/` | Training-ready image and label sets |
-| Synthetic policy corpus + ChromaDB index | `data/policy_pdfs/synthetic/`, `data/chroma_db/` | 5 PDFs, 179 indexed chunks |
+| Synthetic policy corpus + ChromaDB index | `data/policy_pdfs/synthetic/`, `data/chroma_db/` | 5 PDFs, 185 indexed chunks |
 | This report | `Milestone2_Report.md` | Documentation of dataset identification, EDA, preprocessing, and readiness |
 
 ---
@@ -939,7 +977,7 @@ The following artefacts are committed to the project GitHub repository at [githu
 
 ### 13.1 Summary of Work Completed
 
-This milestone identified, verified, downloaded, and prepared the datasets required for the four agents of the multi-agent claim assessment system. VehiDE was confirmed as the primary training dataset (13,655 images, 32,672 retained instances after quality checks and class exclusion), with CarDD (segmentation masks) and the Car Damage Severity dataset (severity calibration) identified but not yet integrated pending data access (Section 11); COCO Car Damage was fully profiled for architecture comparison. A comprehensive EDA revealed a 6.59:1 class imbalance between `scratch` and `shattered_glass`, a right-skewed bounding box area distribution, and a mean of 2.58 instances per image. Preprocessing steps for VehiDE (corrupt-file check, PII detection, class remapping, deduplication, stratified splitting, leakage verification) have been executed and scripted. A synthetic policy corpus of 5 documents (179 chunks, embedded into ChromaDB) was authored, varied in phrasing, and indexed.
+This milestone identified, verified, downloaded, and prepared the datasets required for the four agents of the multi-agent claim assessment system. VehiDE was confirmed as the primary training dataset (13,655 images, 32,672 retained instances after quality checks and class exclusion), with CarDD (segmentation masks) and the Car Damage Severity dataset (severity calibration) identified but not yet integrated pending data access (Section 11); COCO Car Damage was fully profiled for architecture comparison. A comprehensive EDA revealed a 6.59:1 class imbalance between `scratch` and `shattered_glass`, a right-skewed bounding box area distribution, and a mean of 2.58 instances per image. Preprocessing steps for VehiDE (corrupt-file check, PII detection, class remapping, deduplication, stratified splitting, leakage verification) have been executed and scripted. A synthetic policy corpus of 5 documents (185 chunks, embedded into ChromaDB) was authored, varied in phrasing, and indexed; a PDF-extraction bug and a heading-context gap identified during review were fixed and raised MiniLM's retrieval Precision@3 on the corpus from 0.94 to a perfect 1.00 (Section 6.2).
 
 ### 13.2 Key Observations from the Data
 
@@ -950,7 +988,7 @@ This milestone identified, verified, downloaded, and prepared the datasets requi
 
 ### 13.3 Confirmation of Training Readiness
 
-The VehiDE-based vision dataset is ready for model training: the train/validation/test split is finalised, leakage-checked, and the YOLO configuration file (`damage.yaml`, `nc: 6`) is verified. The ChromaDB policy index (179 chunks) is built and queryable. The YOLO fine-tuning can be done on VehiDE without performing any additional data preparation; CarDD-based segmentation augmentation and severity-proxy calibration remain as backup if the performance of the model falls below the original target values.
+The VehiDE-based vision dataset is ready for model training: the train/validation/test split is finalised, leakage-checked, and the YOLO configuration file (`damage.yaml`, `nc: 6`) is verified. The ChromaDB policy index (185 chunks) is built and queryable. The YOLO fine-tuning can be done on VehiDE without performing any additional data preparation; CarDD-based segmentation augmentation and severity-proxy calibration remain as backup if the performance of the model falls below the original target values.
 
 ### 13.4 Planned Activities for Milestone 3
 

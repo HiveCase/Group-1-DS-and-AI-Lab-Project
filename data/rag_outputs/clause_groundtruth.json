@@ -3,30 +3,32 @@
     "text_preview": "BHARAT SURAKSHA MOTOR INSURANCE CO. LTD\nMOTOR PRIVATE CAR COMPREHENSIVE POLICY WORDINGS\nPolicy Type: Comprehensive Own Damage and Third Party Liabilit",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": ""
   },
   "chunk_00001": {
     "text_preview": "Motor Insurance Company Limited (hereinafter referred to as the Company) for the insurance described herein, and\nhas paid the premium stated in the Sc",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": ""
   },
   "chunk_00002": {
     "text_preview": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED\nThe Company will indemnify the insured against loss or damage to the vehicle insured and its acces",
-    "damage_classes": [
-      "broken_lamp"
-    ],
+    "damage_classes": [],
     "clause_type": "coverage",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED"
   },
   "chunk_00003": {
-    "text_preview": "(cid:127) By burglary, housebreaking, or theft.\n(cid:127) By riot and strike.\n(cid:127) By earthquake, including fire and shock damage.\n(cid:127) By f",
+    "text_preview": "[SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED] (cid:127) By burglary, housebreaking, or theft.\n(cid:127) By riot and strike.\n(cid:127) By earth",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED"
   },
   "chunk_00004": {
-    "text_preview": "(cid:127) By accidental external means, including collision, impact with another vehicle or stationary object, and resulting\ndents, scratches, cracks,",
+    "text_preview": "[SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED] (cid:127) By accidental external means, including collision, impact with another vehicle or stat",
     "damage_classes": [
       "dent",
       "scratch",
@@ -34,15 +36,17 @@
       "broken_lamp"
     ],
     "clause_type": "definition",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED"
   },
   "chunk_00005": {
-    "text_preview": "(cid:127) By malicious act, including intentional scratching, keying, or deliberate damage to exterior panels.\n(cid:127) By terrorist activity.\n(cid:1",
+    "text_preview": "[SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED] (cid:127) By malicious act, including intentional scratching, keying, or deliberate damage to ex",
     "damage_classes": [
       "scratch"
     ],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED"
   },
   "chunk_00006": {
     "text_preview": "The following depreciation rates apply to parts necessarily replaced:\n(cid:127) For all rubber, nylon, plastic parts, tyres, tubes, batteries, and air",
@@ -51,349 +55,381 @@
       "flat_tyre"
     ],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The following depreciation rates apply to parts necessarily replaced:"
   },
   "chunk_00007": {
-    "text_preview": "(cid:127) For all parts made of glass, including windscreen, rear windscreen, and door windows: Nil depreciation\napplies. The full replacement cost is",
+    "text_preview": "[The following depreciation rates apply to parts necessarily replaced:] (cid:127) For all parts made of glass, including windscreen, rear windscreen, ",
     "damage_classes": [
       "shattered_glass"
     ],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The following depreciation rates apply to parts necessarily replaced:"
   },
   "chunk_00008": {
-    "text_preview": "Age of Vehicle % of Depreciation\nNot exceeding 6 months Nil\nExceeding 6 months but not exceeding 1 year 5%\nExceeding 1 year but not exceeding 2 years ",
+    "text_preview": "[The following depreciation rates apply to parts necessarily replaced:] Age of Vehicle % of Depreciation\nNot exceeding 6 months Nil\nExceeding 6 months",
     "damage_classes": [],
     "clause_type": "sub_limit",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The following depreciation rates apply to parts necessarily replaced:"
   },
   "chunk_00009": {
-    "text_preview": "Exceeding 5 years but not exceeding 10 years 40%\nExceeding 10 years 50%\nRate of Depreciation for Painting: A depreciation rate of 50% is applied only ",
+    "text_preview": "[The following depreciation rates apply to parts necessarily replaced:] Exceeding 5 years but not exceeding 10 years 40%\nExceeding 10 years 50%\nRate o",
     "damage_classes": [],
     "clause_type": "sub_limit",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The following depreciation rates apply to parts necessarily replaced:"
   },
   "chunk_00010": {
-    "text_preview": "charges. In the case of a consolidated bill, the material component is deemed to be 25% of total painting charges.\nTYRE AND TUBE DAMAGE\nDamage to tyre",
+    "text_preview": "[The following depreciation rates apply to parts necessarily replaced:] charges. In the case of a consolidated bill, the material component is deemed ",
     "damage_classes": [
       "flat_tyre"
     ],
     "clause_type": "condition",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The following depreciation rates apply to parts necessarily replaced:"
   },
   "chunk_00011": {
-    "text_preview": "insured has also sustained damage at the same time. Where the vehicle has not been damaged simultaneously, tyre\nand tube damage alone is not recoverab",
+    "text_preview": "[The following depreciation rates apply to parts necessarily replaced:] insured has also sustained damage at the same time. Where the vehicle has not ",
     "damage_classes": [
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The following depreciation rates apply to parts necessarily replaced:"
   },
   "chunk_00012": {
     "text_preview": "The Company shall not be liable to make any payment in respect of:",
     "damage_classes": [],
     "clause_type": "exclusion",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00013": {
-    "text_preview": "1. Consequential loss, depreciation, wear and tear, or mechanical and electrical breakdown, failures, or breakages,\neven where such breakdown results ",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 1. Consequential loss, depreciation, wear and tear, or mechanical and electrical ",
     "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00014": {
-    "text_preview": "2. Dents, scratches, or panel damage arising solely from gradual deterioration, road vibration over time, or corrosion,\nrather than from a specific id",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 2. Dents, scratches, or panel damage arising solely from gradual deterioration, r",
     "damage_classes": [
       "dent",
       "scratch"
     ],
-    "clause_type": "coverage",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00015": {
-    "text_preview": "3. Scratch or abrasion damage attributable to routine car washing, polishing, or normal servicing activities, classified\nas wear and tear.",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 3. Scratch or abrasion damage attributable to routine car washing, polishing, or ",
     "damage_classes": [
       "scratch"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00016": {
-    "text_preview": "4. Cracks in the dashboard, door trims, or interior plastic components from thermal expansion or contraction due to\nambient temperature changes.",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 4. Cracks in the dashboard, door trims, or interior plastic components from therm",
     "damage_classes": [
       "crack"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00017": {
-    "text_preview": "5. Lamp failure due to bulb burnout, filament failure, or electrical fault, without any accompanying physical impact or\nbreakage of the lamp housing o",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 5. Lamp failure due to bulb burnout, filament failure, or electrical fault, witho",
     "damage_classes": [
       "dent",
       "broken_lamp"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00018": {
-    "text_preview": "6. Condensation or fogging inside lamp assemblies not accompanied by physical damage to the lamp housing itself.",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 6. Condensation or fogging inside lamp assemblies not accompanied by physical dam",
     "damage_classes": [
       "broken_lamp"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00019": {
-    "text_preview": "7. Windscreen scratches or minor surface marks on glass that do not constitute a break, crack, or chip impairing the\ndriver's field of vision.",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 7. Windscreen scratches or minor surface marks on glass that do not constitute a ",
     "damage_classes": [
       "scratch",
       "crack",
       "shattered_glass"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00020": {
-    "text_preview": "8. Tyre wear and tread depth below the legal minimum limit, or damage arising from driving on tyres in an\nunroadworthy condition.",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 8. Tyre wear and tread depth below the legal minimum limit, or damage arising fro",
     "damage_classes": [
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00021": {
-    "text_preview": "9. Tyre or tube damage when the vehicle was being operated outside the geographical area specified in the Schedule\nat the time of loss.",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 9. Tyre or tube damage when the vehicle was being operated outside the geographic",
     "damage_classes": [
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00022": {
-    "text_preview": "10. Loss or damage arising from contractual liability or arising out of use of the vehicle otherwise than in accordance\nwith the Limitations as to Use",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 10. Loss or damage arising from contractual liability or arising out of use of th",
     "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00023": {
-    "text_preview": "11. Any loss or damage sustained whilst the insured or driver was under the influence of intoxicating liquor or drugs.\nBHARAT SURAKSHA MOTOR INSURANCE",
+    "text_preview": "[The Company shall not be liable to make any payment in respect of:] 11. Any loss or damage sustained whilst the insured or driver was under the influ",
     "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "The Company shall not be liable to make any payment in respect of:"
   },
   "chunk_00024": {
     "text_preview": "SECTION II. SUM INSURED AND INSURED DECLARED VALUE (IDV)\nThe Insured Declared Value (IDV) of the vehicle shall be the Sum Insured for the purpose of t",
     "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "sub_limit",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION II. SUM INSURED AND INSURED DECLARED VALUE (IDV)"
   },
   "chunk_00025": {
-    "text_preview": "Age of Vehicle % of Depreciation\nNot exceeding 6 months 5%\nExceeding 6 months but not exceeding 1 year 15%\nExceeding 1 year but not exceeding 2 years ",
+    "text_preview": "[SECTION II. SUM INSURED AND INSURED DECLARED VALUE (IDV)] Age of Vehicle % of Depreciation\nNot exceeding 6 months 5%\nExceeding 6 months but not excee",
     "damage_classes": [],
     "clause_type": "sub_limit",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION II. SUM INSURED AND INSURED DECLARED VALUE (IDV)"
   },
   "chunk_00026": {
-    "text_preview": "The insured vehicle shall be treated as a Constructive Total Loss if the aggregate cost of retrieval and repair exceeds\n75% of the IDV.",
+    "text_preview": "[SECTION II. SUM INSURED AND INSURED DECLARED VALUE (IDV)] The insured vehicle shall be treated as a Constructive Total Loss if the aggregate cost of ",
     "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "sub_limit",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION II. SUM INSURED AND INSURED DECLARED VALUE (IDV)"
   },
   "chunk_00027": {
     "text_preview": "SECTION III. DEDUCTIBLE\nThe Company shall not be liable for the first Rs. 1,000 of each and every claim under Section I of this policy. This\ndeductibl",
-    "damage_classes": [
-      "dent"
-    ],
-    "clause_type": "exclusion",
-    "doc_id": "policy_1_bharat_suraksha"
+    "damage_classes": [],
+    "clause_type": "sub_limit",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION III. DEDUCTIBLE"
   },
   "chunk_00028": {
     "text_preview": "SECTION IV. THIRD PARTY LIABILITY\nSubject to the limits of liability in the Schedule, the Company will indemnify the insured against all sums the insu",
     "damage_classes": [],
     "clause_type": "coverage",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION IV. THIRD PARTY LIABILITY"
   },
   "chunk_00029": {
-    "text_preview": "caused by or arising from use of the vehicle, as required under the Motor Vehicles Act.\nProvided always that the Company shall not be liable for death",
+    "text_preview": "[SECTION IV. THIRD PARTY LIABILITY] caused by or arising from use of the vehicle, as required under the Motor Vehicles Act.\nProvided always that the C",
     "damage_classes": [],
     "clause_type": "exclusion",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION IV. THIRD PARTY LIABILITY"
   },
   "chunk_00030": {
     "text_preview": "SECTION V. ADD-ON COVERS\nAdd-On 1: Nil Depreciation Cover (Zero Dep)\nIn the event of a partial loss claim, no depreciation deduction shall apply to th",
     "damage_classes": [],
     "clause_type": "coverage",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION V. ADD-ON COVERS"
   },
   "chunk_00031": {
-    "text_preview": "registration.\nAdd-On 2: Roadside Assistance\nEmergency towing assistance is provided up to 50 km free of charge in the event of accident or breakdown. ",
+    "text_preview": "[SECTION V. ADD-ON COVERS] registration.\nAdd-On 2: Roadside Assistance\nEmergency towing assistance is provided up to 50 km free of charge in the event",
     "damage_classes": [
-      "dent",
       "flat_tyre"
     ],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "coverage",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION V. ADD-ON COVERS"
   },
   "chunk_00032": {
-    "text_preview": "Add-On 3: Engine Protection Cover\nConsequential damage to engine parts and gearbox components arising from water ingression due to flood or\ninundation",
+    "text_preview": "[SECTION V. ADD-ON COVERS] Add-On 3: Engine Protection Cover\nConsequential damage to engine parts and gearbox components arising from water ingression",
     "damage_classes": [],
     "clause_type": "coverage",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION V. ADD-ON COVERS"
   },
   "chunk_00033": {
-    "text_preview": "retrieved from the waterlogged area within 72 hours.\nExclusion under Engine Protection: Damage to engine or gearbox arising from delay in intimation, ",
+    "text_preview": "[SECTION V. ADD-ON COVERS] retrieved from the waterlogged area within 72 hours.\nExclusion under Engine Protection: Damage to engine or gearbox arising",
     "damage_classes": [],
     "clause_type": "coverage",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION V. ADD-ON COVERS"
   },
   "chunk_00034": {
     "text_preview": "A No Claim Bonus discount is applicable on Own Damage premium at renewal:\nClaim History NCB Discount on OD Premium\n1 claim-free year 20%\n2 consecutive",
     "damage_classes": [],
     "clause_type": "exclusion",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "A No Claim Bonus discount is applicable on Own Damage premium at renewal:"
   },
   "chunk_00035": {
-    "text_preview": "NCB reverts to 0% at the next renewal if any claim is made during the policy period.",
+    "text_preview": "[A No Claim Bonus discount is applicable on Own Damage premium at renewal:] NCB reverts to 0% at the next renewal if any claim is made during the poli",
     "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "exclusion",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "A No Claim Bonus discount is applicable on Own Damage premium at renewal:"
   },
   "chunk_00036": {
-    "text_preview": "1. The insured must give immediate written notice to the Company upon the occurrence of any accidental loss or\ndamage. In the case of theft, immediate",
-    "damage_classes": [
-      "dent"
-    ],
+    "text_preview": "[SECTION VII. GENERAL CONDITIONS] 1. The insured must give immediate written notice to the Company upon the occurrence of any accidental loss or\ndamag",
+    "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION VII. GENERAL CONDITIONS"
   },
   "chunk_00037": {
-    "text_preview": "2. No admission, offer, or promise of payment shall be made by the insured without the written consent of the\nCompany.",
+    "text_preview": "[SECTION VII. GENERAL CONDITIONS] 2. No admission, offer, or promise of payment shall be made by the insured without the written consent of the\nCompan",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION VII. GENERAL CONDITIONS"
   },
   "chunk_00038": {
-    "text_preview": "3. The insured shall take all reasonable steps to safeguard the vehicle from further loss or damage after an accident.",
-    "damage_classes": [
-      "dent"
-    ],
+    "text_preview": "[SECTION VII. GENERAL CONDITIONS] 3. The insured shall take all reasonable steps to safeguard the vehicle from further loss or damage after an acciden",
+    "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION VII. GENERAL CONDITIONS"
   },
   "chunk_00039": {
-    "text_preview": "4. If a dispute arises as to the quantum payable under this policy, the matter shall be referred to arbitration under the\nArbitration and Conciliation",
+    "text_preview": "[SECTION VII. GENERAL CONDITIONS] 4. If a dispute arises as to the quantum payable under this policy, the matter shall be referred to arbitration unde",
     "damage_classes": [],
     "clause_type": "coverage",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION VII. GENERAL CONDITIONS"
   },
   "chunk_00040": {
-    "text_preview": "5. The due observance of all terms, conditions, and endorsements of this policy is a condition precedent to any liability\nof the Company.",
-    "damage_classes": [
-      "dent"
-    ],
+    "text_preview": "[SECTION VII. GENERAL CONDITIONS] 5. The due observance of all terms, conditions, and endorsements of this policy is a condition precedent to any liab",
+    "damage_classes": [],
     "clause_type": "condition",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION VII. GENERAL CONDITIONS"
   },
   "chunk_00041": {
     "text_preview": "SECTION VIII. CLAIM PROCEDURE\n(cid:127) Intimate the claim to the Company within 48 hours of the incident.\n(cid:127) Do not move or repair the vehicle",
-    "damage_classes": [
-      "dent"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
-  },
-  "chunk_00042": {
-    "text_preview": "exceeding Rs. 500.\n(cid:127) Submit completed claim form, RC copy, driving licence, FIR (if applicable), and repair estimate.\n(cid:127) Payment will b",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION VIII. CLAIM PROCEDURE"
+  },
+  "chunk_00042": {
+    "text_preview": "[SECTION VIII. CLAIM PROCEDURE] exceeding Rs. 500.\n(cid:127) Submit completed claim form, RC copy, driving licence, FIR (if applicable), and repair es",
+    "damage_classes": [],
+    "clause_type": "general",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION VIII. CLAIM PROCEDURE"
   },
   "chunk_00043": {
     "text_preview": "SECTION IX. GENERAL EXCEPTIONS\nThis policy does not cover loss, damage, or liability arising from nuclear weapons, ionising radiation, war, invasion,\n",
     "damage_classes": [],
-    "clause_type": "exclusion",
-    "doc_id": "policy_1_bharat_suraksha"
+    "clause_type": "coverage",
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION IX. GENERAL EXCEPTIONS"
   },
   "chunk_00044": {
-    "text_preview": "area, or in violation of the Driver's Clause, are also excluded.\nInsurance is the subject matter of solicitation. Please read all te\nissued for educat",
+    "text_preview": "[SECTION IX. GENERAL EXCEPTIONS] area, or in violation of the Driver's Clause, are also excluded.\nInsurance is the subject matter of solicitation. Ple",
     "damage_classes": [],
     "clause_type": "exclusion",
-    "doc_id": "policy_1_bharat_suraksha"
+    "doc_id": "policy_1_bharat_suraksha",
+    "heading": "SECTION IX. GENERAL EXCEPTIONS"
   },
   "chunk_00045": {
     "text_preview": "SAFEDRIVE ASSURANCE CORPORATION\nPRIVATE MOTOR VEHICLE OWN DAMAGE POLICY\nStandalone Own Damage Cover with Nil Depreciation Add-On\nThis policy document ",
     "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": ""
   },
   "chunk_00046": {
-    "text_preview": "Schedule and SafeDrive Assurance Corporation. The Schedule, this document, and any endorsements together form\nthe entire policy agreement.\nPART A. WHA",
-    "damage_classes": [
-      "flat_tyre"
-    ],
+    "text_preview": "Schedule and SafeDrive Assurance Corporation. The Schedule, this document, and any endorsements together form\nthe entire policy agreement.",
+    "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": ""
   },
   "chunk_00047": {
     "text_preview": "We will pay for physical loss or damage to your vehicle caused by:\n(cid:127) Fire, explosion, lightning, or self-ignition.\n(cid:127) Theft, burglary, ",
-    "damage_classes": [
-      "broken_lamp"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "damage_classes": [],
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "We will pay for physical loss or damage to your vehicle caused by:"
   },
   "chunk_00048": {
-    "text_preview": "(cid:127) Physical impact damage caused by collision with another vehicle, animal, or fixed object, resulting in dents to\npanels, bumpers, or wheel ar",
+    "text_preview": "[We will pay for physical loss or damage to your vehicle caused by:] (cid:127) Physical impact damage caused by collision with another vehicle, animal",
     "damage_classes": [
       "dent",
-      "scratch",
-      "flat_tyre"
+      "scratch"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "We will pay for physical loss or damage to your vehicle caused by:"
   },
   "chunk_00049": {
-    "text_preview": "abrasive surfaces where an identifiable accidental event can be established.\n(cid:127) Structural fractures to body panels, bumpers, and exterior trim",
+    "text_preview": "[We will pay for physical loss or damage to your vehicle caused by:] abrasive surfaces where an identifiable accidental event can be established.\n(cid",
     "damage_classes": [
       "dent",
       "crack"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "We will pay for physical loss or damage to your vehicle caused by:"
   },
   "chunk_00050": {
-    "text_preview": "contact.\n(cid:127) Damage to lighting units including headlamp assemblies, tail lamp clusters, fog lamps, indicator units, and\nreflectors, caused by i",
+    "text_preview": "[We will pay for physical loss or damage to your vehicle caused by:] contact.\n(cid:127) Damage to lighting units including headlamp assemblies, tail l",
     "damage_classes": [
       "dent",
       "broken_lamp",
       "shattered_glass"
     ],
     "clause_type": "coverage",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "We will pay for physical loss or damage to your vehicle caused by:"
   },
   "chunk_00051": {
-    "text_preview": "cost of windscreen replacement is payable without any deduction for the age of the vehicle.\n(cid:127) Landslide or rockslide.\n(cid:127) Transit damage",
+    "text_preview": "[We will pay for physical loss or damage to your vehicle caused by:] cost of windscreen replacement is payable without any deduction for the age of th",
     "damage_classes": [
       "shattered_glass"
     ],
     "clause_type": "coverage",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "We will pay for physical loss or damage to your vehicle caused by:"
   },
   "chunk_00052": {
-    "text_preview": "PART A1. GLASS COVERAGE DETAILS\nGlass components of the vehicle including the front windscreen, rear windscreen, quarter glass panels, and door\nwindow",
+    "text_preview": "[We will pay for physical loss or damage to your vehicle caused by:] PART A1. GLASS COVERAGE DETAILS\nGlass components of the vehicle including the fro",
     "damage_classes": [
       "shattered_glass"
     ],
     "clause_type": "coverage",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "We will pay for physical loss or damage to your vehicle caused by:"
   },
   "chunk_00053": {
-    "text_preview": "glass replacement at an authorised service centre is recoverable.",
+    "text_preview": "[We will pay for physical loss or damage to your vehicle caused by:] glass replacement at an authorised service centre is recoverable.",
     "damage_classes": [
       "shattered_glass"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "We will pay for physical loss or damage to your vehicle caused by:"
   },
   "chunk_00054": {
     "text_preview": "What is NOT covered under glass:\n(cid:127) Internal rear-view mirror glass that is not part of the vehicle's main glazing.\n(cid:127) Sunroof and panor",
@@ -401,261 +437,306 @@
       "shattered_glass"
     ],
     "clause_type": "coverage",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "What is NOT covered under glass:"
   },
   "chunk_00055": {
-    "text_preview": "(cid:127) Superficial glass scratches or micro-abrasions that do not constitute a break or chip.\n(cid:127) Glass damage sustained while the vehicle is",
+    "text_preview": "[What is NOT covered under glass:] (cid:127) Superficial glass scratches or micro-abrasions that do not constitute a break or chip.\n(cid:127) Glass da",
     "damage_classes": [
       "scratch",
       "shattered_glass"
     ],
     "clause_type": "coverage",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "What is NOT covered under glass:"
   },
   "chunk_00056": {
-    "text_preview": "PART A2. TYRE COVERAGE DETAILS\nTyre damage is covered subject to a deduction of 50% of t\ncover applies only if the vehicle itself has also sustain\nwit",
+    "text_preview": "[What is NOT covered under glass:] PART A2. TYRE COVERAGE DETAILS\nTyre damage is covered subject to a deduction of 50% of the cost of replacement of t",
     "damage_classes": [
-      "dent",
+      "shattered_glass",
       "flat_tyre"
     ],
-    "clause_type": "condition",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "What is NOT covered under glass:"
   },
   "chunk_00057": {
-    "text_preview": "What is NOT covered for tyres:\n(cid:127) Tyre wear, sidewall cracking from age, or tread depth\n(cid:127) Damage to run-flat tyres used beyond the manu",
+    "text_preview": "[What is NOT covered under glass:] without concurrent vehicle body damage are not admissible.",
+    "damage_classes": [
+      "dent",
+      "shattered_glass"
+    ],
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "What is NOT covered under glass:"
+  },
+  "chunk_00058": {
+    "text_preview": "What is NOT covered for tyres:\n(cid:127) Tyre wear, sidewall cracking from age, or tread depth below 1.6mm (legal minimum).\n(cid:127) Damage to run-fl",
     "damage_classes": [
       "crack",
       "flat_tyre"
     ],
     "clause_type": "coverage",
-    "doc_id": "policy_2_safedrive_assurance"
-  },
-  "chunk_00058": {
-    "text_preview": "(cid:127) Gradual deterioration of tyre compound from UV expos\ne cost of replacement of the damaged tyre and tube. This\nd damage in the same incident.",
-    "damage_classes": [
-      "dent",
-      "flat_tyre"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "What is NOT covered for tyres:"
   },
   "chunk_00059": {
-    "text_preview": "'s specified zero-pressure range.\nal racing, rallying, or off-road purposes not permitted under\ne or tube damage.\nre, ozone degradation, or age.\nSAFED",
+    "text_preview": "[What is NOT covered for tyres:] (cid:127) Tyre damage when the vehicle was being used for illegal racing, rallying, or off-road purposes not permitte",
     "damage_classes": [
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "What is NOT covered for tyres:"
   },
   "chunk_00060": {
-    "text_preview": "This policy includes Nil Depreciation cover as a standard feature for vehicles not exceeding 3 years from the date of\nfirst registration. For vehicles",
-    "damage_classes": [],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_2_safedrive_assurance"
+    "text_preview": "[What is NOT covered for tyres:] (cid:127) Gradual deterioration of tyre compound from UV exposure, ozone degradation, or age.\nSAFEDRIVE ASSURANCE COR",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "What is NOT covered for tyres:"
   },
   "chunk_00061": {
-    "text_preview": "Age of Vehicle % of Depreciation\nVehicle age up to 3 years Nil depreciation (100% parts cost recoverable)\nVehicle age 3 to 5 years 75% waiver of stand",
+    "text_preview": "PART B. NIL DEPRECIATION ADD-ON (INCLUDED IN THIS POLICY)\nThis policy includes Nil Depreciation cover as a standard feature for vehicles not exceeding",
     "damage_classes": [],
     "clause_type": "sub_limit",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART B. NIL DEPRECIATION ADD-ON (INCLUDED IN THIS POLICY)"
   },
   "chunk_00062": {
+    "text_preview": "[PART B. NIL DEPRECIATION ADD-ON (INCLUDED IN THIS POLICY)] depreciation benefit is available for vehicles older than 5 years.\nAge of Vehicle % of Dep",
+    "damage_classes": [],
+    "clause_type": "sub_limit",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART B. NIL DEPRECIATION ADD-ON (INCLUDED IN THIS POLICY)"
+  },
+  "chunk_00063": {
+    "text_preview": "[PART B. NIL DEPRECIATION ADD-ON (INCLUDED IN THIS POLICY)] Vehicle age exceeding 5 years Standard depreciation applies as per schedule",
+    "damage_classes": [],
+    "clause_type": "sub_limit",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART B. NIL DEPRECIATION ADD-ON (INCLUDED IN THIS POLICY)"
+  },
+  "chunk_00064": {
     "text_preview": "The following are excluded from this policy:",
     "damage_classes": [],
     "clause_type": "exclusion",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
   },
-  "chunk_00063": {
-    "text_preview": "1. Consequential financial loss, loss of use, or reduction in market value of the vehicle following an accident, even if\nthe physical damage is covere",
-    "damage_classes": [
-      "dent"
-    ],
-    "clause_type": "coverage",
-    "doc_id": "policy_2_safedrive_assurance"
+  "chunk_00065": {
+    "text_preview": "[The following are excluded from this policy:] 1. Consequential financial loss, loss of use, or reduction in market value of the vehicle following an ",
+    "damage_classes": [],
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
   },
-  "chunk_00064": {
-    "text_preview": "2. Panel dents, scratches, or marks arising from gradual accumulation of minor incidents over time where no single\nidentifiable accident can be attrib",
+  "chunk_00066": {
+    "text_preview": "[The following are excluded from this policy:] 2. Panel dents, scratches, or marks arising from gradual accumulation of minor incidents over time wher",
     "damage_classes": [
       "dent",
       "scratch"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
   },
-  "chunk_00065": {
-    "text_preview": "3. Scratch damage resulting from routine washing and cleaning activities of the vehicle, classified under fair wear and\ntear.",
+  "chunk_00067": {
+    "text_preview": "[The following are excluded from this policy:] 3. Scratch damage resulting from routine washing and cleaning activities of the vehicle, classified und",
     "damage_classes": [
       "scratch"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
   },
-  "chunk_00066": {
-    "text_preview": "4. Cracks in engine mountings, chassis members, or structural frame components arising from metal fatigue or\nprolonged vibration.",
+  "chunk_00068": {
+    "text_preview": "[The following are excluded from this policy:] 4. Cracks in engine mountings, chassis members, or structural frame components arising from metal fatig",
     "damage_classes": [
       "crack"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
-  },
-  "chunk_00067": {
-    "text_preview": "5. Lamp malfunction due to electrical failure, water ingression through an undamaged seal, or simple bulb failure\nwithout physical damage to the lamp ",
-    "damage_classes": [
-      "broken_lamp"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
-  },
-  "chunk_00068": {
-    "text_preview": "6. Corrosion of lamp housings or lighting units from long-term exposure to the elements, classified as deterioration\nrather than accidental damage.",
-    "damage_classes": [
-      "dent",
-      "broken_lamp"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
   },
   "chunk_00069": {
-    "text_preview": "7. Glass haze, delamination, or yellowing of polycarbonate headlamp covers from UV exposure over time, not caused\nby a specific impact event.",
+    "text_preview": "[The following are excluded from this policy:] 5. Lamp malfunction due to electrical failure, water ingression through an undamaged seal, or simple bu",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
+  },
+  "chunk_00070": {
+    "text_preview": "[The following are excluded from this policy:] 6. Corrosion of lamp housings or lighting units from long-term exposure to the elements, classified as ",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
+  },
+  "chunk_00071": {
+    "text_preview": "[The following are excluded from this policy:] 7. Glass haze, delamination, or yellowing of polycarbonate headlamp covers from UV exposure over time, ",
     "damage_classes": [
       "dent",
       "broken_lamp",
       "shattered_glass"
     ],
-    "clause_type": "coverage",
-    "doc_id": "policy_2_safedrive_assurance"
-  },
-  "chunk_00070": {
-    "text_preview": "8. Damage to tyres used beyond their rated load index or speed rating as specified by the vehicle manufacturer.",
-    "damage_classes": [
-      "flat_tyre"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
-  },
-  "chunk_00071": {
-    "text_preview": "9. Any claim where the vehicle was driven with a tyre already known to be flat or significantly underinflated at the time\nof the journey.",
-    "damage_classes": [
-      "flat_tyre"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
   },
   "chunk_00072": {
-    "text_preview": "10. Mechanical or electrical breakdown of any component, including the engine, gearbox, suspension, or braking\nsystem, unless caused directly by an in",
-    "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "text_preview": "[The following are excluded from this policy:] 8. Damage to tyres used beyond their rated load index or speed rating as specified by the vehicle manuf",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
   },
   "chunk_00073": {
+    "text_preview": "[The following are excluded from this policy:] 9. Any claim where the vehicle was driven with a tyre already known to be flat or significantly underin",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
+  },
+  "chunk_00074": {
+    "text_preview": "[The following are excluded from this policy:] 10. Mechanical or electrical breakdown of any component, including the engine, gearbox, suspension, or ",
+    "damage_classes": [],
+    "clause_type": "exclusion",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "The following are excluded from this policy:"
+  },
+  "chunk_00075": {
     "text_preview": "PART D. INSURED DECLARED VALUE (IDV)\nYour vehicle's IDV represents the maximum we will pay in the event of a total loss or theft. It is calculated at ",
     "damage_classes": [],
     "clause_type": "sub_limit",
-    "doc_id": "policy_2_safedrive_assurance"
-  },
-  "chunk_00074": {
-    "text_preview": "Age of Vehicle % of Depreciation\nNot exceeding 6 months 5%\nExceeding 6 months but not exceeding 1 year 15%\nExceeding 1 year but not exceeding 2 years ",
-    "damage_classes": [],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_2_safedrive_assurance"
-  },
-  "chunk_00075": {
-    "text_preview": "A claim will be settled as Total Loss if the cost of repair exceeds 75% of IDV.\nPART E. DEDUCTIBLE\nYou are responsible for the first Rs. 2,000 of each",
-    "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART D. INSURED DECLARED VALUE (IDV)"
   },
   "chunk_00076": {
-    "text_preview": "excess applies per occurrence. An optional voluntary excess of Rs. 1,000, Rs. 2,000, or Rs. 5,000 may be selected at\ninception for a premium discount.",
+    "text_preview": "[PART D. INSURED DECLARED VALUE (IDV)] Age of Vehicle % of Depreciation\nNot exceeding 6 months 5%\nExceeding 6 months but not exceeding 1 year 15%\nExce",
     "damage_classes": [],
-    "clause_type": "exclusion",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "sub_limit",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART D. INSURED DECLARED VALUE (IDV)"
   },
   "chunk_00077": {
-    "text_preview": "0 claims in preceding 2 years 25% 0%\n0 claims in preceding 3 years 35% 0%\n0 claims in preceding 4 years 45% 0%\n0 claims in preceding 5+ years 50% 0%\nP",
-    "damage_classes": [
-      "dent"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "text_preview": "[PART D. INSURED DECLARED VALUE (IDV)] A claim will be settled as Total Loss if the cost of repair exceeds 75% of IDV.",
+    "damage_classes": [],
+    "clause_type": "sub_limit",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART D. INSURED DECLARED VALUE (IDV)"
   },
   "chunk_00078": {
-    "text_preview": "(cid:127) Do not authorise repairs above Rs. 500 without our written approval.\n(cid:127) Submit your claim form, vehicle documents, and repair estimat",
+    "text_preview": "PART E. DEDUCTIBLE\nYou are responsible for the first Rs. 2,000 of each own damage claim under Part A of this policy. This compulsory\nexcess applies pe",
     "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "clause_type": "sub_limit",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART E. DEDUCTIBLE"
   },
   "chunk_00079": {
-    "text_preview": "PART H. GENERAL EXCEPTIONS\nThis policy does not cover any loss arising from: war, nuclear risk, use of vehicle in violation of permit conditions,\ndriv",
+    "text_preview": "PART F. NO CLAIM BONUS\nClaim History NCB at Renewal NCB if Claim Made\n0 claims in preceding year 20% 0%\n0 claims in preceding 2 years 25% 0%\n0 claims ",
     "damage_classes": [],
     "clause_type": "exclusion",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART F. NO CLAIM BONUS"
   },
   "chunk_00080": {
-    "text_preview": "This is a synthetic specimen policy document created for research and educational purposes. It does not constitute a valid insurance\ncontract.",
+    "text_preview": "PART G. HOW TO MAKE A CLAIM\n(cid:127) Contact our 24-hour claims helpline within 24 hours of the incident.\n(cid:127) Do not authorise repairs above Rs",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_2_safedrive_assurance"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART G. HOW TO MAKE A CLAIM"
   },
   "chunk_00081": {
-    "text_preview": "QUICKCLAIM GENERAL INSURANCE LIMITED\nMOTOR VEHICLE PACKAGE POLICY - SCHEDULE OF TERMS AND\nCONDITIONS\nComprehensive Own Damage and Compulsory Third Par",
+    "text_preview": "[PART G. HOW TO MAKE A CLAIM] (cid:127) Payment is processed within 5 working days of survey completion.",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART G. HOW TO MAKE A CLAIM"
   },
   "chunk_00082": {
-    "text_preview": "Insurance Limited, subject to the terms, exclusions, conditions, and limitations set forth herein. The Schedule attached\nforms an integral part of thi",
+    "text_preview": "PART H. GENERAL EXCEPTIONS\nThis policy does not cover any loss arising from: war, nuclear risk, use of vehicle in violation of permit conditions,\ndriv",
     "damage_classes": [],
-    "clause_type": "condition",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "coverage",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART H. GENERAL EXCEPTIONS"
   },
   "chunk_00083": {
+    "text_preview": "[PART H. GENERAL EXCEPTIONS] This is a synthetic specimen policy document created for research and educational purposes. It does not constitute a vali",
+    "damage_classes": [],
+    "clause_type": "general",
+    "doc_id": "policy_2_safedrive_assurance",
+    "heading": "PART H. GENERAL EXCEPTIONS"
+  },
+  "chunk_00084": {
+    "text_preview": "QUICKCLAIM GENERAL INSURANCE LIMITED\nMOTOR VEHICLE PACKAGE POLICY - SCHEDULE OF TERMS AND\nCONDITIONS\nComprehensive Own Damage and Compulsory Third Par",
+    "damage_classes": [],
+    "clause_type": "coverage",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": ""
+  },
+  "chunk_00085": {
+    "text_preview": "Insurance Limited, subject to the terms, exclusions, conditions, and limitations set forth herein. The Schedule attached\nforms an integral part of thi",
+    "damage_classes": [],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": ""
+  },
+  "chunk_00086": {
     "text_preview": "OPERATIVE CLAUSE - OWN DAMAGE SECTION\nThe Company undertakes to indemnify the insured in respect of accidental loss or damage to the vehicle insured,",
+    "damage_classes": [],
+    "clause_type": "coverage",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": ""
+  },
+  "chunk_00087": {
+    "text_preview": "arising from and directly caused by the following events during the policy period:\n(cid:127) Fire, self-ignition, lightning, explosion.\n(cid:127) Thef",
+    "damage_classes": [],
+    "clause_type": "general",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "arising from and directly caused by the following events during the policy period:"
+  },
+  "chunk_00088": {
+    "text_preview": "[arising from and directly caused by the following events during the policy period:] (cid:127) Flood, cyclone, hurricane, inundation, hailstorm.\n(cid:",
     "damage_classes": [
       "dent"
     ],
     "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "arising from and directly caused by the following events during the policy period:"
   },
-  "chunk_00084": {
-    "text_preview": "arising from and directly caused by the following events during the policy period:\n(cid:127) Fire, self-ignition, lightning, explosion.\n(cid:127) Thef",
+  "chunk_00089": {
+    "text_preview": "[arising from and directly caused by the following events during the policy period:] such contact.\n(cid:127) Damage arising from contact with abrasive",
     "damage_classes": [
-      "broken_lamp"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00085": {
-    "text_preview": "(cid:127) Flood, cyclone, hurricane, inundation, hailstorm.\n(cid:127) Damage arising from accidental contact with another vehicle or stationary object",
-    "damage_classes": [
-      "dent",
-      "flat_tyre"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00086": {
-    "text_preview": "such contact.\n(cid:127) Damage arising from contact with abrasive surfaces or deliberate acts amounting to malicious mischief,\nwhere an act by an iden",
-    "damage_classes": [
-      "dent",
       "scratch"
     ],
     "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "arising from and directly caused by the following events during the policy period:"
   },
-  "chunk_00087": {
-    "text_preview": "scratches or paint abrasion.\n(cid:127) Damage to plastic, composite, or metal components resulting in fracture or structural breach, caused\ndirectly b",
+  "chunk_00090": {
+    "text_preview": "[arising from and directly caused by the following events during the policy period:] scratches or paint abrasion.\n(cid:127) Damage to plastic, composi",
     "damage_classes": [
       "dent",
       "scratch",
-      "crack",
-      "flat_tyre"
+      "crack"
     ],
     "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "arising from and directly caused by the following events during the policy period:"
   },
-  "chunk_00088": {
-    "text_preview": "and sills.\n(cid:127) Destruction or breakage of headlamps, tail lamps, indicator assemblies, and auxiliary lamps caused\ndirectly by mechanical impact ",
+  "chunk_00091": {
+    "text_preview": "[arising from and directly caused by the following events during the policy period:] and sills.\n(cid:127) Destruction or breakage of headlamps, tail l",
     "damage_classes": [
       "dent",
       "crack",
@@ -663,718 +744,832 @@
       "shattered_glass"
     ],
     "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "arising from and directly caused by the following events during the policy period:"
   },
-  "chunk_00089": {
-    "text_preview": "windscreen, and side door glass. Glass is indemnified at actual replacement cost without depreciation deduction.\n(cid:127) Landslide, rockslide.\n(cid:",
+  "chunk_00092": {
+    "text_preview": "[arising from and directly caused by the following events during the policy period:] windscreen, and side door glass. Glass is indemnified at actual r",
     "damage_classes": [
       "shattered_glass",
       "flat_tyre"
     ],
     "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "arising from and directly caused by the following events during the policy period:"
   },
-  "chunk_00090": {
-    "text_preview": "SPECIAL CONDITIONS - TYRE DAMAGE\nLoss or damage to tyres and inner tubes is covered subject to a deduction of 50% of the cost of replacement, provided",
+  "chunk_00093": {
+    "text_preview": "[arising from and directly caused by the following events during the policy period:] SPECIAL CONDITIONS - TYRE DAMAGE\nLoss or damage to tyres and inne",
     "damage_classes": [
-      "dent",
       "flat_tyre"
     ],
     "clause_type": "coverage",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00091": {
-    "text_preview": "is conditional upon the simultaneous presence of other admissible damage to the vehicle body.\nSCHEDULE OF EXCLUDED LOSSES AND LIABILITIES\nNotwithstand",
-    "damage_classes": [],
-    "clause_type": "exclusion",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00092": {
-    "text_preview": "following:\nA. Exclusions Relating to Panel and Body Damage\nA1. Dents or deformations of body panels arising from metal fatigue, long-term vibration st",
-    "damage_classes": [
-      "dent"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00093": {
-    "text_preview": "A2. Panel damage attributable to overloading of the vehicle beyond the manufacturer's gross vehicle weight rating,\nwhere such overloading is the proxi",
-    "damage_classes": [
-      "dent",
-      "scratch"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "arising from and directly caused by the following events during the policy period:"
   },
   "chunk_00094": {
-    "text_preview": "pre-inspection report.\nA4. Cosmetic marks or shallow surface scuffs on bumpers caused by parking in proximity to kerb stones during\nnormal driving, cl",
+    "text_preview": "[arising from and directly caused by the following events during the policy period:] is conditional upon the simultaneous presence of other admissible",
+    "damage_classes": [],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "arising from and directly caused by the following events during the policy period:"
+  },
+  "chunk_00095": {
+    "text_preview": "A. Exclusions Relating to Panel and Body Damage\nA1. Dents or deformations of body panels arising from metal fatigue, long-term vibration stress, or co",
     "damage_classes": [
       "dent"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00095": {
-    "text_preview": "manufacturer's warranty.\nB. Exclusions Relating to Scratch and Paint Damage\nB1. Scratches and paint damage from automated car wash equipment, hand was",
-    "damage_classes": [
-      "scratch"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "A. Exclusions Relating to Panel and Body Damage"
   },
   "chunk_00096": {
-    "text_preview": "B2. Fade, oxidation, or chalking of paintwork from prolonged UV exposure or environmental pollutants, constituting\ngradual deterioration.\nB3. Paint da",
+    "text_preview": "[A. Exclusions Relating to Panel and Body Damage] A2. Panel damage attributable to overloading of the vehicle beyond the manufacturer's gross vehicle ",
     "damage_classes": [
       "dent",
       "scratch"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "A. Exclusions Relating to Panel and Body Damage"
   },
   "chunk_00097": {
-    "text_preview": "insured event.\nB4. Scratches on internally fitted surfaces, door sills, or boot lids from loading and unloading of goods by the insured.\nB5. Any scrat",
+    "text_preview": "[A. Exclusions Relating to Panel and Body Damage] pre-inspection report.\nA4. Cosmetic marks or shallow surface scuffs on bumpers caused by parking in ",
+    "damage_classes": [
+      "dent"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "A. Exclusions Relating to Panel and Body Damage"
+  },
+  "chunk_00098": {
+    "text_preview": "B. Exclusions Relating to Scratch and Paint Damage\nB1. Scratches and paint damage from automated car wash equipment, hand washing with abrasive materi",
     "damage_classes": [
       "scratch"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "B. Exclusions Relating to Scratch and Paint Damage"
   },
-  "chunk_00098": {
+  "chunk_00099": {
+    "text_preview": "[B. Exclusions Relating to Scratch and Paint Damage] B2. Fade, oxidation, or chalking of paintwork from prolonged UV exposure or environmental polluta",
+    "damage_classes": [
+      "scratch"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "B. Exclusions Relating to Scratch and Paint Damage"
+  },
+  "chunk_00100": {
+    "text_preview": "[B. Exclusions Relating to Scratch and Paint Damage] insured event.\nB4. Scratches on internally fitted surfaces, door sills, or boot lids from loading",
+    "damage_classes": [
+      "scratch"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "B. Exclusions Relating to Scratch and Paint Damage"
+  },
+  "chunk_00101": {
     "text_preview": "C. Exclusions Relating to Cracks\nC1. Hairline cracks in laminated safety glass that do not progress into full fractures and do not impair the driver's",
     "damage_classes": [
       "crack",
       "shattered_glass"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "C. Exclusions Relating to Cracks"
   },
-  "chunk_00099": {
-    "text_preview": "C2. Cracks in engine block, cylinder head, or other internal mechanical components, even where resulting from an\nexternal impact, unless such impact i",
+  "chunk_00102": {
+    "text_preview": "[C. Exclusions Relating to Cracks] C2. Cracks in engine block, cylinder head, or other internal mechanical components, even where resulting from an\nex",
     "damage_classes": [
       "dent",
       "crack"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "C. Exclusions Relating to Cracks"
   },
-  "chunk_00100": {
-    "text_preview": "C3. Cracks in dashboard, door card, or interior trim materials from heat, UV exposure, or age-related embrittlement.\nC4. Fractures to tow bar attachme",
+  "chunk_00103": {
+    "text_preview": "[C. Exclusions Relating to Cracks] C3. Cracks in dashboard, door card, or interior trim materials from heat, UV exposure, or age-related embrittlement",
     "damage_classes": [
       "crack"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "C. Exclusions Relating to Cracks"
   },
-  "chunk_00101": {
-    "text_preview": "manufacturer's specification.\nC5. Stress cracks in the vehicle chassis or monocoque arising from prolonged use on uneven roads, classified as\nstructur",
+  "chunk_00104": {
+    "text_preview": "[C. Exclusions Relating to Cracks] manufacturer's specification.\nC5. Stress cracks in the vehicle chassis or monocoque arising from prolonged use on u",
     "damage_classes": [
-      "crack",
-      "broken_lamp"
+      "crack"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "C. Exclusions Relating to Cracks"
   },
-  "chunk_00102": {
+  "chunk_00105": {
     "text_preview": "D. Exclusions Relating to Lamp Damage\nD1. Failure of lamp units due to electrical faults in the vehicle wiring, including short circuits, voltage spik",
     "damage_classes": [
       "broken_lamp"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00103": {
-    "text_preview": "D2. Lamp damage arising from thermal stress caused by the use of non-OEM replacement bulbs with wattage\nexceeding the manufacturer's specification.\nD3",
-    "damage_classes": [
-      "broken_lamp"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00104": {
-    "text_preview": "vehicle's regulatory lighting.\nD4. Discolouration, cloudiness, or UV hazing of polycarbonate headlamp covers, not resulting from a specific impact\neve",
-    "damage_classes": [
-      "dent",
-      "broken_lamp"
-    ],
-    "clause_type": "coverage",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00105": {
-    "text_preview": "under this policy.\nE. Exclusions Relating to Glass Damage\nE1. Glass damage sustained on vehicles being transported as commercial cargo, unless transit",
-    "damage_classes": [
-      "shattered_glass"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "D. Exclusions Relating to Lamp Damage"
   },
   "chunk_00106": {
-    "text_preview": "endorsed on the Schedule.\nE2. Replacement or repair of tinted films, UV filters, or decorative coatings applied to glass surfaces post-manufacture.\nE3",
+    "text_preview": "[D. Exclusions Relating to Lamp Damage] D2. Lamp damage arising from thermal stress caused by the use of non-OEM replacement bulbs with wattage\nexceed",
     "damage_classes": [
-      "dent",
-      "shattered_glass"
+      "broken_lamp"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "D. Exclusions Relating to Lamp Damage"
   },
   "chunk_00107": {
-    "text_preview": "E4. Microscopic surface scratches on tempered side glass that do not impair visibility or constitute a structural breach.\nE5. Glass repair (as distinc",
+    "text_preview": "[D. Exclusions Relating to Lamp Damage] vehicle's regulatory lighting.\nD4. Discolouration, cloudiness, or UV hazing of polycarbonate headlamp covers, ",
     "damage_classes": [
+      "dent",
+      "broken_lamp"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "D. Exclusions Relating to Lamp Damage"
+  },
+  "chunk_00108": {
+    "text_preview": "E. Exclusions Relating to Glass Damage\nE1. Glass damage sustained on vehicles being transported as commercial cargo, unless transit is specifically\nen",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "E. Exclusions Relating to Glass Damage"
+  },
+  "chunk_00109": {
+    "text_preview": "[E. Exclusions Relating to Glass Damage] E3. Sunroof or glass roof panel damage unless specifically included by endorsement in the Schedule.\nE4. Micro",
+    "damage_classes": [
+      "dent",
       "scratch",
       "shattered_glass"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "E. Exclusions Relating to Glass Damage"
   },
-  "chunk_00108": {
+  "chunk_00110": {
+    "text_preview": "[E. Exclusions Relating to Glass Damage] E5. Glass repair (as distinct from replacement) where the repaired area exceeds the diameter threshold specif",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "E. Exclusions Relating to Glass Damage"
+  },
+  "chunk_00111": {
     "text_preview": "F. Exclusions Relating to Tyre Damage\nF1. Tyre damage occurring when the vehicle is operated outside the permitted geographical area stated in the\nSch",
     "damage_classes": [
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00109": {
-    "text_preview": "F3. Tyre valve stem damage alone, without accompanying damage to the tyre carcass, bead, or inner tube.\nF4. Damage to run-flat tyres operated beyond z",
-    "damage_classes": [
-      "flat_tyre"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00110": {
-    "text_preview": "limit.\nF5. Tyre damage resulting from driving over road conditions that the insured was aware of before commencing the\njourney.\nDEDUCTIBLE\nThe insured",
-    "damage_classes": [
-      "flat_tyre"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
-  },
-  "chunk_00111": {
-    "text_preview": "insurable.\nIDV AND TOTAL LOSS\nAge of Vehicle % of Depreciation\nNot exceeding 6 months 5%\nExceeding 6 months but not exceeding 1 year 15%\nExceeding 1 y",
-    "damage_classes": [],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_3_quickclaim_general"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "F. Exclusions Relating to Tyre Damage"
   },
   "chunk_00112": {
-    "text_preview": "Exceeding 4 years but not exceeding 5 years 50%\nTotal Loss is declared when repair cost exceeds 75% of IDV.\nCLAIM INTIMATION\nIntimation of any claim m",
-    "damage_classes": [],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_3_quickclaim_general"
+    "text_preview": "[F. Exclusions Relating to Tyre Damage] F3. Tyre valve stem damage alone, without accompanying damage to the tyre carcass, bead, or inner tube.\nF4. Da",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "F. Exclusions Relating to Tyre Damage"
   },
   "chunk_00113": {
-    "text_preview": "condition may prejudice the insured's entitlement to indemnity.\nThis is a synthetic specimen policy for research and educational use only. Not a valid",
-    "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_3_quickclaim_general"
+    "text_preview": "[F. Exclusions Relating to Tyre Damage] limit.\nF5. Tyre damage resulting from driving over road conditions that the insured was aware of before commen",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "F. Exclusions Relating to Tyre Damage"
   },
   "chunk_00114": {
-    "text_preview": "AUTOGUARD PREMIUM I\nAUTOGUARD PREM\nOwn Damage with Fu\nAutoGuard Premium Insurance Services Ltd agrees to ins\nspecified in this document, for the perio",
-    "damage_classes": [],
-    "clause_type": "coverage",
-    "doc_id": "policy_4_autoguard_premium"
+    "text_preview": "[F. Exclusions Relating to Tyre Damage] insurable.\nIDV AND TOTAL LOSS\nAge of Vehicle % of Depreciation\nNot exceeding 6 months 5%\nExceeding 6 months bu",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "F. Exclusions Relating to Tyre Damage"
   },
   "chunk_00115": {
-    "text_preview": "3:\nEvent Coverage detail\nFire and allied perils Fire, explosion, lightnin\nTheft Burglary, housebreakin\nNatural calamity Flood, cyclone, earthqu\nDents ",
+    "text_preview": "[F. Exclusions Relating to Tyre Damage] Exceeding 4 years but not exceeding 5 years 50%\nTotal Loss is declared when repair cost exceeds 75% of IDV.\nCL",
     "damage_classes": [
-      "dent",
-      "scratch",
-      "broken_lamp"
+      "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "F. Exclusions Relating to Tyre Damage"
   },
   "chunk_00116": {
-    "text_preview": "Paint and surface damage vandalism\nPanel fractures Cracks to bumpers, doo\nHeadlamps, tail lamps,\nLighting assembly damage by impact\nWindscreen, rear s",
+    "text_preview": "[F. Exclusions Relating to Tyre Damage] condition may prejudice the insured's entitlement to indemnity.\nThis is a synthetic specimen policy for resear",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_3_quickclaim_general",
+    "heading": "F. Exclusions Relating to Tyre Damage"
+  },
+  "chunk_00117": {
+    "text_preview": "AUTOGUARD PREMIUM INSURANCE SERVICES LTD\nAUTOGUARD PREMIUM MOTOR POLICY\nOwn Damage with Full Cover Add-On Suite\nAutoGuard Premium Insurance Services L",
+    "damage_classes": [],
+    "clause_type": "coverage",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": ""
+  },
+  "chunk_00118": {
+    "text_preview": "specified in this document, for the period shown, in exchange for the premium paid.",
+    "damage_classes": [],
+    "clause_type": "general",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": ""
+  },
+  "chunk_00119": {
+    "text_preview": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE\nThe following events are covered under this policy, subject to the terms, exclusions, and sub-limits defined in",
+    "damage_classes": [],
+    "clause_type": "coverage",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE"
+  },
+  "chunk_00120": {
+    "text_preview": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Theft Burglary, housebreaking, theft Whole vehicle\nNatural calamity Flood, cyclone, earthquake, hailstorm All",
+    "damage_classes": [
+      "dent",
+      "scratch"
+    ],
+    "clause_type": "coverage",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE"
+  },
+  "chunk_00121": {
+    "text_preview": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface damage vandalism Exterior surfaces\nPanel fractures Cracks to bumpers, door panels, trims fr",
     "damage_classes": [
       "dent",
       "scratch",
       "crack",
       "broken_lamp",
+      "shattered_glass"
+    ],
+    "clause_type": "coverage",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE"
+  },
+  "chunk_00122": {
+    "text_preview": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Glass damage depreciation All vehicle glazing\nAt 50% of replacement cost if concurrent vehicle\nTyre and tube ",
+    "damage_classes": [
       "shattered_glass",
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "coverage",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE"
   },
-  "chunk_00117": {
-    "text_preview": "CHAPTER 2. DEPRECIATION SCHEDULE\nStandard depreciation applies to parts replaced, except wh\nAge of Vehicle\nNot exceeding 6 months\nExceeding 6 months b",
+  "chunk_00123": {
+    "text_preview": "CHAPTER 2. DEPRECIATION SCHEDULE\nStandard depreciation applies to parts replaced, except where the Nil Depreciation Add-On (Chapter 5) applies:\nAge of",
     "damage_classes": [],
     "clause_type": "sub_limit",
-    "doc_id": "policy_4_autoguard_premium"
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 2. DEPRECIATION SCHEDULE"
   },
-  "chunk_00118": {
-    "text_preview": "Exceeding 3 years but not exceeding 4 years\nExceeding 4 years but not exceeding 5 years\nSURANCE SERVICES LTD\n0001V01202425\nUM MOTOR POLICY\nl Cover Add",
-    "damage_classes": [],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_4_autoguard_premium"
-  },
-  "chunk_00119": {
-    "text_preview": "e for the premium paid.\nAGE\nto the terms, exclusions, and sub-limits defined in Chapter\nApplies to\n, self-ignition All components\n, theft Whole vehicl",
+  "chunk_00124": {
+    "text_preview": "[CHAPTER 2. DEPRECIATION SCHEDULE] Exceeding 2 years but not exceeding 3 years 15%\nExceeding 3 years but not exceeding 4 years 25%\nExceeding 4 years b",
     "damage_classes": [
-      "dent",
-      "scratch"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
-  },
-  "chunk_00120": {
-    "text_preview": "Exterior surfaces\npanels, trims from impact Exterior components\nfog lamps, indicators broken All lamps and\nreflectors\nen, side windows - nil\nAll vehic",
-    "damage_classes": [
-      "dent",
-      "broken_lamp",
-      "shattered_glass",
-      "flat_tyre"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
-  },
-  "chunk_00121": {
-    "text_preview": "% of Depreciation\nNil\n5%\n10%\n15%\n25%\n35%\nExceeding 5 years but not exceeding 10 years 40%\nExceeding 10 years 50%\nGlass components carry nil depreciati",
-    "damage_classes": [
-      "dent",
       "shattered_glass"
     ],
     "clause_type": "sub_limit",
-    "doc_id": "policy_4_autoguard_premium"
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 2. DEPRECIATION SCHEDULE"
   },
-  "chunk_00122": {
+  "chunk_00125": {
     "text_preview": "3.1 Panel and Dent Exclusions\n(cid:127) Dents arising from hail where the vehicle was left uncovered in an open area against a forecast severe weather",
     "damage_classes": [
       "dent"
     ],
-    "clause_type": "coverage",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.1 Panel and Dent Exclusions"
   },
-  "chunk_00123": {
-    "text_preview": "(cid:127) Panel damage resulting from the vehicle being used to tow a load exceeding the manufacturer's towing capacity\nspecification.\n(cid:127) Dents",
+  "chunk_00126": {
+    "text_preview": "[3.1 Panel and Dent Exclusions] (cid:127) Panel damage resulting from the vehicle being used to tow a load exceeding the manufacturer's towing capacit",
     "damage_classes": [
       "dent"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.1 Panel and Dent Exclusions"
   },
-  "chunk_00124": {
-    "text_preview": "body panel.\n(cid:127) Body panel damage from shopping trolley impact in private parking facilities where the insured had parked against\nthe facility's",
+  "chunk_00127": {
+    "text_preview": "[3.1 Panel and Dent Exclusions] body panel.\n(cid:127) Body panel damage from shopping trolley impact in private parking facilities where the insured h",
     "damage_classes": [
-      "dent",
-      "scratch"
+      "dent"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.1 Panel and Dent Exclusions"
   },
-  "chunk_00125": {
+  "chunk_00128": {
     "text_preview": "3.2 Scratch Exclusions\n(cid:127) Scratches from improper car wash technique, including dry wiping or use of coarse sponges, constituting\nowner-induced",
     "damage_classes": [
       "scratch"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.2 Scratch Exclusions"
   },
-  "chunk_00126": {
-    "text_preview": "(cid:127) Surface marks on plastic bumpers from minor parking manoeuvres.\n(cid:127) Scratches inside the vehicle load bay or boot area from carrying l",
+  "chunk_00129": {
+    "text_preview": "[3.2 Scratch Exclusions] (cid:127) Surface marks on plastic bumpers from minor parking manoeuvres.\n(cid:127) Scratches inside the vehicle load bay or ",
     "damage_classes": [
       "scratch"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.2 Scratch Exclusions"
   },
-  "chunk_00127": {
+  "chunk_00130": {
     "text_preview": "3.3 Crack Exclusions\n(cid:127) Cracks in the engine block, cylinder head, or differential casing, unless caused by a primary accidental external\nevent",
     "damage_classes": [
-      "dent",
       "crack"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.3 Crack Exclusions"
   },
-  "chunk_00128": {
-    "text_preview": "(cid:127) Stress fractures in suspension components from prolonged use on poor roads.\n(cid:127) Cracks in aftermarket bodywork additions, spoilers, or",
+  "chunk_00131": {
+    "text_preview": "[3.3 Crack Exclusions] (cid:127) Stress fractures in suspension components from prolonged use on poor roads.\n(cid:127) Cracks in aftermarket bodywork ",
     "damage_classes": [
       "crack"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.3 Crack Exclusions"
   },
-  "chunk_00129": {
+  "chunk_00132": {
     "text_preview": "3.4 Lamp Exclusions\n(cid:127) Electrical failure of lamp control modules or LED drivers without physical damage to the lamp housing or lens.\n(cid:127)",
     "damage_classes": [
       "broken_lamp"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
-  },
-  "chunk_00130": {
-    "text_preview": "(cid:127) DRL (Daytime Running Light) malfunction not associated with an accident.\n(cid:127) Lamp damage on a second vehicle involved in the same inci",
-    "damage_classes": [
-      "dent",
-      "broken_lamp"
-    ],
-    "clause_type": "coverage",
-    "doc_id": "policy_4_autoguard_premium"
-  },
-  "chunk_00131": {
-    "text_preview": "section.\n(cid:127) Corrosion of lamp contacts or connectors from moisture ingress through an undamaged seal.\n3.5 Glass Exclusions\n(cid:127) Glass dama",
-    "damage_classes": [
-      "broken_lamp",
-      "shattered_glass"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
-  },
-  "chunk_00132": {
-    "text_preview": "(cid:127) Tinting films, privacy glass coatings, or heat-rejection treatments applied to the original vehicle glass.\n(cid:127) Laminated windscreen se",
-    "damage_classes": [
-      "shattered_glass"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.4 Lamp Exclusions"
   },
   "chunk_00133": {
-    "text_preview": "(cid:127) Sunroof glass breakage unless the Sunroof Add-On is endorsed on the Schedule.\n(cid:127) Glass scratches from windscreen wiper blades operati",
+    "text_preview": "[3.4 Lamp Exclusions] (cid:127) DRL (Daytime Running Light) malfunction not associated with an accident.\n(cid:127) Lamp damage on a second vehicle inv",
     "damage_classes": [
-      "scratch",
-      "shattered_glass",
-      "flat_tyre"
+      "broken_lamp"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.4 Lamp Exclusions"
   },
   "chunk_00134": {
+    "text_preview": "[3.4 Lamp Exclusions] section.\n(cid:127) Corrosion of lamp contacts or connectors from moisture ingress through an undamaged seal.",
+    "damage_classes": [
+      "broken_lamp"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.4 Lamp Exclusions"
+  },
+  "chunk_00135": {
+    "text_preview": "3.5 Glass Exclusions\n(cid:127) Glass damage on a vehicle registered as a commercial goods carrier under a different class of insurance.\n(cid:127) Tint",
+    "damage_classes": [
+      "shattered_glass"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.5 Glass Exclusions"
+  },
+  "chunk_00136": {
+    "text_preview": "[3.5 Glass Exclusions] (cid:127) Laminated windscreen separation or delamination from age or manufacturing defect, recoverable under warranty.\n(cid:12",
+    "damage_classes": [
+      "scratch",
+      "shattered_glass"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.5 Glass Exclusions"
+  },
+  "chunk_00137": {
     "text_preview": "3.6 Tyre Exclusions\n(cid:127) Tyre damage from deliberate spiked road obstacles (road spikes) in a disputed ownership or legal proceeding\nsituation.\n(",
     "damage_classes": [
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.6 Tyre Exclusions"
   },
-  "chunk_00135": {
-    "text_preview": "(cid:127) Tyre damage from use of incorrect tyre size not conforming to vehicle type approval.\n(cid:127) Gradual loss of tyre pressure from micro-poro",
+  "chunk_00138": {
+    "text_preview": "[3.6 Tyre Exclusions] (cid:127) Tyre damage from use of incorrect tyre size not conforming to vehicle type approval.\n(cid:127) Gradual loss of tyre pr",
     "damage_classes": [
       "flat_tyre"
     ],
-    "clause_type": "coverage",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "exclusion",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "3.6 Tyre Exclusions"
   },
-  "chunk_00136": {
+  "chunk_00139": {
     "text_preview": "CHAPTER 4. DEDUCTIBLE AND IDV\nCompulsory deductible: Rs. 2,500 per claim occurrence.\nOptional voluntary deductible: Rs. 2,500 / Rs. 5,000 / Rs. 10,000",
     "damage_classes": [],
     "clause_type": "sub_limit",
-    "doc_id": "policy_4_autoguard_premium"
-  },
-  "chunk_00137": {
-    "text_preview": "Exceeding 1 year but not exceeding 2 years 20%\nExceeding 2 years but not exceeding 3 years 30%\nExceeding 3 years but not exceeding 4 years 40%\nExceedi",
-    "damage_classes": [],
-    "clause_type": "coverage",
-    "doc_id": "policy_4_autoguard_premium"
-  },
-  "chunk_00138": {
-    "text_preview": "Add-On A: Nil Depreciation\nAvailable for vehicles up to 5 years old. No depreciation is charged on parts replaced during a partial loss claim,\nsubject",
-    "damage_classes": [],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_4_autoguard_premium"
-  },
-  "chunk_00139": {
-    "text_preview": "Add-On B: Return to Invoice\nIn the event of Total Loss or theft with no recovery, the claim is settled at the original on-road price (ex-showroom plus",
-    "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 4. DEDUCTIBLE AND IDV"
   },
   "chunk_00140": {
-    "text_preview": "Add-On C: Consumables Cover\nConsumable items including engine oil, coolant, AC gas, nuts, bolts, and sealants replaced during an admissible\npartial lo",
+    "text_preview": "[CHAPTER 4. DEDUCTIBLE AND IDV] Exceeding 1 year but not exceeding 2 years 20%\nExceeding 2 years but not exceeding 3 years 30%\nExceeding 3 years but n",
     "damage_classes": [],
-    "clause_type": "coverage",
-    "doc_id": "policy_4_autoguard_premium"
+    "clause_type": "sub_limit",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 4. DEDUCTIBLE AND IDV"
   },
   "chunk_00141": {
+    "text_preview": "CHAPTER 5. PREMIUM ADD-ON COVERS\nAdd-On A: Nil Depreciation\nAvailable for vehicles up to 5 years old. No depreciation is charged on parts replaced dur",
+    "damage_classes": [],
+    "clause_type": "coverage",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 5. PREMIUM ADD-ON COVERS"
+  },
+  "chunk_00142": {
+    "text_preview": "[CHAPTER 5. PREMIUM ADD-ON COVERS] Add-On B: Return to Invoice\nIn the event of Total Loss or theft with no recovery, the claim is settled at the origi",
+    "damage_classes": [],
+    "clause_type": "coverage",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 5. PREMIUM ADD-ON COVERS"
+  },
+  "chunk_00143": {
+    "text_preview": "[CHAPTER 5. PREMIUM ADD-ON COVERS] Add-On C: Consumables Cover\nConsumable items including engine oil, coolant, AC gas, nuts, bolts, and sealants repla",
+    "damage_classes": [],
+    "clause_type": "coverage",
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 5. PREMIUM ADD-ON COVERS"
+  },
+  "chunk_00144": {
     "text_preview": "CHAPTER 6. CLAIMS\n(cid:127) Intimate within 24 hours at our helpline or via the mobile app.\n(cid:127) A virtual survey option is available for claims ",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 6. CLAIMS"
   },
-  "chunk_00142": {
-    "text_preview": "(cid:127) Claim decision within 5 working days of survey completion.\nSynthetic specimen policy - research and educational use only. Not a valid insura",
+  "chunk_00145": {
+    "text_preview": "[CHAPTER 6. CLAIMS] (cid:127) Claim decision within 5 working days of survey completion.\nSynthetic specimen policy - research and educational use only",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_4_autoguard_premium"
+    "doc_id": "policy_4_autoguard_premium",
+    "heading": "CHAPTER 6. CLAIMS"
   },
-  "chunk_00143": {
+  "chunk_00146": {
     "text_preview": "VALUEMOTOR COMPREHENSIVE INSURANCE LTD\nVALUEMOTOR COMPREHENSIVE MOTOR POLICY\nAffordable Comprehensive Own Damage and Third Party Cover\nThank you for c",
     "damage_classes": [],
     "clause_type": "coverage",
-    "doc_id": "policy_5_valuemotor"
+    "doc_id": "policy_5_valuemotor",
+    "heading": ""
   },
-  "chunk_00144": {
+  "chunk_00147": {
     "text_preview": "under your policy. Please read it carefully and keep it safe.",
     "damage_classes": [],
     "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "doc_id": "policy_5_valuemotor",
+    "heading": ""
   },
-  "chunk_00145": {
+  "chunk_00148": {
     "text_preview": "Your vehicle is covered for loss or damage caused by:\n(cid:127) Fire, explosion, or lightning strike.\n(cid:127) Theft or attempted theft.\n(cid:127) Ri",
-    "damage_classes": [
-      "broken_lamp"
-    ],
+    "damage_classes": [],
     "clause_type": "coverage",
-    "doc_id": "policy_5_valuemotor"
+    "doc_id": "policy_5_valuemotor",
+    "heading": "Your vehicle is covered for loss or damage caused by:"
   },
-  "chunk_00146": {
-    "text_preview": "(cid:127) Accidental collision or impact - loss or damage caused by your vehicle colliding with another vehicle or object,\nresulting in dents to the v",
+  "chunk_00149": {
+    "text_preview": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Accidental collision or impact - loss or damage caused by your vehicle colliding wit",
     "damage_classes": [
       "dent",
-      "scratch",
-      "flat_tyre"
+      "scratch"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "coverage",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "Your vehicle is covered for loss or damage caused by:"
   },
-  "chunk_00147": {
-    "text_preview": "identifiable accidental or malicious event.\n(cid:127) Cracking or fracturing of exterior components by accidental means - this includes cracks in bump",
+  "chunk_00150": {
+    "text_preview": "[Your vehicle is covered for loss or damage caused by:] identifiable accidental or malicious event.\n(cid:127) Cracking or fracturing of exterior compo",
     "damage_classes": [
       "dent",
       "crack"
     ],
-    "clause_type": "definition",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "coverage",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "Your vehicle is covered for loss or damage caused by:"
   },
-  "chunk_00148": {
-    "text_preview": "(cid:127) Breakage of headlight, taillight, or indicator units by accident or collision during the policy period.\n(cid:127) Glass damage without depre",
+  "chunk_00151": {
+    "text_preview": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Breakage of headlight, taillight, or indicator units by accident or collision during",
     "damage_classes": [
       "dent",
       "broken_lamp",
       "shattered_glass"
     ],
     "clause_type": "coverage",
-    "doc_id": "policy_5_valuemotor"
+    "doc_id": "policy_5_valuemotor",
+    "heading": "Your vehicle is covered for loss or damage caused by:"
   },
-  "chunk_00149": {
-    "text_preview": "(cid:127) Tyre and tube damage at 50% of replacement cost, only when the vehicle has also been damaged in the same\nincident.\n(cid:127) Damage in trans",
+  "chunk_00152": {
+    "text_preview": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Tyre and tube damage at 50% of replacement cost, only when the vehicle has also been",
     "damage_classes": [
-      "dent",
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "coverage",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "Your vehicle is covered for loss or damage caused by:"
   },
-  "chunk_00150": {
-    "text_preview": "2. HOW DEPRECIATION WORKS\nWhen a part is replaced, we deduct a percentage for depreciation based on your vehicle's age, except for glass\n(always nil d",
+  "chunk_00153": {
+    "text_preview": "[Your vehicle is covered for loss or damage caused by:] 2. HOW DEPRECIATION WORKS\nWhen a part is replaced, we deduct a percentage for depreciation bas",
     "damage_classes": [
       "shattered_glass"
     ],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "coverage",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "Your vehicle is covered for loss or damage caused by:"
   },
-  "chunk_00151": {
-    "text_preview": "Exceeding 1 year but not exceeding 2 years 10%\nExceeding 2 years but not exceeding 3 years 15%\nExceeding 3 years but not exceeding 4 years 25%\nExceedi",
+  "chunk_00154": {
+    "text_preview": "[Your vehicle is covered for loss or damage caused by:] Exceeding 1 year but not exceeding 2 years 10%\nExceeding 2 years but not exceeding 3 years 15%",
     "damage_classes": [],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "coverage",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "Your vehicle is covered for loss or damage caused by:"
   },
-  "chunk_00152": {
-    "text_preview": "Exceeding 10 years 50%\nRubber, plastic, tyre, battery, and airbag parts: always 50% deduction.\nGlass parts: always nil deduction. You get the full rep",
+  "chunk_00155": {
+    "text_preview": "[Your vehicle is covered for loss or damage caused by:] Exceeding 10 years 50%\nRubber, plastic, tyre, battery, and airbag parts: always 50% deduction.",
     "damage_classes": [
       "shattered_glass",
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "coverage",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "Your vehicle is covered for loss or damage caused by:"
   },
-  "chunk_00153": {
-    "text_preview": "These situations are excluded from your ValueMotor policy:\n3.1 General exclusions\n(cid:127) Wear and tear, gradual deterioration, or mechanical and el",
+  "chunk_00156": {
+    "text_preview": "These situations are excluded from your ValueMotor policy:",
     "damage_classes": [],
     "clause_type": "exclusion",
-    "doc_id": "policy_5_valuemotor"
+    "doc_id": "policy_5_valuemotor",
+    "heading": "These situations are excluded from your ValueMotor policy:"
   },
-  "chunk_00154": {
-    "text_preview": "(cid:127) Loss outside the geographical area stated in your Schedule.\n(cid:127) Use of the vehicle in violation of your permit conditions.\n(cid:127) D",
-    "damage_classes": [
-      "dent"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+  "chunk_00157": {
+    "text_preview": "3.1 General exclusions\n(cid:127) Wear and tear, gradual deterioration, or mechanical and electrical breakdown.\n(cid:127) Damage caused while the drive",
+    "damage_classes": [],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.1 General exclusions"
   },
-  "chunk_00155": {
+  "chunk_00158": {
+    "text_preview": "[3.1 General exclusions] (cid:127) Use of the vehicle in violation of your permit conditions.\n(cid:127) Driving without a valid driving licence.",
+    "damage_classes": [],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.1 General exclusions"
+  },
+  "chunk_00159": {
     "text_preview": "3.2 Dent and body panel exclusions\n(cid:127) Dents caused by you or a family member driving the vehicle deliberately into a gate, pillar, or fixed str",
     "damage_classes": [
       "dent"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
-  },
-  "chunk_00156": {
-    "text_preview": "(cid:127) Pre-existing dents noted at pre-policy inspection and documented in the Inspection Report at policy inception.\n(cid:127) Dents in the vehicl",
-    "damage_classes": [
-      "dent",
-      "crack"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
-  },
-  "chunk_00157": {
-    "text_preview": "(cid:127) Minor parking contact marks on bumpers from very low-speed manoeuvres in private parking where no reportable\nevent occurred.\n3.3 Scratch and",
-    "damage_classes": [
-      "scratch"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
-  },
-  "chunk_00158": {
-    "text_preview": "(cid:127) Surface oxidation, paint fade, or chalking from prolonged UV exposure.\n(cid:127) Chemical paint damage from acid rain, industrial fallout, o",
-    "damage_classes": [
-      "dent",
-      "scratch"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
-  },
-  "chunk_00159": {
-    "text_preview": "(cid:127) Scratch damage to the interior of the vehicle including seats, dashboard, and door cards.\nVALUEMOTOR COMPREHENSIVE INSURANCE LTD\n3.4 Crack e",
-    "damage_classes": [
-      "dent",
-      "scratch",
-      "crack"
-    ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.2 Dent and body panel exclusions"
   },
   "chunk_00160": {
-    "text_preview": "covered under Section 1.\n(cid:127) Hairline cracks in laminated glass that do not impair the driver's vision and do not develop into full fractures wi",
+    "text_preview": "[3.2 Dent and body panel exclusions] (cid:127) Pre-existing dents noted at pre-policy inspection and documented in the Inspection Report at policy inc",
     "damage_classes": [
+      "dent",
+      "crack"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.2 Dent and body panel exclusions"
+  },
+  "chunk_00161": {
+    "text_preview": "[3.2 Dent and body panel exclusions] (cid:127) Minor parking contact marks on bumpers from very low-speed manoeuvres in private parking where no repor",
+    "damage_classes": [
+      "dent"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.2 Dent and body panel exclusions"
+  },
+  "chunk_00162": {
+    "text_preview": "3.3 Scratch and paint exclusions\n(cid:127) Paint scratches from automatic car wash equipment with worn or dirty brushes.\n(cid:127) Surface oxidation, ",
+    "damage_classes": [
+      "scratch"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.3 Scratch and paint exclusions"
+  },
+  "chunk_00163": {
+    "text_preview": "[3.3 Scratch and paint exclusions] (cid:127) Chemical paint damage from acid rain, industrial fallout, or bird droppings not linked to a sudden identi",
+    "damage_classes": [
+      "scratch"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.3 Scratch and paint exclusions"
+  },
+  "chunk_00164": {
+    "text_preview": "[3.3 Scratch and paint exclusions] (cid:127) Scratch damage to the interior of the vehicle including seats, dashboard, and door cards.\nVALUEMOTOR COMP",
+    "damage_classes": [
+      "scratch"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.3 Scratch and paint exclusions"
+  },
+  "chunk_00165": {
+    "text_preview": "3.4 Crack exclusions\n(cid:127) Cracks in the engine block or cylinder head, unless arising directly and solely from an insured external impact\ncovered",
+    "damage_classes": [
+      "dent",
       "crack",
       "shattered_glass"
     ],
-    "clause_type": "coverage",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.4 Crack exclusions"
   },
-  "chunk_00161": {
-    "text_preview": "(cid:127) Dashboard or interior trim panel cracks from heat, UV, or age-related material degradation.\n(cid:127) Fractures in tow ball assemblies, roof",
+  "chunk_00166": {
+    "text_preview": "[3.4 Crack exclusions] the policy period.\n(cid:127) Cracks in aftermarket accessories or non-standard body additions.\n(cid:127) Dashboard or interior ",
     "damage_classes": [
-      "crack",
-      "broken_lamp"
+      "crack"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.4 Crack exclusions"
   },
-  "chunk_00162": {
+  "chunk_00167": {
     "text_preview": "3.5 Lamp exclusions\n(cid:127) Lamp failure from bulb burnout, filament failure, or blown fuse, without any physical damage to the lamp body or\nlens.\n(",
     "damage_classes": [
       "broken_lamp"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.5 Lamp exclusions"
   },
-  "chunk_00163": {
-    "text_preview": "(cid:127) Lighting modifications or aftermarket lights not approved by the manufacturer.\n(cid:127) Corrosion of lamp connector pins or wiring from moi",
+  "chunk_00168": {
+    "text_preview": "[3.5 Lamp exclusions] (cid:127) Lighting modifications or aftermarket lights not approved by the manufacturer.\n(cid:127) Corrosion of lamp connector p",
     "damage_classes": [
       "broken_lamp"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.5 Lamp exclusions"
   },
-  "chunk_00164": {
-    "text_preview": "regulatory lighting.\n3.6 Glass exclusions\n(cid:127) Sunroof glass damage unless specifically endorsed on your Schedule.\n(cid:127) Replacement of tinte",
+  "chunk_00169": {
+    "text_preview": "3.6 Glass exclusions\n(cid:127) Sunroof glass damage unless specifically endorsed on your Schedule.\n(cid:127) Replacement of tinted privacy film, UV co",
     "damage_classes": [
-      "broken_lamp",
       "shattered_glass"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.6 Glass exclusions"
   },
-  "chunk_00165": {
-    "text_preview": "(cid:127) Windscreen wiper-induced scratches on tempered glass where the wiper blade was damaged or worn at the time.\n(cid:127) Glass damage on a vehi",
+  "chunk_00170": {
+    "text_preview": "[3.6 Glass exclusions] (cid:127) Windscreen wiper-induced scratches on tempered glass where the wiper blade was damaged or worn at the time.\n(cid:127)",
     "damage_classes": [
       "scratch",
       "shattered_glass"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.6 Glass exclusions"
   },
-  "chunk_00166": {
-    "text_preview": "(cid:127) Repair-only windscreen claims where the chip or crack is small and repairable rather than requiring full windscreen\nreplacement.\n3.7 Tyre ex",
+  "chunk_00171": {
+    "text_preview": "[3.6 Glass exclusions] (cid:127) Repair-only windscreen claims where the chip or crack is small and repairable rather than requiring full windscreen\nr",
     "damage_classes": [
       "crack",
-      "shattered_glass",
-      "flat_tyre"
+      "shattered_glass"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.6 Glass exclusions"
   },
-  "chunk_00167": {
-    "text_preview": "(cid:127) Tyre damage when the vehicle was driven knowingly on a flat or underinflated tyre for a distance exceeding 2 km.\n(cid:127) Damage to non-sta",
+  "chunk_00172": {
+    "text_preview": "3.7 Tyre exclusions\n(cid:127) Tyre deterioration, tread wear, or sidewall cracking from age and use.\n(cid:127) Tyre damage when the vehicle was driven",
     "damage_classes": [
+      "crack",
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
   },
-  "chunk_00168": {
-    "text_preview": "approval.\n(cid:127) Tyre valve cap or core damage alone, without tyre body damage.\n(cid:127) Tyre damage from use of the vehicle in rallying, track da",
+  "chunk_00173": {
+    "text_preview": "[3.7 Tyre exclusions] (cid:127) Damage to non-standard tyres, including competition tyres or oversized tyres not conforming to the vehicle's type\nappr",
     "damage_classes": [
       "dent",
       "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
-  },
-  "chunk_00169": {
-    "text_preview": "4. YOUR EXCESS (DEDUCTIBLE)\nYou pay the first Rs. 1,000 of each claim. This is your compulsory excess. You cannot insure this amount with us or\nany ot",
-    "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
-  },
-  "chunk_00170": {
-    "text_preview": "5. INSURED DECLARED VALUE AND TOTAL LOSS\nThe IDV is your vehicle's sum insured. It is based on the manufacturer's ex-showroom price reduced for age:\nA",
-    "damage_classes": [],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_5_valuemotor"
-  },
-  "chunk_00171": {
-    "text_preview": "Exceeding 1 year but not exceeding 2 years 20%\nExceeding 2 years but not exceeding 3 years 30%\nExceeding 3 years but not exceeding 4 years 40%\nExceedi",
-    "damage_classes": [],
-    "clause_type": "sub_limit",
-    "doc_id": "policy_5_valuemotor"
-  },
-  "chunk_00172": {
-    "text_preview": "If your repair cost exceeds 75% of the IDV, we will settle your claim as a Total Loss and pay you the IDV less any\nsalvage value.",
-    "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
-  },
-  "chunk_00173": {
-    "text_preview": "6. NO CLAIM BONUS\nYour claim history Your NCB discount\n1 claim-free year 20%\n2 claim-free years 25%\n3 claim-free years 35%\n4 claim-free years 45%\n5+ c",
-    "damage_classes": [],
     "clause_type": "exclusion",
-    "doc_id": "policy_5_valuemotor"
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
   },
   "chunk_00174": {
-    "text_preview": "7. HOW TO CLAIM\n(cid:127) Call our helpline or use the app within 24 hours of the accident.\n(cid:127) Take photos of the damage before moving the vehi",
+    "text_preview": "[3.7 Tyre exclusions] (cid:127) Tyre damage from use of the vehicle in rallying, track days, or any competitive motorsport event.",
     "damage_classes": [
-      "dent"
+      "flat_tyre"
     ],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
   },
   "chunk_00175": {
-    "text_preview": "(cid:127) We aim to complete survey and approve repairs within 2 working days.\n(cid:127) Cashless repair is available at our network garages.",
-    "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "text_preview": "[3.7 Tyre exclusions] 4. YOUR EXCESS (DEDUCTIBLE)\nYou pay the first Rs. 1,000 of each claim. This is your compulsory excess. You cannot insure this am",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
   },
   "chunk_00176": {
-    "text_preview": "8. THIRD PARTY COVER\nWe provide compulsory third-party liability cover as required by the Motor Vehicles Act. This covers you for legal\nliability aris",
-    "damage_classes": [],
-    "clause_type": "coverage",
-    "doc_id": "policy_5_valuemotor"
+    "text_preview": "[3.7 Tyre exclusions] 5. INSURED DECLARED VALUE AND TOTAL LOSS\nThe IDV is your vehicle's sum insured. It is based on the manufacturer's ex-showroom pr",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
   },
   "chunk_00177": {
-    "text_preview": "9. GENERAL EXCEPTIONS\nThis policy does not cover any claim arising from war, nuclear risk, use of the vehicle in violation of permit conditions,\nor op",
-    "damage_classes": [],
+    "text_preview": "[3.7 Tyre exclusions] Exceeding 1 year but not exceeding 2 years 20%\nExceeding 2 years but not exceeding 3 years 30%\nExceeding 3 years but not exceedi",
+    "damage_classes": [
+      "flat_tyre"
+    ],
     "clause_type": "exclusion",
-    "doc_id": "policy_5_valuemotor"
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
   },
   "chunk_00178": {
-    "text_preview": "This is a synthetic specimen policy document created for AI research and educational purposes only. This document does not\nconstitute a valid, binding",
-    "damage_classes": [],
-    "clause_type": "general",
-    "doc_id": "policy_5_valuemotor"
+    "text_preview": "[3.7 Tyre exclusions] If your repair cost exceeds 75% of the IDV, we will settle your claim as a Total Loss and pay you the IDV less any\nsalvage value",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
+  },
+  "chunk_00179": {
+    "text_preview": "[3.7 Tyre exclusions] 6. NO CLAIM BONUS\nYour claim history Your NCB discount\n1 claim-free year 20%\n2 claim-free years 25%\n3 claim-free years 35%\n4 cla",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
+  },
+  "chunk_00180": {
+    "text_preview": "[3.7 Tyre exclusions] 7. HOW TO CLAIM\n(cid:127) Call our helpline or use the app within 24 hours of the accident.\n(cid:127) Take photos of the damage ",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
+  },
+  "chunk_00181": {
+    "text_preview": "[3.7 Tyre exclusions] (cid:127) We aim to complete survey and approve repairs within 2 working days.\n(cid:127) Cashless repair is available at our net",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
+  },
+  "chunk_00182": {
+    "text_preview": "[3.7 Tyre exclusions] 8. THIRD PARTY COVER\nWe provide compulsory third-party liability cover as required by the Motor Vehicles Act. This covers you fo",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
+  },
+  "chunk_00183": {
+    "text_preview": "[3.7 Tyre exclusions] 9. GENERAL EXCEPTIONS\nThis policy does not cover any claim arising from war, nuclear risk, use of the vehicle in violation of pe",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
+  },
+  "chunk_00184": {
+    "text_preview": "[3.7 Tyre exclusions] This is a synthetic specimen policy document created for AI research and educational purposes only. This document does not\nconst",
+    "damage_classes": [
+      "flat_tyre"
+    ],
+    "clause_type": "exclusion",
+    "doc_id": "policy_5_valuemotor",
+    "heading": "3.7 Tyre exclusions"
   }
 }

@@ -29,41 +29,100 @@ DAMAGE_CLASSES = [
     "dent", "scratch", "crack", "broken_lamp", "shattered_glass", "flat_tyre"
 ]
 
-# Keywords used to auto-tag chunks with damage classes
+# Keywords used to auto-tag chunks with damage classes. Word-boundary
+# regex (not bare substring matching) -- see the tag_damage_classes
+# docstring below for the specific bugs this fixes.
 DAMAGE_KEYWORDS = {
-    "dent":            ["dent", "dented", "denting", "panel damage", "body damage",
-                        "sheet metal", "impact", "collision"],
-    "scratch":         ["scratch", "scratched", "scratching", "surface damage",
-                        "abrasion", "paint damage", "paintwork"],
-    "crack":           ["crack", "cracked", "cracking", "fracture", "structural damage",
-                        "body crack", "chassis","torn body"],
-    "broken_lamp":     ["lamp", "light", "headlight", "taillight", "indicator",
-                        "broken lamp", "lighting unit", "reflector"],
-    "shattered_glass": ["glass", "windscreen", "windshield", "window", "shattered",
-                        "broken glass", "glazing"],
-    "flat_tyre":       ["tyre", "tire", "flat tyre", "puncture", "tube",
-                        "rubber", "wheel", "burst tyre"],
+    "dent": [
+        r"\bdents?\b", r"\bdented\b", r"\bdenting\b", r"panel damage",
+        r"body damage", r"sheet metal", r"\bimpact\b", r"\bcollision\b",
+        r"deformations? of body panels?",
+    ],
+    "scratch": [
+        r"\bscratch(es|ed|ing)?\b", r"surface damage", r"\babrasion\b",
+        r"paint damage", r"\bpaintwork\b", r"\bkeying\b", r"\bkeyed\b",
+        r"paint abrasion", r"paint scratches?",
+    ],
+    "crack": [
+        r"\bcracks?\b", r"\bcracked\b", r"\bcracking\b", r"\bfracture[sd]?\b",
+        r"structural damage", r"\bchassis\b",
+    ],
+    "broken_lamp": [
+        r"\blamps?\b", r"\bheadlamps?\b", r"\bheadlights?\b",
+        r"\btaillights?\b", r"tail lamps?", r"\bindicators?\b",
+        r"broken lamp", r"lighting unit", r"\breflectors?\b",
+        r"fog lamps?", r"fog lights?",
+    ],
+    "shattered_glass": [
+        r"\bwindscreens?\b", r"\bwindshields?\b", r"window glass",
+        r"side window", r"door window", r"\bglazing\b", r"quarter glass",
+        r"sunroof glass", r"glass component", r"glass part",
+        r"glass damage", r"glass exclusion", r"glass coverage",
+        r"glass claim", r"glass replacement", r"glass repair",
+        r"\bshattered\b", r"broken glass", r"glass scratches",
+        r"laminated (safety )?glass", r"\bsafety glass\b", r"glass surface",
+        # bare "glass" as a fallback signal, excluding the confirmed
+        # false-positive pattern ("fibre glass" / "fiberglass" body material)
+        r"(?<!fibre )(?<!fiber )\bglass\b",
+    ],
+    "flat_tyre": [
+        r"\btyres?\b", r"\btires?\b", r"flat tyre", r"\bpuncture[sd]?\b",
+        r"\btubes?\b", r"burst tyre", r"tyre valve", r"tyre carcass",
+        r"tyre and tube", r"zero-pressure",
+    ],
 }
 
-# Clause type keywords for metadata tagging
+# Clause type keywords for metadata tagging. "exclusions?" is included so
+# that a heading like "3.6 Tyre Exclusions" or "A. Exclusions Relating to
+# Panel and Body Damage" (see contextualize()) tags correctly even though
+# it never says "excluded" or "shall not be liable" in that exact form.
 CLAUSE_TYPE_KEYWORDS = {
-    "coverage":     ["will indemnify", "shall pay", "covers", "covered", "insured against",
-                     "compensation", "reimburse", "payable"],
-    "exclusion":    ["shall not be liable", "not covered", "excluded", "does not cover",
-                     "no claim", "not payable", "excluded from"],
-    "sub_limit":    ["limited to", "maximum", "not exceeding", "upto", "up to",
-                     "subject to a maximum", "capped at"],
-    "condition":    ["provided that", "subject to", "on condition", "only if",
-                     "condition precedent", "provided always"],
-    "definition":   ["means", "shall mean", "defined as", "refers to", "herein referred"],
+    "coverage": [
+        r"will indemnify", r"shall pay", r"\bcovers?\b", r"\bcovered\b",
+        r"insured against", r"\bcompensation\b", r"\breimburse\b",
+        r"\bpayable\b", r"we will pay", r"undertakes to indemnify",
+    ],
+    "exclusion": [
+        r"shall not be liable", r"not covered", r"\bexcluded\b",
+        r"does not cover", r"no claim", r"not payable", r"excluded from",
+        r"we do not cover", r"not admissible", r"\bexclusions?\b",
+    ],
+    "sub_limit": [
+        r"limited to", r"\bmaximum\b", r"not exceeding", r"\bupto\b",
+        r"up to", r"subject to a maximum", r"capped at",
+    ],
+    "condition": [
+        r"provided that", r"subject to", r"on condition", r"only if",
+        r"condition precedent", r"provided always",
+    ],
+    "definition": [
+        r"\bmeans\b", r"shall mean", r"defined as", r"refers to",
+        r"herein referred",
+    ],
 }
 
-# Section heading patterns that act as hard chunk boundaries
-SECTION_PATTERNS = [
+# Two tiers of chunk-boundary markers.
+#
+# HEADING_PATTERNS: structural section/subsection headings (SECTION,
+# PART, CHAPTER, lettered sub-sections like "A. Exclusions Relating to
+# Panel and Body Damage", numbered sub-headings like "3.1 Panel and Dent
+# Exclusions"). These become the "current heading" breadcrumb prepended
+# to every chunk that falls under them (see chunk_document).
+#
+# ITEM_PATTERNS: numbered/lettered list items ("1. Consequential loss...",
+# "a) ..."). These still force their own chunk boundary (so each item
+# stays atomic) but do NOT overwrite the current heading -- a bare list
+# item is not itself a new section, and treating it as one is what
+# disconnected exclusion/coverage items from their governing heading in
+# the original version of this script (see the section-context write-up
+# in the Milestone 2 report, Section 6.2).
+HEADING_PATTERNS = [
     r"^SECTION\s+[IVX]+",
+    r"^PART\s+[A-Z]\.",
+    r"^CHAPTER\s+\d+\.",
     r"^[A-Z][A-Z\s&/]+:$",
-    r"^\d+\.\s+[A-Z]",
-    r"^[a-z]\)\s",
+    r"^\d\.\d+\s+[A-Za-z]",
+    r"^[A-Z]\.\s+[A-Z][a-z]",
     r"^ADD-ON\s+COVER",
     r"^GENERAL\s+EXCEPTION",
     r"^CONDITIONS?:",
@@ -71,37 +130,43 @@ SECTION_PATTERNS = [
     r"^DEDUCTIBLE:",
     r"^CLAIM\s+PROCEDURE",
 ]
+ITEM_PATTERNS = [
+    r"^\d+\.\s+[A-Z]",
+    r"^[a-z]\)\s",
+]
 
-SECTION_RE = re.compile("|".join(SECTION_PATTERNS), re.IGNORECASE)
+HEADING_RE = re.compile("|".join(HEADING_PATTERNS), re.IGNORECASE)
+ITEM_RE = re.compile("|".join(ITEM_PATTERNS), re.IGNORECASE)
+SECTION_RE = re.compile(HEADING_RE.pattern + "|" + ITEM_RE.pattern, re.IGNORECASE)
+
+MAX_HEADING_LEN = 90  # truncate long heading lines before using as a breadcrumb
 
 # PDF Extraction
 
 def extract_pdf_text(pdf_path: Path) -> str:
     """
-    Extract text from a PDF using pdfplumber.
-    Applies a basic column-order correction for two-column layouts.
+    Extract text from a PDF using pdfplumber's default reading-order
+    extraction.
+
+    An earlier version of this function tried to auto-detect two-column
+    layouts by bisecting each page at width/2 and comparing word counts
+    against full-page extraction. None of the 5 synthetic policy PDFs are
+    actually laid out in two columns; the bisection instead cut through
+    single-column text and table cells at an arbitrary x-coordinate
+    (verified on policy_4 page 1's coverage table and policy_2 page 2's
+    tyre-exclusion paragraph, where it split "INSURANCE" into "I" /
+    "SURANCE" and truncated words like "lightning" -> "lightnin"). The
+    word-count heuristic used to trigger this ("left + right word count >
+    full-page word count * 1.05") fires on 3 of 21 pages across the
+    corpus purely from incidental word-splitting noise at the bisection
+    line, not genuine multi-column content, and each time it fires it
+    destroys otherwise-correct text. It has been removed.
     """
     pages_text = []
     try:
         with pdfplumber.open(pdf_path) as pdf:
-            for page_num, page in enumerate(pdf.pages, 1):
-                width  = page.width
-                height = page.height
-
-                # Try two-column split: if left-column text + right-column text
-                # gives more words than full-page extraction, use it
-                left   = page.within_bbox((0, 0, width / 2, height))
-                right  = page.within_bbox((width / 2, 0, width, height))
-                full   = page.extract_text() or ""
-                l_text = left.extract_text() or ""
-                r_text = right.extract_text() or ""
-
-                if len(l_text.split()) + len(r_text.split()) > len(full.split()) * 1.05:
-                    text = l_text.strip() + "\n\n" + r_text.strip()
-                else:
-                    text = full
-
-                pages_text.append(text)
+            for page in pdf.pages:
+                pages_text.append(page.extract_text() or "")
     except Exception as e:
         log.error("Failed to extract %s: %s", pdf_path.name, e)
         return ""
@@ -145,33 +210,53 @@ def clean_text(raw: str, doc_name: str) -> str:
     return "\n".join(cleaned)
 
 
-# Section-aware chunking
+# Structure-aware chunking
 
 def split_into_sections(text: str) -> list:
     """
-    Split text on section headings before applying the token splitter.
-    Returns a list of section strings.
+    Split text on structural headings and list items (both act as hard
+    chunk boundaries). Returns a list of {"text": str, "is_heading": bool}
+    dicts. is_heading is True only when the boundary line that opened
+    this section is a real structural heading (HEADING_RE), not a bare
+    numbered/lettered list item (ITEM_RE) -- callers use this to update
+    a "current heading" breadcrumb without a list item wrongly resetting
+    it to itself.
     """
     sections = []
-    current  = []
+    current = []
+    current_is_heading = False
 
     for line in text.splitlines():
-        if SECTION_RE.match(line.strip()) and current:
-            sections.append("\n".join(current).strip())
+        stripped = line.strip()
+        starts_heading = bool(HEADING_RE.match(stripped))
+        starts_item = (not starts_heading) and bool(ITEM_RE.match(stripped))
+
+        if (starts_heading or starts_item) and current:
+            sections.append({"text": "\n".join(current).strip(), "is_heading": current_is_heading})
             current = [line]
+            current_is_heading = starts_heading
         else:
             current.append(line)
 
     if current:
-        sections.append("\n".join(current).strip())
+        sections.append({"text": "\n".join(current).strip(), "is_heading": current_is_heading})
 
-    return [s for s in sections if len(s) > 20]
+    return [s for s in sections if len(s["text"]) > 20]
 
 
 def chunk_document(text: str, chunk_size: int = 300, chunk_overlap: int = 40) -> list:
     """
-    Section-aware chunking: split on headings first, then apply
-    RecursiveCharacterTextSplitter within each section.
+    Structure-aware chunking: split on headings and list items first (so
+    each list item stays atomic rather than merging across an unrelated
+    boundary), then apply RecursiveCharacterTextSplitter within each
+    resulting section. Returns a list of (heading, chunk_text) tuples,
+    where heading is the nearest preceding structural heading -- e.g. a
+    numbered exclusion item ("1. Consequential loss...") is paired with
+    the heading of the section it lives under ("EXCLUSIONS UNDER SECTION
+    I" or "3.1 Panel and Dent Exclusions"), not just the item text
+    itself. This is what lets contextualize() (below) prepend the
+    governing heading before embedding, so an itemised exclusion clause
+    still reads as an exclusion once split out of its parent section.
     """
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
@@ -181,35 +266,102 @@ def chunk_document(text: str, chunk_size: int = 300, chunk_overlap: int = 40) ->
     )
 
     sections = split_into_sections(text)
-    chunks   = []
-    for section in sections:
-        sub_chunks = splitter.split_text(section)
-        chunks.extend(sub_chunks)
+    current_heading = ""
+    chunks = []  # (heading, chunk_text)
 
-    # Filter very short chunks (likely headers or page noise)
-    return [c.strip() for c in chunks if len(c.strip()) > 40]
+    for section in sections:
+        if section["is_heading"]:
+            first_line = section["text"].splitlines()[0].strip()
+            current_heading = first_line[:MAX_HEADING_LEN]
+
+        for sub_chunk in splitter.split_text(section["text"]):
+            sub_chunk = sub_chunk.strip()
+            if len(sub_chunk) > 40:
+                chunks.append((current_heading, sub_chunk))
+
+    return chunks
+
+
+def contextualize(heading: str, chunk: str) -> str:
+    """
+    Prepend the governing heading as a short breadcrumb, unless the
+    chunk already begins with that heading text (the first chunk under a
+    heading does, since the heading line is the first line of its own
+    section). This is the text that actually gets embedded and stored --
+    the heading is not just tagging metadata, so retrieval itself (not
+    just the clause_type/damage_classes tags) benefits from the context.
+    """
+    if not heading:
+        return chunk
+    if chunk.strip().lower().startswith(heading.strip().lower()[:30]):
+        return chunk
+    return f"[{heading}] {chunk}"
 
 
 # Damage-class and clause-type tagging
+#
+# Both taggers score the *contextualized* chunk (heading + body), so a
+# heading like "3.6 Tyre Exclusions" or "EXCLUSIONS UNDER SECTION I"
+# contributes its own keywords even when the item text itself doesn't
+# restate them. Keyword lists use word-boundary regex, refined after a
+# full manual review of all 179 chunks against the source PDFs found
+# three substring bugs in the original naive `in` matching: "light"
+# matched inside "lightning" (a fire peril, unrelated to lamps), "wheel"
+# matched inside "wheel arch" (a body panel, not a tyre), and bare
+# "glass" matched both genuine window glass and "fibre glass" (a body
+# material).
 
-def tag_damage_classes(chunk: str) -> list:
+def tag_damage_classes(text: str) -> list:
     """Return list of damage classes mentioned or implied in a chunk."""
-    chunk_lower = chunk.lower()
+    lower = text.lower()
     tags = []
-    for cls, keywords in DAMAGE_KEYWORDS.items():
-        if any(kw in chunk_lower for kw in keywords):
+    for cls, patterns in DAMAGE_KEYWORDS.items():
+        if any(re.search(p, lower) for p in patterns):
             tags.append(cls)
     return tags
 
 
-def tag_clause_type(chunk: str) -> str:
-    """Return the most likely clause type for a chunk."""
-    chunk_lower = chunk.lower()
-    scores = {ct: 0 for ct in CLAUSE_TYPE_KEYWORDS}
-    for ct, keywords in CLAUSE_TYPE_KEYWORDS.items():
-        scores[ct] = sum(1 for kw in keywords if kw in chunk_lower)
-    best = max(scores, key=scores.get)
-    return best if scores[best] > 0 else "general"
+def tag_clause_type(heading: str, body: str) -> str:
+    """
+    Return the most likely clause type for a chunk.
+
+    A heading-level signal takes priority over a body-level one. Manual
+    review of the corpus found this matters concretely: several exclusion
+    items explain what is *not* covered by contrasting it with "...a
+    specific identifiable accidental event covered under this policy" --
+    the body text's own "covered" keyword then ties against the heading's
+    "shall not be liable" / "Exclusions" signal, and a naive combined
+    score resolves the tie to "coverage" by dict order, which is wrong
+    every time it happens. The heading (e.g. "The Company shall not be
+    liable to make any payment in respect of:", "3.2 Scratch Exclusions")
+    is the more reliable indicator of the chunk's true governing
+    category, so it wins outright whenever it carries any signal at all;
+    body-only scoring is the fallback for chunks under a heading that
+    doesn't itself indicate a clause type (e.g. "CLAIM PROCEDURE").
+
+    The DEPRECIATION/DEDUCTIBLE/... check is deliberately case-sensitive
+    and heading-scoped: a case-insensitive bare-word version (tried
+    during manual review) hijacked chunks whose own body prose happened
+    to mention "depreciation" mid-sentence in an unrelated exclusion item.
+    """
+    heading_lower = heading.lower()
+    heading_scores = {
+        ct: sum(1 for p in patterns if re.search(p, heading_lower))
+        for ct, patterns in CLAUSE_TYPE_KEYWORDS.items()
+    }
+    if re.search(r"\b(DEPRECIATION|DEDUCTIBLE|INSURED DECLARED VALUE|IDV|NO CLAIM BONUS|YOUR EXCESS)\b", heading):
+        heading_scores["sub_limit"] += 1
+
+    if any(v > 0 for v in heading_scores.values()):
+        return max(heading_scores, key=heading_scores.get)
+
+    body_lower = body.lower()
+    body_scores = {
+        ct: sum(1 for p in patterns if re.search(p, body_lower))
+        for ct, patterns in CLAUSE_TYPE_KEYWORDS.items()
+    }
+    best = max(body_scores, key=body_scores.get)
+    return best if body_scores[best] > 0 else "general"
 
 
 # Deduplication
@@ -218,7 +370,9 @@ def dedup_chunks(chunks: list, threshold: float = 0.90) -> list:
     """
     Remove near-identical chunks based on normalised character overlap.
     Two chunks are considered near-duplicates if their Jaccard similarity
-    of word trigrams exceeds the threshold.
+    of word trigrams exceeds the threshold. chunks is a list of
+    (heading, chunk_text) tuples; only chunk_text is compared, since the
+    heading is shared context rather than distinguishing content.
     """
     def trigrams(text):
         words = text.lower().split()
@@ -227,7 +381,7 @@ def dedup_chunks(chunks: list, threshold: float = 0.90) -> list:
     unique  = []
     seen_tg = []
 
-    for chunk in chunks:
+    for heading, chunk in chunks:
         tg = trigrams(chunk)
         is_dup = False
         for ref in seen_tg:
@@ -238,7 +392,7 @@ def dedup_chunks(chunks: list, threshold: float = 0.90) -> list:
                 is_dup = True
                 break
         if not is_dup:
-            unique.append(chunk)
+            unique.append((heading, chunk))
             seen_tg.append(tg)
 
     return unique
@@ -269,6 +423,7 @@ def embed_and_index(
         for m in batch_meta:
             safe_meta.append({
                 "doc_id":        m.get("doc_id", ""),
+                "heading":       m.get("heading", ""),
                 "damage_classes": ",".join(m.get("damage_classes", [])),
                 "clause_type":   m.get("clause_type", "general"),
                 "chunk_index":   int(m.get("chunk_index", 0)),
@@ -297,6 +452,7 @@ def build_groundtruth(all_chunks: list, all_metadata: list, output_dir: Path):
             "damage_classes": meta.get("damage_classes", []),
             "clause_type":    meta.get("clause_type", "general"),
             "doc_id":         meta.get("doc_id", ""),
+            "heading":        meta.get("heading", ""),
         }
 
     out_path = output_dir / "clause_groundtruth.json"
@@ -505,12 +661,13 @@ def export_chunks_tsv(all_chunks: list, all_metadata: list, output_dir: Path):
     out_path = output_dir / "chunks_all.tsv"
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter="\t")
-        writer.writerow(["chunk_id", "doc_id", "damage_classes", "clause_type",
-                         "chunk_len", "text"])
+        writer.writerow(["chunk_id", "doc_id", "heading", "damage_classes",
+                         "clause_type", "chunk_len", "text"])
         for i, (chunk, meta) in enumerate(zip(all_chunks, all_metadata)):
             writer.writerow([
                 f"chunk_{i:05d}",
                 meta.get("doc_id", ""),
+                meta.get("heading", ""),
                 ",".join(meta.get("damage_classes", [])),
                 meta.get("clause_type", "general"),
                 len(chunk),
@@ -617,18 +774,22 @@ def main():
         log.info("  Pages: ~%d chars | Raw chunks: %d | After dedup: %d (removed %d)",
                  len(clean), len(chunks_raw), len(chunks_dedup), removed_dup)
 
-        # Tag each chunk
+        # Tag each chunk. chunks_dedup is a list of (heading, chunk_text)
+        # tuples; contextualize() prepends the heading as a breadcrumb to
+        # form the text that actually gets embedded, stored, and tagged.
         doc_id = pdf_path.stem
-        for idx, chunk in enumerate(chunks_dedup):
-            damage_cls  = tag_damage_classes(chunk)
-            clause_type = tag_clause_type(chunk)
-            all_chunks.append(chunk)
+        for idx, (heading, chunk) in enumerate(chunks_dedup):
+            ctx_text    = contextualize(heading, chunk)
+            damage_cls  = tag_damage_classes(ctx_text)
+            clause_type = tag_clause_type(heading, chunk)
+            all_chunks.append(ctx_text)
             all_metadata.append({
                 "doc_id":         doc_id,
                 "chunk_index":    len(all_chunks) - 1,
                 "damage_classes": damage_cls,
                 "clause_type":    clause_type,
-                "text":           chunk,
+                "text":           ctx_text,
+                "heading":        heading,
             })
 
         doc_stats.append({
