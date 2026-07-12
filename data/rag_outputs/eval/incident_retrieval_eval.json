@@ -1,0 +1,17 @@
+{
+  "evaluation": "50 synthetic incident descriptions vs. clause_groundtruth.json damage-class overlap",
+  "dense_only": {
+    "n_incidents": 50,
+    "mean_precision_at_3": 0.893,
+    "mean_reciprocal_rank": 0.98,
+    "zero_hit_incidents": []
+  },
+  "hybrid_rrf": {
+    "dense_weight": 3.0,
+    "sparse_weight": 1.0,
+    "n_incidents": 50,
+    "mean_precision_at_3": 0.913,
+    "mean_reciprocal_rank": 0.977,
+    "zero_hit_incidents": []
+  }
+}
