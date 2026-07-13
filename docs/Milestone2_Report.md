@@ -510,9 +510,7 @@ Object detection datasets do not have tabular "missing values" in the traditiona
 | Near-duplicates | Perceptual hash (pHash), Hamming distance ≤ 8 bits | 272 images | Duplicate copy removed; primary retained |
 | Cross-dataset near-duplicates (VehiDE vs CarDD) | pHash cross-matching | Not yet run | To be run if CarDD is integrated (Section 7.2) |
 
-**Why pHash threshold ≤ 8 bits.** A 64-bit pHash encodes the low-frequency DCT structure of an image. Two genuinely distinct damage photographs — even of similar damage types on similar vehicles typically differ by 25–35+ bits, because their spatial texture, lighting, and panel geometry vary. A threshold of 8 bits (~12.5% of the hash) therefore matches true re-uploads (same photo saved at different JPEG quality, marginally cropped, or re-scaled) rather than similar-but-distinct training examples. This is the widely-used default for pHash-based image deduplication.
-
-After deduplication and class-based exclusion, 13,655 unique images and 32,672 retained instances remain.
+**Why pHash threshold ≤ 8 bits.** A 64-bit pHash encodes the low-frequency DCT structure of an image. Two genuinely distinct damage photographs even of similar damage types on similar vehicles typically differ by 25–35+ bits, because their spatial texture, lighting, and panel geometry vary. A threshold of 8 bits (~12.5% of the hash) therefore matches true re-uploads (same photo saved at different JPEG quality, marginally cropped, or re-scaled) rather than similar-but-distinct training examples. This is the widely-used default for pHash-based image deduplication.
 
 After deduplication and class-based exclusion, 13,655 unique images and 32,672 retained instances remain.
 
@@ -521,7 +519,6 @@ After deduplication and class-based exclusion, 13,655 unique images and 32,672 r
 ![Spatial distribution of normalised damage bounding-box centres, per class](eda_outputs/plots/spatial_distribution.png)
 
 Normalised `(x_center, y_center)` positions for each class cluster around the centre of the frame (0.5, 0.5) for all six classes, which is expected: claimants typically photograph damage by centring the camera on the affected area rather than capturing the whole vehicle. `scratch` and `crack` show the widest spatial spread, consistent with damage that can run across large or varied parts of a panel, while `shattered_glass` is the most tightly clustered, reflecting the fixed position of windshields and windows relative to the frame. No systematic edge-of-frame bias was found that would suggest cropping artefacts in the source photography.
-
 
 ---
 
@@ -548,6 +545,7 @@ def check_image(path):
 corrupt = [p for p in image_paths if not check_image(p)]
 # Result: 0 corrupt files removed
 ```
+
 [Completed]
 
 **Step 2: Class remapping (7-to-6)**
@@ -565,6 +563,7 @@ A versioned lookup table (`configs/class_remap.json`) maps VehiDE\'s 7 native Vi
   "vo_kinh": "shattered_glass"
 }
 ```
+
 [Completed]
 
 **Step 3: YOLO format verification**
@@ -580,18 +579,21 @@ test:  images/test
 nc: 6
 names: ['scratch', 'dent', 'crack', 'broken_lamp', 'flat_tyre', 'shattered_glass']
 ```
+
 [Completed]
 
 
-**Step 4: Image resizing with letterboxing — [Completed]**
+**Step 4: Image resizing with letterboxing**
 
 All images were resized to 1,280 × 1,280 using letterboxing (grey padding, fill value 114, matching the Ultralytics YOLO inference default) to preserve aspect ratio. The target size of 1,280 px was determined data-driven by `scripts/preprocess_images.py`: the script computed the instance-count-weighted mean resolution across the 13,655 retained images (giving more weight to images that contribute more training instances), yielding a weighted mean of 1,395.4 × 1,037.7 px (longer axis: 1,395.4 px), and selected 1,280 as the nearest standard YOLO-compatible size below that. This approach avoids the common assumption that 640 px is always appropriate — for this dataset, the majority of images are above 640 px on their longer side, so 640 px would discard roughly half the available resolution. This is applied as a preprocessing step before training rather than at runtime to reduce I/O overhead. 
+
 [Completed]
 
 
 **Step 5: Annotation spot-check**
 
 A random sample of converted annotations was visually verified by rendering bounding boxes over images. No systematic coordinate conversion bugs were found. 
+
 [Completed]
 
 **Step 6: PII blurring**
@@ -605,6 +607,7 @@ A Haar-cascade-based face detector and a license plate pattern detector (aspect 
 | No PII detected | 13,655 | No action |
 
 No PII was detected in the current VehiDE image set; the detector remains in the pipeline for any future data additions.
+
 [Completed]
 
 **Preprocessing trade-offs and limitations.**
@@ -754,13 +757,13 @@ The Step 5 smoke test uses one clean, textbook-style query per damage class and 
 
 ## 7. Dataset Integration
 
-For this milestone, only **VehiDE** is preprocessed, it is sufficient on its own (13,655 images, 32,672 instances across all 6 project classes) to produce a training-ready dataset. CarDD, the Car Damage Severity dataset, and COCO Car Damage (Section 2.1) are **not** merged into the training corpus at this stage. They are held in reserve as a contingency plan and will only be integrated if the VehiDE-only model's validation performance (mAP@50, per-class F1 — particularly for the minority classes `shattered_glass`, `flat_tyre`, and `crack` given the 6.59:1 imbalance, Section 5.2) falls short of the Milestone 1 targets once baseline training runs in Milestone 3. Because no merging occurs at this stage, no schema alignment, cross-dataset deduplication, or format conversion has been performed.
+For this milestone, only **VehiDE** is preprocessed, it is sufficient on its own (13,655 images, 32,672 instances across all 6 project classes) to produce a training-ready dataset. CarDD, the Car Damage Severity dataset, and COCO Car Damage (Section 2.1) are **not** merged into the training corpus at this stage. They are held in reserve as a contingency plan and will only be integrated if the VehiDE-only model's validation performance (mAP@50, per-class F1 particularly for the minority classes `shattered_glass`, `flat_tyre`, and `crack` given the 6.59:1 imbalance, Section 5.2) falls short of the Milestone 1 targets once baseline training runs in Milestone 3. Because no merging occurs at this stage, no schema alignment, cross-dataset deduplication, or format conversion has been performed.
 
 ### 7.1 Training Corpus - VehiDE
 
 | **Source** | **Images** | **Instances** | **Status** |
 | --- | --- | --- | --- |
-| VehiDE | 13,655 | 32,672 | Sole training corpus for this milestone |
+| VehiDE | 13,655 | 32,672 | Preprocessed and ready for training the model |
 
 ---
 
@@ -840,6 +843,15 @@ Image counts per split were measured from outputs of the script run (`/scripts/p
 | Validation | 2,048 | 15.0% |
 | Test | 2,049 | 15.0% |
 | **Total** | **13,655** | **32,672** | |
+
+**Justification for the split:** The 70% training allocation is the standard minimum for a fine-tuning task of this scale: with 9,558 training images containing 32,672 instances across six classes, the training set is large enough that the model sees sufficient within-class variation (including the minority classes `shattered_glass` at ~2,164 instances and `flat_tyre` at ~2,394 instances) without over-relying on augmentation to compensate for a smaller training pool. 
+
+Equal 15% validation and test allocations (~2,048 and ~2,049 images respectively) were chosen deliberately over an asymmetric 70/20/10 or 80/10/10 split for following three reasons:
+- **Stable model selection:** The validation set is used at every epoch during training to tune early stopping and hyperparameters; a larger validation set reduces the variance of per-epoch mAP estimates, which matters when the minority classes are small and a single batch can noticeably affect per-class metrics.
+- **Reliable final evaluation:** The test set is the only held-out set that will never be seen during model development; making it equal in size to the validation set ensures the final reported metrics have comparable statistical reliability, rather than the test evaluation being substantially noisier than the development loop.
+- **Robust minority-class evaluation:** Retaining 15% of the data for testing provides more robust evaluation of minority classes. For example, the `shattered_glass` class contains only about 2,164 annotated instances. Under an 80/10/10 split, the test set would contain only around 216 instances of this class, making per-class precision, recall, and F1 estimates considerably more sensitive to random variation. A 15% test split increases this to approximately 325 instances, providing a more defensible sample size for reporting minority-class performance.
+
+A 70/15/15 split is also widely used in comparable YOLO fine-tuning studies on small-to-medium domain-specific datasets, making the resulting metrics directly comparable with published baselines without introducing differences attributable to the train-validation-test ratio.
 
 [Completed]
 
