@@ -288,7 +288,7 @@ This project's primary contribution is not a new model architecture. It lies in 
 
 The system consists of three sequential stages that interact as follows:
 
-![High-Level Architecture Diagram](multimodal_damage_assessment_architecture.svg)
+![High-Level Architecture Diagram](multiagent_architecture_staged.svg)
 
 **Stage 1 - YOLO Detection Module:** The uploaded vehicle image is passed through a fine-tuned YOLOv8/YOLOv11 model. The model outputs a list of detected damage regions, each with a class label (dent, scratch, crack, broken lamp, flat tyre, shattered glass), a bounding box, a confidence score, and a severity category (Minor, Moderate, Severe) derived from the proportion of the bounding box area relative to the visible vehicle surface.
 
