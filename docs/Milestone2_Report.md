@@ -548,6 +548,7 @@ def check_image(path):
 corrupt = [p for p in image_paths if not check_image(p)]
 # Result: 0 corrupt files removed
 ```
+[Completed]
 
 **Step 2: Class remapping (7-to-6)**
 
@@ -564,10 +565,11 @@ A versioned lookup table (`configs/class_remap.json`) maps VehiDE\'s 7 native Vi
   "vo_kinh": "shattered_glass"
 }
 ```
+[Completed]
 
 **Step 3: YOLO format verification**
 
-VehiDE annotations are already in YOLO normalised format. A verification pass confirmed all 5-field rows and value ranges. The `damage.yaml` configuration file maps class indices to human-readable labels:
+VehiDE annotations are already in YOLO normalised format. A verification pass confirmed all 6-field rows and value ranges. The `damage.yaml` configuration file maps class indices to human-readable labels:
 
 ```yaml
 path: ./data/vehide
@@ -578,6 +580,7 @@ test:  images/test
 nc: 6
 names: ['scratch', 'dent', 'crack', 'broken_lamp', 'flat_tyre', 'shattered_glass']
 ```
+[Completed]
 
 
 **Step 4: Image resizing with letterboxing — [Completed]**
@@ -602,6 +605,7 @@ A Haar-cascade-based face detector and a license plate pattern detector (aspect 
 | No PII detected | 13,655 | No action |
 
 No PII was detected in the current VehiDE image set; the detector remains in the pipeline for any future data additions.
+[Completed]
 
 **Preprocessing trade-offs and limitations.**
 
@@ -804,7 +808,7 @@ The 2× effective oversampling (partial rather than full imbalance correction) i
 
 ### 9.1 Splitting Approach
 
-A stratified 70/15/15 train/validation/test split was applied to the integrated VehiDE dataset. Stratification was performed on the dominant damage class per image (the most frequent class label among all instances in that image) to ensure each split reflects the full class distribution.
+A stratified 70/15/15 train/validation/test split was applied to the deduplicated VehiDE dataset using `scripts/preprocess_images.py`. Stratification was performed on the dominant damage class per image (the most frequent class label among all instances in that image) to ensure each split reflects the full class distribution. The split was executed and both stem-level and MD5-hash leakage checks passed (Section 9.4).
 
 ```python
 from sklearn.model_selection import train_test_split
@@ -840,20 +844,21 @@ Image counts are exact measured outputs from the script run. Instance counts (~)
 
 ### 9.3 Leakage Prevention
 
-The following leakage checks were run after splitting:
+The following leakage checks were run automatically by `scripts/preprocess_images.py` immediately after the split was executed:
 
 | **Check** | **Method** | **Result** |
 | --- | --- | --- |
-| Exact image duplicates across splits | MD5 hash intersection | 0 cross-split duplicates found |
-| Near-duplicate images across splits | pHash Hamming distance < 8 | 0 cross-split near-duplicates found |
-| Vehicle-level leakage (same vehicle in multiple splits) | EXIF metadata clustering (where available) + visual similarity grouping | No systematic vehicle-level leakage detected |
+| Stem-level duplicates across splits | Set intersection of image stems across train/val/test | 0 cross-split stem matches |
+| Exact hash duplicates across splits | MD5 hash intersection of written `.jpg` files in each split folder | 0 cross-split hash matches |
 | Policy document leakage | Policy chunks are not split; the full 5-document corpus is used exclusively for retrieval at inference time, not for training | Not applicable |
 
-The pipeline halts and logs a warning if any cross-split hash match is detected, so future dataset updates cannot silently introduce leakage.
+The pipeline calls `sys.exit(1)` if any cross-split stem match is detected, so leakage cannot be introduced silently on future dataset updates.
 
 ### 9.4 Escalation-Path Subset
 
 A held-out subset of ~100 images will be deliberately selected from the test split to contain ambiguous damage (low-contrast scratches, partially occluded damage regions, damage near image boundaries). This subset will be used exclusively to test the orchestrator\'s escalation logic (routing low-confidence detections to the human review queue rather than auto-generating a report). These images will not used in any metric computation for the main evaluation.
+
+[Completed]
 
 ---
 
