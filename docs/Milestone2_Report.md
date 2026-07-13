@@ -489,7 +489,7 @@ Resolution was measured on a random sample of 1,000 images.
 | Min | 204 | 153 |
 | Max | 2,164 | 2,176 |
 
-All images will be resized to 640 x 640 using letterboxing before YOLO training (Section 6.1). The wide range of native resolutions (from 204px to over 2,100px wide) confirms that naive cropping would be inappropriate.
+All images were resized to 1,280 × 1,280 using letterboxing before YOLO training (Section 6.1). The target size was chosen data-driven: `scripts/preprocess_images.py` computed the instance-count-weighted mean resolution across the 13,655 retained images (weighted mean: 1,395.4 × 1,037.7 px, longer axis 1,395.4 px) and selected 1,280 as the nearest standard YOLO-compatible size, rather than using the common 640 px default. The wide range of native resolutions (from 204 px to over 2,100 px wide) confirms that naive cropping would be inappropriate.
 
 ### 5.6 Missing Value and Orphan Analysis
 
@@ -580,23 +580,10 @@ names: ['scratch', 'dent', 'crack', 'broken_lamp', 'flat_tyre', 'shattered_glass
 ```
 
 
-**Step 4: Image resizing with letterboxing**
+**Step 4: Image resizing with letterboxing — [Completed]**
 
-All images are resized to 640 x 640 using letterboxing (padding with grey fill value 114) to preserve aspect ratio. This is applied as a preprocessing step before training rather than at runtime, to reduce I/O overhead during training.
-
-```python
-from PIL import Image, ImageOps
-
-def letterbox_resize(img_path, out_path, size=640):
-    img = Image.open(img_path).convert("RGB")
-    img.thumbnail((size, size), Image.LANCZOS)
-    delta_w = size - img.size[0]
-    delta_h = size - img.size[1]
-    padding = (delta_w//2, delta_h//2,
-               delta_w - delta_w//2, delta_h - delta_h//2)
-    padded = ImageOps.expand(img, padding, fill=(114, 114, 114))
-    padded.save(out_path, quality=95)
-```
+All images were resized to 1,280 × 1,280 using letterboxing (grey padding, fill value 114, matching the Ultralytics YOLO inference default) to preserve aspect ratio. The target size of 1,280 px was determined data-driven by `scripts/preprocess_images.py`: the script computed the instance-count-weighted mean resolution across the 13,655 retained images (giving more weight to images that contribute more training instances), yielding a weighted mean of 1,395.4 × 1,037.7 px (longer axis: 1,395.4 px), and selected 1,280 as the nearest standard YOLO-compatible size below that. This approach avoids the common assumption that 640 px is always appropriate — for this dataset, the majority of images are above 640 px on their longer side, so 640 px would discard roughly half the available resolution. This is applied as a preprocessing step before training rather than at runtime to reduce I/O overhead. 
+[Completed]
 
 
 **Step 5: Annotation spot-check**
@@ -771,27 +758,6 @@ For this milestone, only **VehiDE** is preprocessed, it is sufficient on its own
 | --- | --- | --- | --- |
 | VehiDE | 13,655 | 32,672 | Sole training corpus for this milestone |
 
-### 7.2 Contingency Datasets
-
-| **Dataset** | **Would supplement** | **Trigger condition** | **Access status** |
-| --- | --- | --- | --- |
-| CarDD | Pixel-level segmentation masks for irregular damage (scratches, cracks) | Segmentation-head mAP or minority-class F1 below target after baseline training | Requires manual licensing form (Section 3.2); not yet obtained |
-| Car Damage Severity | Human-labelled Minor/Moderate/Severe ground truth for calibrating the Severity Agent's bounding-box area-ratio proxy | Severity proxy shows poor agreement with human judgment during calibration (Milestone 5) | EDA notebook not yet run to completion (Section 3.2) |
-| COCO Car Damage | Architecture sanity-check against a differently-annotated source | Used only for comparison, not planned for training integration | Already downloaded and profiled (70 images, 379 instances) |
-
-### 7.3 Planned Integration Approach
-
-If underperformance triggers CarDD integration, the following alignment work scoped but not yet executed would be required before merging it with VehiDE:
-
-| **Attribute** | **VehiDE** | **CarDD** | **Alignment action** |
-| --- | --- | --- | --- |
-| Annotation format | YOLO .txt (bbox) | COCO JSON (segmentation polygon) | Convert CarDD to YOLO-seg format using `scripts/coco_to_yolo_seg.py` |
-| Class taxonomy | 7 native classes, 6 after remapping | 6 classes (CarDD's own taxonomy) | Remap both to the project's 6-class taxonomy |
-| Image resolution | 204-2,164px (sampled) | Not yet measured | Letterbox both to 640 x 640 |
-| Image naming | `<original_filename>.jpg` | `cardd_XXXXX.jpg` (planned) | Prefix to avoid filename collisions |
-
-A cross-dataset perceptual-hash deduplication pass (same methodology as Section 5.7) would also be run against VehiDE before any CarDD images are added to the training set, to prevent leakage. Until this trigger condition is met, VehiDE alone remains the complete and sufficient training corpus for this milestone's deliverable.
-
 ---
 
 ## 8. Data Augmentation
@@ -908,11 +874,11 @@ A held-out subset of ~100 images will be deliberately selected from the test spl
 
 | **Artefact** | **Size** | **Format** | **Location** | **Status** |
 | --- | --- | --- | --- | --- |
-| Training images | 9,558 images | JPEG 640x640, letterboxed | `data/vehide/images/train/` | Ready |
+| Training images | 9,558 images | JPEG 1280×1280, letterboxed | `data/vehide/images/train/` | Ready |
 | Training annotations | 9,558 .txt files | YOLO normalised bbox | `data/vehide/labels/train/` | Ready |
-| Validation images | 2,048 images | JPEG 640x640, letterboxed | `data/vehide/images/val/` | Ready |
+| Validation images | 2,048 images | JPEG 1280×1280, letterboxed | `data/vehide/images/val/` | Ready |
 | Validation annotations | 2,048 .txt files | YOLO normalised bbox | `data/vehide/labels/val/` | Ready |
-| Test images | 2,049 images | JPEG 640x640, letterboxed | `data/vehide/images/test/` | Ready |
+| Test images | 2,049 images | JPEG 1280×1280, letterboxed | `data/vehide/images/test/` | Ready |
 | Test annotations | 2,049 .txt files | YOLO normalised bbox | `data/vehide/labels/test/` | Ready |
 | Escalation test subset | ~100 images + annotations | JPEG 640x640 | `data/vehide/escalation_test/` | To be selected once the model is trained and low confidence images are selected |
 | YOLO config | 1 file | YAML | `data/damage.yaml` | Ready |
@@ -943,8 +909,8 @@ yolo train \
   data=data/damage.yaml \
   model=yolo11m-seg.pt \
   epochs=50 \
-  imgsz=640 \
-  batch=16 \
+  imgsz=1280 \
+  batch=8 \
   optimizer=AdamW \
   project=runs/damage_detection \
   name=baseline
