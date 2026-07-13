@@ -34,13 +34,12 @@
 
 - [1. Introduction](#1-introduction)
 - [2. Dataset Identification](#2-dataset-identification)
-  - [2.1 Vision Datasets](#21-vision-datasets)
+  - [2.1 Vision Datasets: VehiDe](#21-vision-datasets-vehide)
   - [2.2 Policy and Text Datasets](#22-policy-and-text-datasets)
   - [2.3 Ownership, Licensing, and Usage Constraints](#23-ownership-licensing-and-usage-constraints)
 - [3. Dataset Description](#3-dataset-description)
   - [3.1 VehiDE: Structure, Schema, and Sample Records](#31-vehide-structure-schema-and-sample-records)
-  - [3.2 Supplementary Vision Datasets](#32-supplementary-vision-datasets)
-  - [3.3 Policy Document Corpus](#33-policy-document-corpus)
+  - [3.2 Policy Document Corpus](#33-policy-document-corpus)
 - [4. Data Governance](#4-data-governance)
   - [4.1 Data Source and Licensing](#41-data-source-and-licensing)
   - [4.2 Privacy](#42-privacy)
@@ -118,9 +117,7 @@ By the end of this milestone, any team member with repository access should be a
 
 ## 2. Dataset Identification
 
-### 2.1 Vision Datasets
-
-#### Primary: VehiDE
+### 2.1 Vision Dataset: VehiDE
 
 | **Attribute** | **Detail** |
 | --- | --- |
@@ -234,15 +231,7 @@ The traget classes were present in Vietnamese which had to be mapped to english 
 
 Imbalance ratio (largest/smallest): **6.59:1** (`paint_scratches` vs `broken_glass`)
 
-### 3.2 Supplementary Vision Datasets
-
-| **Dataset** | **Images** | **Instances / Labels** | **Format** | **Target variable** |
-| --- | --- | --- | --- | --- |
-| CarDD | 4,000  | Pixel-level segmentation masks | COCO-format JSON + PNG masks | Damage class (6 categories matching project taxonomy) |
-| COCO Car Damage | 70 | 379 annotated instances (6 categories: `damage`, `door`, `front_bumper`, `headlamp`, `hood`, `rear_bumper`) | COCO JSON | Not "damage present/type." The 6 categories are 5 parts and one generic damage class. This does not match the project's requirements |
-| Car Damage Severity | 1631 | Image-level severity label per image | Folder-organised JPEG | Severity: Minor / Moderate / Severe |
-
-### 3.3 Policy Document Corpus
+### 3.2 Policy Document Corpus
 
 **Reference documents (structural reference only, not training data):**
 
