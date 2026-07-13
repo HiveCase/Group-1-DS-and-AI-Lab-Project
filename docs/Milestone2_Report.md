@@ -785,22 +785,23 @@ The following parameters are set in `damage.yaml` and `configs/augmentation.yaml
 | JPEG compression | `jpeg_quality` | 75 | **Added (not in default set)** | Simulates WhatsApp/email compression of claim photos |
 
 [Configured: Completed]
+
 [Planned to be implemented at training time in Milestone 3]
 
 ### 8.2 Class-Targeted Oversampling
 
-To address the imbalance between `scratch` and `shattered_glass` (Section 5.2), class-positive weights are set using YOLO's `cls_pw` parameter. Each weight is computed as **max\_count / class\_count**, normalised so the most frequent class (`scratch`) has weight 1.0, standard linear inverse-frequency weighting. Linear weighting was chosen over alternatives (e.g. square-root inverse frequency, which would compress the weight range to ~1.0–2.6) because the 6.68:1 ratio is large enough that a compressed correction would still leave the smallest classes substantially under-weighted in the loss function.
+To address the imbalance between `scratch` and `shattered_glass` (Section 5.2), class-positive weights are set using YOLO's `cls_pw` parameter. Each weight is computed as **max\_count / class\_count**, normalised so the most frequent class (`scratch`) has weight 1.0, standard linear inverse-frequency weighting. Linear weighting was chosen over alternatives (e.g. square-root inverse frequency, which would compress the weight range to ~1.0–2.6) because the 6.59:1 ratio is large enough that a compressed correction would still leave the smallest classes substantially under-weighted in the loss function.
 
 The 2× effective oversampling (partial rather than full imbalance correction) is deliberate: oversampling the smallest classes at their full inverse-frequency ratio would repeat the same limited pool of `shattered_glass` and `flat_tyre` images many times per epoch, increasing overfitting risk for those classes. The current weights apply a partial correction; per-class F1 after baseline training will determine whether further adjustment is needed.
 
 | **Class** | **Instance count (final, post-dedup)** | **Class weight (max / count)** |
 | --- | --- | --- |
-| Scratch | 14,461 | 1.0 |
-| Dent | 5,560 | 2.6 |
-| Crack | 5,386 | 2.7 |
-| Broken lamp | 2,724 | 5.3 |
-| Flat tyre | 2,394 | 6.0 |
-| Shattered glass | 2,164 | 6.7 |
+| Scratch | 14,386 | 1.0 |
+| Dent | 5,580 | 2.6 |
+| Crack | 5,411 | 2.7 |
+| Broken lamp | 2,733 | 5.3 |
+| Flat tyre | 2,380 | 6.0 |
+| Shattered glass | 2,182 | 6.6 |
 
 ---
 
