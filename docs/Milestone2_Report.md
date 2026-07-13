@@ -24,6 +24,7 @@
 | ANUJ GAUTAM | 21f1002407@ds.study.iitm.ac.in | [anujgautam1](https://github.com/anujgautam1) |
 | PRANAB KUMAR MANNA | 22f1000887@ds.study.iitm.ac.in | [pranab92](https://github.com/pranab92) |
 | VENKATA SIVA KAMAL GUDDANTI | 22f2000094@ds.study.iitm.ac.in | [22f2000094](https://github.com/22f2000094) |
+| HARSH PAL | 21f1002562@ds.study.iitm.ac.in | [HarshPalaps1](https://github.com/HarshPalaps1) |
 
 </div>
 
@@ -1044,5 +1045,6 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 | Pranab Kumar Manna | 09-07-2026  | Pk Manna |
 | Venkata Siva Kamal Guddanti | 09-07-2026 | Kamal G |
 | Anuj Gautam | 09-07-2026 | Anuj Gautam |
+| Harsh Pal | | |
 
 ---
