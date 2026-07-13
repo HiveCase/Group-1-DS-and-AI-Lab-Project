@@ -12,7 +12,7 @@
 
 <h1 style="font-size:26em;">Multimodal Damage Assessment for Insurance Claims</h1>
 
-<h2>Milestone 1: Problem Definition & Literature Review</h2>
+<h2>Milestone 3: Model Architecture</h2>
 
 <h3>Group 1</h3>
 
