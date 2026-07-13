@@ -832,7 +832,7 @@ val_imgs, test_imgs = train_test_split(
 
 ### 9.2 Split Sizes
 
-Image counts are exact measured outputs from the script run. Instance counts (~) are proportional estimates based on the overall class distribution — exact per-split instance counts were not logged separately by the current script and will be confirmed when per-split EDA is run in Milestone 3.
+Image counts per split were measured from outputs of the script run (`/scripts/preprocess_images.py`).
 
 | **Split** | **Images (exact)** | **% of total (images)** |
 | --- | --- | --- |
