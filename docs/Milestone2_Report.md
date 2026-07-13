@@ -936,7 +936,7 @@ results = collection.query(
 
 | **Challenge** | **Details** | **Resolution / Remaining limitation** |
 | --- | --- | --- |
-| Class imbalance (6.68:1 ratio) | `scratch` accounts for 44.2% of retained instances; `shattered_glass` represents only 6.6% | Class-weighted loss and 2x oversampling configured (exercised at training time, Milestone 3); per-class F1 will be monitored separately |
+| Class imbalance (6.59:1 ratio) | `scratch` accounts for 44.0% of retained instances; `shattered_glass` represents only 6.7% | Class-weighted loss and 2x oversampling configured (will be exercised at training time, Milestone 3); per-class F1 will be monitored separately |
 | Mapping choice for `torn_body` | We initially merged `torn_body` into `scratch`, which would have inflated the imbalance ratio to over 9:1 and lost `crack` as a separately detectable class | Resolved by mapping `torn_body` to its own `crack` class instead (Section 3.1), which also keeps the vision taxonomy aligned with the policy corpus's crack-related clauses (Section 3.3) |
 | CarDD dataset access | CarDD is distributed via a manual licensing form rather than a direct download, so the CarDD EDA notebook and dataset integration (Section 7) could not be completed with real data during this milestone | Licensing form to be submitted based on baseline model performance; Integration to be completed if it is required |
 | Geographic bias in VehiDE | Dataset constructed primarily from Southeast Asian vehicle images; Indian vehicle types and claim conditions may be underrepresented | Addressed through augmentation (brightness, blur, compression); acknowledged as a domain shift risk in Section 4.4 |
@@ -953,10 +953,7 @@ The following artefacts are committed to the project GitHub repository at [githu
 
 | **Deliverable** | **File / Location** | **Description** |
 | --- | --- | --- |
-| EDA notebook - VehiDE | `notebooks/EDA/VehiDE_Dataset_EDA.ipynb` | Plots, statistics, and quality-check outputs for the primary dataset |
-| EDA notebook - CarDD | `notebooks/EDA/CarDD_EDA.ipynb` | Structure in place; pending re-run once the licensed archive is obtained |
-| EDA notebook - COCO Car Damage | `notebooks/EDA/COCO_Car_Damage_Detection_EDA.ipynb` | Complete; used for architecture sanity-check comparison |
-| EDA notebook — Car Damage Severity | `notebooks/EDA/Car_Damage_Severity_EDA.ipynb` | Structure in place; pending re-run |
+| EDA notebook - VehiDE | `notebooks/VehiDE_Dataset_EDA.ipynb` | Plots, statistics, and quality-check outputs for the primary dataset |
 | Preprocessing script | `scripts/preprocess_vehide.py` | Corrupt/duplicate removal, class remapping, letterboxing, PII detection |
 | Class remap lookup | `configs/class_remap.json` | Vietnamese-to-project class mapping |
 | YOLO config | `data/vehide_processed/damage.yaml` | 6-class detection config |
@@ -976,7 +973,7 @@ This milestone identified, verified, downloaded, and prepared the datasets requi
 
 ### 13.2 Key Observations from the Data
 
-- The 6.68:1 scratch-to-shattered_glass imbalance is the most significant data quality concern.. Without class weighting, the model will likely meet the overall mAP@50 target but fail the per-class F1 target of >= 0.65 for shattered_glass and flat_tyre.
+- The 6.59:1 scratch-to-shattered_glass imbalance is the most significant data quality concern.. Without class weighting, the model will likely meet the overall mAP@50 target but fail the per-class F1 target of >= 0.65 for shattered_glass and flat_tyre.
 - At 2.58 instances per image, multi-label detection will be the norm.
 - `torn_body` is mapped to `crack` class (Section 3.1), which keeps the vision taxonomy aligned with the policy corpus's crack-related clauses (Section 3.3) and avoids further inflating the already-dominant `scratch` class.
 - Phrasing variation in the synthetic policy corpus produced noticeably different retrieval difficulty across documents, which is the intended outcome.
