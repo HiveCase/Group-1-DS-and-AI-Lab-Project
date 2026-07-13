@@ -57,6 +57,13 @@
 - [5. Gaps in Existing Solutions](#5-gaps-in-existing-solutions)
 - [6. Nature of Our Contribution](#6-nature-of-our-contribution)
 - [7. System Architecture Overview](#7-system-architecture-overview)
+  - [7.1 Orchestrator (LangGraph)](#71-orchestrator-langgraph)
+  - [7.2 Damage Agent](#72-damage-agent)
+  - [7.3 Severity Agent](#73-severity-agent)
+  - [7.4 Policy Agent (MCP Tool)](#74-policy-agent-mcp-tool)
+  - [7.5 Report Agent](#75-report-agent)
+  - [7.6 Escalation Path](#76-escalation-path)
+  - [7.7 Deployment](#77-deployment)
 - [8. Evaluation Plan](#8-evaluation-plan)
   - [8.1 Vehicle Damage Detection](#81-vehicle-damage-detection)
   - [8.2 Policy Retrieval](#82-policy-retrieval)
@@ -286,15 +293,52 @@ This project's primary contribution is not a new model architecture. It lies in 
 
 ## 7. System Architecture Overview
 
-The system consists of three sequential stages that interact as follows:
+The system is implemented as a **multi-agent RAG architecture** in which a LangGraph orchestrator routes each incoming claim to four specialist agents. The agents run in a defined sequence, but the orchestrator can short-circuit or branch the path depending on what the claim contains and how confident the outputs are.
 
 ![High-Level Architecture Diagram](multiagent_architecture_staged.svg)
 
-**Stage 1 - YOLO Detection Module:** The uploaded vehicle image is passed through a fine-tuned YOLOv8/YOLOv11 model. The model outputs a list of detected damage regions, each with a class label (dent, scratch, crack, broken lamp, flat tyre, shattered glass), a bounding box, a confidence score, and a severity category (Minor, Moderate, Severe) derived from the proportion of the bounding box area relative to the visible vehicle surface.
+### 7.1 Orchestrator (LangGraph)
 
-**Stage 2 - RAG Pipeline:** At ingestion time, the policy PDF is chunked into overlapping 300-token segments using LangChain's RecursiveCharacterTextSplitter. Each chunk is embedded using sentence-transformers/all-MiniLM-L6-v2 [11], a lightweight bi-encoder model that produces 384-dimensional dense vectors, and stored in a FAISS flat index [12] (cosine similarity). At inference time, a query string is constructed from the detected damage classes and submitted to the retriever, which returns the top-k most relevant policy chunks.
+A LangGraph state machine holds the shared claim context - uploaded image, uploaded policy PDF (if any), detection results, retrieved clauses, severity scores, and a confidence flag - and routes it through the agents below. At each node, the orchestrator reads the current state and decides the next action. If no policy PDF is supplied, the Policy Agent step is skipped. If the Damage Agent's detection confidence falls below a configurable threshold, the claim is routed to a **human review queue** rather than auto-generating a report, implementing an explicit escalation path.
 
-**Stage 3 - LLM Report Generator:** The structured detection output from Stage 1 and the retrieved clauses from Stage 2 are combined into a structured prompt. GPT-4o [18] (primary, via the OpenAI API) generates the preliminary claim assessment report, constrained to the retrieved policy context to minimise hallucination. Gemini 1.5 Flash is maintained as a cost-efficient fallback in case of API budget constraints or rate limiting.
+### 7.2 Damage Agent
+
+The uploaded vehicle image is passed through a fine-tuned vision model. The model outputs a list of detected damage regions, each with:
+
+- a class label (dent, scratch, crack, broken lamp, flat tyre, shattered glass),
+- a bounding box and segmentation mask,
+- a confidence score, and
+- a severity category (Minor / Moderate / Severe) derived from the normalised bounding-box area relative to the visible vehicle surface.
+
+The detection output is written back into the LangGraph state, and the orchestrator checks whether the minimum per-detection confidence meets the escalation threshold before proceeding.
+
+### 7.3 Severity Agent
+
+The Severity Agent reads the bounding-box area statistics from the Damage Agent's output and applies a per-class calibrated severity proxy to assign a final severity rating to each detected damage instance. Class-specific calibration is necessary because the raw bounding-box area has different distributional properties per class - `shattered_glass` instances, for example, naturally span a much larger area than `flat_tyre` instances, so a single global threshold would systematically mislabel them.
+
+### 7.4 Policy Agent (MCP Tool)
+
+The Policy Agent is exposed as a **FastMCP tool** callable by the orchestrator. When invoked, it:
+
+1. Constructs a query string from the detected damage classes and severity ratings written to the LangGraph state.
+2. Encodes the query using `sentence-transformers/all-MiniLM-L6-v2` (a lightweight bi-encoder producing 384-dimensional dense vectors).
+3. Retrieves the top-k most relevant 300-token chunks from a ChromaDB persistent vector index built over 5 synthetic insurance policy PDFs.
+4. Returns the retrieved chunks and their metadata (clause type, damage classes tagged, source document ID) to the orchestrator state.
+
+Exposing retrieval as an MCP tool rather than embedding it inline in the orchestrator allows the Policy Agent to be called conditionally (skipped if no policy PDF context is needed), replaced independently (e.g. swapping ChromaDB for a different vector store) without changing the orchestrator logic, and tested in isolation against the ground-truth clause mapping (Section 8.2).
+
+### 7.5 Report Agent
+
+The Report Agent receives the full LangGraph state (detection results, severity ratings, and retrieved policy clauses) and issues a structured prompt to an LLM. GPT-4o (primary, via the OpenAI API) generates the preliminary claim assessment report, constrained to the retrieved policy context to minimise hallucination. Gemini 1.5 Flash is maintained as a cost-efficient fallback. The generated report is written back to the state as the final output.
+
+### 7.6 Escalation Path
+
+If the Damage Agent's output contains any detection with confidence below the escalation threshold, or if no damage is detected at all, the orchestrator does not invoke the Severity, Policy, or Report Agents. Instead, it writes the claim to a **human review queue** with a structured flag identifying the low-confidence regions, so that a human assessor can review the raw detections before any policy lookup or report is generated. This prevents the downstream agents from producing authoritative-sounding outputs on uncertain inputs.
+
+### 7.7 Deployment
+
+The full pipeline is served as a **Gradio application deployed on Hugging Face Spaces**. A user uploads a vehicle damage photograph and optionally a policy PDF; the orchestrator runs the agent sequence; and the interface displays the annotated detection image, the severity breakdown, the retrieved policy clauses, and the generated report in a structured tabbed view. All processing is stateless per submission (no image, document, or report is retained beyond the current session).
+
 
 ---
 
