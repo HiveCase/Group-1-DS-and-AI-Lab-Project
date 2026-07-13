@@ -330,7 +330,14 @@ The following automated checks were run as part of the preprocessing pipeline (`
 
 ### 4.4 Ethics and Bias
 
-**Geographic representation:** VehiDE was constructed primarily from vehicle images collected in Vietnam and Southeast Asia. This introduces a potential geographic bias: vehicle types prevalent in India (compact sedans, two-wheelers, autorickshaws), damage patterns common in India (monsoon-related surface oxidation, potholes causing tyre and underbody damage), and camera conditions typical of Indian mobile claim submissions (low light, dust-covered lenses) may be underrepresented in the training distribution. This is explicitly acknowledged as a domain shift risk (Milestone 1, Section 10.3) and is mitigated through augmentation (Section 8) and domain-shift stress testing.
+**Geographic representation:** VehiDE was constructed primarily from vehicle images collected in Vietnam and Southeast Asia. This introduces several distinct components of geographic bias:
+
+- **Vehicle fleet differences.** The Vietnamese and Southeast Asian fleet is dominated by narrower range of compact car models than the Indian market. India has a larger share of SUVs, hatchbacks, and commercial light vehicles with different body panel profiles, bumper designs, and paint finish types that may not be well-represented in VehiDE.
+- **Damage pattern differences.** Damage patterns common in India are monsoon-related surface oxidation, pothole-induced tyre and underbody damage, and high-frequency low-speed contact damage from dense urban traffic which may differ in visual signature and location from the damage types that dominate VehiDE's collection.
+- **Photographic style differences.** VehiDE images follow a relatively consistent close-up, damage-focused photography style. Indian claimant-submitted photos typically taken by non-experts on mobile phones for WhatsApp-based claim submission are more likely to show variable framing, background clutter, and motion blur.
+- **Impact on generalisation.** These factors compound: a model that performs well on VehiDE's validation split may show degraded precision and recall on real Indian claim photos, particularly for the minority classes (`shattered_glass`, `flat_tyre`) that are already data-scarce. The augmentation parameters in Section 8.1 (motion blur, JPEG compression) partially address the photographic style gap.
+
+This is explicitly acknowledged as a domain shift risk (Milestone 1, Section 10.3). Full resolution requires domain-shift stress testing against a held-out set of real Indian claim images, planned for Milestone 5.
 
 **Class imbalance:** After remapping, `scratch` alone accounts for roughly 61% of all retained instances (Section 5.2), far outnumbering `shattered_glass`, the smallest class. Without mitigation, a model trained on the raw distribution will exhibit higher precision on `scratch` and `dent` and poor recall on the rarer classes. Mitigation strategies are described in Section 8.
 
