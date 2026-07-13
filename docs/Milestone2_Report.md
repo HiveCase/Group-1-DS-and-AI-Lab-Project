@@ -339,7 +339,7 @@ The following automated checks were run as part of the preprocessing pipeline (`
 
 This is explicitly acknowledged as a domain shift risk (Milestone 1, Section 10.3). Full resolution requires domain-shift stress testing against a held-out set of real Indian claim images, planned for Milestone 5.
 
-**Class imbalance:** After remapping, `scratch` alone accounts for roughly 61% of all retained instances (Section 5.2), far outnumbering `shattered_glass`, the smallest class. Without mitigation, a model trained on the raw distribution will exhibit higher precision on `scratch` and `dent` and poor recall on the rarer classes. Mitigation strategies are described in Section 8.
+**Class imbalance:** After remapping, `scratch` alone accounts for roughly 44% of all retained instances (Section 5.2), far outnumbering `shattered_glass`, the smallest class. Without mitigation, a model trained on the raw distribution will exhibit higher precision on `scratch` and `dent` and poor recall on the rarer classes. Mitigation strategies are described in Section 8.
 
 **Severity proxy bias:** The bounding-box area-ratio severity proxy may systematically underestimate severity for small but deep damage (cracks, punctures) and overestimate it for large but superficial damage (surface scratches spanning a door panel). This is a known limitation discussed in Milestone 1 (Section 10.2).
 
@@ -406,7 +406,7 @@ Each native class maps 1:1 to a project class (no merging) except `lost_parts`, 
 
 ![Class distribution — instance count and proportion per project class](eda_outputs/plots/class_distribution.png)
 
-**Imbalance ratio (most frequent vs least frequent project class):** scratch (14,646) vs shattered_glass (2,221) = **6.59:1**.
+**Imbalance ratio (most frequent vs least frequent project class):** scratch (14,461) vs shattered_glass (2,164) = **6.68:1**.
 
 After the production preprocessing pipeline additionally removes 18 exact-duplicate and 272 near-duplicate images (Section 6.1), the retained instance count drops proportionally from 33,262 to 32,672, giving the following final training-set class distribution:
 
@@ -811,16 +811,18 @@ The following parameters are set in `damage.yaml` and `configs/augmentation.yaml
 
 ### 8.2 Class-Targeted Oversampling
 
-To address the 6.59:1 imbalance between `scratch` and `shattered_glass` (Section 5.2), minority classes (`shattered_glass` and `flat_tyre`) are oversampled during training by a factor of 2x using YOLO\'s `cls_pw` (class positive weight) parameter. The class weights (inverse-frequency, normalised to the largest class, computed on the final 32,672-instance training set) are:
+To address the imbalance between `scratch` and `shattered_glass` (Section 5.2), class-positive weights are set using YOLO's `cls_pw` parameter. Each weight is computed as **max\_count / class\_count**, normalised so the most frequent class (`scratch`) has weight 1.0, standard linear inverse-frequency weighting. Linear weighting was chosen over alternatives (e.g. square-root inverse frequency, which would compress the weight range to ~1.0–2.6) because the 6.68:1 ratio is large enough that a compressed correction would still leave the smallest classes substantially under-weighted in the loss function.
 
-| **Class** | **Instance count** | **Class weight** |
+The 2× effective oversampling (partial rather than full imbalance correction) is deliberate: oversampling the smallest classes at their full inverse-frequency ratio would repeat the same limited pool of `shattered_glass` and `flat_tyre` images many times per epoch, increasing overfitting risk for those classes. The current weights apply a partial correction; per-class F1 after baseline training will determine whether further adjustment is needed.
+
+| **Class** | **Instance count (final, post-dedup)** | **Class weight (max / count)** |
 | --- | --- | --- |
-| Scratch | 14,386 | 1.0 |
-| Dent | 5,580 | 2.6 |
-| Crack | 5,411 | 2.7 |
-| Broken lamp | 2,733 | 5.3 |
-| Flat tyre | 2,380 | 6.0 |
-| Shattered glass | 2,182 | 6.6 |
+| Scratch | 14,461 | 1.0 |
+| Dent | 5,560 | 2.6 |
+| Crack | 5,386 | 2.7 |
+| Broken lamp | 2,724 | 5.3 |
+| Flat tyre | 2,394 | 6.0 |
+| Shattered glass | 2,164 | 6.7 |
 
 ---
 
@@ -965,7 +967,7 @@ results = collection.query(
 
 | **Challenge** | **Details** | **Resolution / Remaining limitation** |
 | --- | --- | --- |
-| Class imbalance (6.59:1 ratio) | `scratch` accounts for 44.0% of retained instances; `shattered_glass` represents only 6.7% | Class-weighted loss and 2x oversampling applied; per-class F1 will be monitored separately |
+| Class imbalance (6.68:1 ratio) | `scratch` accounts for 44.2% of retained instances; `shattered_glass` represents only 6.6% | Class-weighted loss and 2x oversampling configured (exercised at training time, Milestone 3); per-class F1 will be monitored separately |
 | Mapping choice for `torn_body` | We initially merged `torn_body` into `scratch`, which would have inflated the imbalance ratio to over 9:1 and lost `crack` as a separately detectable class | Resolved by mapping `torn_body` to its own `crack` class instead (Section 3.1), which also keeps the vision taxonomy aligned with the policy corpus's crack-related clauses (Section 3.3) |
 | CarDD dataset access | CarDD is distributed via a manual licensing form rather than a direct download, so the CarDD EDA notebook and dataset integration (Section 7) could not be completed with real data during this milestone | Licensing form to be submitted based on baseline model performance; Integration to be completed if it is required |
 | Geographic bias in VehiDE | Dataset constructed primarily from Southeast Asian vehicle images; Indian vehicle types and claim conditions may be underrepresented | Addressed through augmentation (brightness, blur, compression); acknowledged as a domain shift risk in Section 4.4 |
@@ -1005,7 +1007,7 @@ This milestone identified, verified, downloaded, and prepared the datasets requi
 
 ### 13.2 Key Observations from the Data
 
-- The 6.59:1 scratch-to-shattered_glass imbalance is the most significant data quality concern. Without class weighting, the model will likely meet the overall mAP@50 target but fail the per-class F1 target of >= 0.65 for shattered_glass and flat_tyre.
+- The 6.68:1 scratch-to-shattered_glass imbalance is the most significant data quality concern.. Without class weighting, the model will likely meet the overall mAP@50 target but fail the per-class F1 target of >= 0.65 for shattered_glass and flat_tyre.
 - At 2.58 instances per image, multi-label detection will be the norm.
 - `torn_body` is mapped to `crack` class (Section 3.1), which keeps the vision taxonomy aligned with the policy corpus's crack-related clauses (Section 3.3) and avoids further inflating the already-dominant `scratch` class.
 - Phrasing variation in the synthetic policy corpus produced noticeably different retrieval difficulty across documents, which is the intended outcome.
