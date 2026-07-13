@@ -611,6 +611,12 @@ A Haar-cascade-based face detector and a license plate pattern detector (aspect 
 
 No PII was detected in the current VehiDE image set; the detector remains in the pipeline for any future data additions.
 
+**Preprocessing trade-offs and limitations.**
+
+- **Letterbox resizing to 1,280×1,280 (Step 4)** preserves more detail than the common 640 px default, which is appropriate given the weighted mean source resolution of ~1,395 px. However, it increases VRAM consumption approximately 4× relative to 640 px (area scales as size²), which reduces the maximum practical batch size from 16 to ~8 on a 16 GB T4 GPU. Training wall-clock time per epoch will be higher than at 640 px.
+- **Near-duplicate removal (Step 4 of the pipeline)** can in principle remove genuinely different images that look visually similar. The 30-pair manual review and per-class retention rate check described in Section 5.7 were run to bound this risk, but they are sample-based rather than exhaustive.
+- **Excluding `lost_parts` (Step 2)** narrows the task scope: the Damage Agent will not detect missing or detached vehicle parts. This is a real functional gap for claims where a component (e.g. a side mirror) is absent rather than visibly damaged in place.
+
 
 ### 6.2 Policy Document Preprocessing
 
