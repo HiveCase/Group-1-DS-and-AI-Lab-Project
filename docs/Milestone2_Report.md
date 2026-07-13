@@ -827,29 +827,18 @@ val_imgs, test_imgs = train_test_split(
 
 ### 9.2 Split Sizes
 
-| **Split** | **Images** | **Instances** | **% of total (images)** |
-| --- | --- | --- | --- |
-| Train | 9,558 | ~22,876 | 70.0% |
-| Validation | 2,048 | ~4,901 | 15.0% |
-| Test | 2,049 | ~4,895 | 15.0% |
+Image counts are exact measured outputs from the script run. Instance counts (~) are proportional estimates based on the overall class distribution — exact per-split instance counts were not logged separately by the current script and will be confirmed when per-split EDA is run in Milestone 3.
+
+| **Split** | **Images (exact)** | **% of total (images)** |
+| --- | --- | --- |
+| Train | 9,558 | 70.0% |
+| Validation | 2,048 | 15.0% |
+| Test | 2,049 | 15.0% |
 | **Total** | **13,655** | **32,672** | |
 
-### 9.3 Class Distribution per Split
+[Completed]
 
-Instance counts per class per split are estimated proportionally from the overall class distribution (Section 5.2) and the 70/15/15 image split ratio.
-
-| **Class** | **Train** | **Validation** | **Test** |
-| --- | --- | --- | --- |
-| Scratch | 10,074 | 2,158 | 2,154 |
-| Dent | 3,906 | 837 | 837 |
-| Crack | 3,789 | 812 | 810 |
-| Broken lamp | 1,914 | 410 | 409 |
-| Flat tyre | 1,666 | 357 | 357 |
-| Shattered glass | 1,528 | 327 | 327 |
-
-The proportional class distributions are consistent across splits, confirming that stratification is expected to be effective.
-
-### 9.4 Leakage Prevention
+### 9.3 Leakage Prevention
 
 The following leakage checks were run after splitting:
 
@@ -862,7 +851,7 @@ The following leakage checks were run after splitting:
 
 The pipeline halts and logs a warning if any cross-split hash match is detected, so future dataset updates cannot silently introduce leakage.
 
-### 9.5 Escalation-Path Subset
+### 9.4 Escalation-Path Subset
 
 A held-out subset of ~100 images will be deliberately selected from the test split to contain ambiguous damage (low-contrast scratches, partially occluded damage regions, damage near image boundaries). This subset will be used exclusively to test the orchestrator\'s escalation logic (routing low-confidence detections to the human review queue rather than auto-generating a report). These images will not used in any metric computation for the main evaluation.
 
