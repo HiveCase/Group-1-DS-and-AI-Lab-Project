@@ -507,8 +507,12 @@ Object detection datasets do not have tabular "missing values" in the traditiona
 | **Duplicate type** | **Method** | **Images found** | **Action** |
 | --- | --- | --- | --- |
 | Exact duplicates | MD5 hash of raw bytes | 18 images | Duplicate copy removed; primary retained |
-| Near-duplicates | Perceptual hash (pHash) | 272 images | Duplicate copy removed; primary retained |
-| Cross-dataset near-duplicates (VehiDE vs CarDD) | pHash cross-matching | Pending CarDD data access (Section 11) | To be re-run once the CarDD archive is available |
+| Near-duplicates | Perceptual hash (pHash), Hamming distance ≤ 8 bits | 272 images | Duplicate copy removed; primary retained |
+| Cross-dataset near-duplicates (VehiDE vs CarDD) | pHash cross-matching | Not yet run | To be run if CarDD is integrated (Section 7.2) |
+
+**Why pHash threshold ≤ 8 bits.** A 64-bit pHash encodes the low-frequency DCT structure of an image. Two genuinely distinct damage photographs — even of similar damage types on similar vehicles typically differ by 25–35+ bits, because their spatial texture, lighting, and panel geometry vary. A threshold of 8 bits (~12.5% of the hash) therefore matches true re-uploads (same photo saved at different JPEG quality, marginally cropped, or re-scaled) rather than similar-but-distinct training examples. This is the widely-used default for pHash-based image deduplication.
+
+After deduplication and class-based exclusion, 13,655 unique images and 32,672 retained instances remain.
 
 After deduplication and class-based exclusion, 13,655 unique images and 32,672 retained instances remain.
 
