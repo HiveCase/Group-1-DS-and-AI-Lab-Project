@@ -34,6 +34,9 @@
 # Table of Contents
 
 - [1. Introduction](#1-introduction)
+  - [1.1 Project Recap](#11-project-recap)
+  - [1.2 Objectives of Milestone 2](#12-objectives-of-milestone-2)
+  - [1.3 Relationship Between Datasets and Project Goals](#13-relationship-between-datasets-and-project-goals)
 - [2. Dataset Identification](#2-dataset-identification)
   - [2.1 Vision Datasets: VehiDe](#21-vision-datasets-vehide)
   - [2.2 Policy and Text Datasets](#22-policy-and-text-datasets)
@@ -60,17 +63,14 @@
   - [6.2 Policy Document Preprocessing](#62-policy-document-preprocessing)
 - [7. Dataset Integration](#7-dataset-integration)
   - [7.1 Training Corpus - VehiDE](#71-training-corpus---vehide)
-  - [7.2 Contingency Datasets](#72-contingency-datasets)
-  - [7.3 Planned Integration Approach](#73-planned-integration-approach)
 - [8. Data Augmentation](#8-data-augmentation)
   - [8.1 Augmentation Configuration](#81-augmentation-configuration)
   - [8.2 Class-Targeted Oversampling](#82-class-targeted-oversampling)
 - [9. Dataset Splitting](#9-dataset-splitting)
   - [9.1 Splitting Approach](#91-splitting-approach)
   - [9.2 Split Sizes](#92-split-sizes)
-  - [9.3 Class Distribution per Split](#93-class-distribution-per-split)
-  - [9.4 Leakage Prevention](#94-leakage-prevention)
-  - [9.5 Escalation-Path Subset](#95-escalation-path-subset)
+  - [9.3 Leakage Prevention](#93-leakage-prevention)
+  - [9.4 Escalation-Path Subset](#94-escalation-path-subset)
 - [10. Final Prepared Dataset](#10-final-prepared-dataset)
   - [10.1 Vision Dataset Summary](#101-vision-dataset-summary)
   - [10.2 Policy Corpus Summary](#102-policy-corpus-summary)
@@ -874,7 +874,7 @@ A held-out subset of ~100 images will be deliberately selected from the test spl
 | Validation annotations | 2,048 .txt files | YOLO normalised bbox | `data/vehide/labels/val/` | Ready |
 | Test images | 2,049 images | JPEG 1280×1280, letterboxed | `data/vehide/images/test/` | Ready |
 | Test annotations | 2,049 .txt files | YOLO normalised bbox | `data/vehide/labels/test/` | Ready |
-| Escalation test subset | ~100 images + annotations | JPEG 640x640 | `data/vehide/escalation_test/` | To be selected once the model is trained and low confidence images are selected |
+| Escalation test subset | ~100 images + annotations | JPEG 1280x1280 | `data/vehide/escalation_test/` | To be selected once the model is trained and low confidence images are selected |
 | YOLO config | 1 file | YAML | `data/damage.yaml` | Ready |
 | Augmentation config | 1 file | YAML | `configs/augmentation.yaml` | Ready |
 | Class remap lookup | 1 file | JSON | `configs/class_remap.json` | Ready |
