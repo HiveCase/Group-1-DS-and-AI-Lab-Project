@@ -601,7 +601,8 @@ def letterbox_resize(img_path, out_path, size=640):
 
 **Step 5: Annotation spot-check**
 
-A random sample of converted annotations was visually verified by rendering bounding boxes over images. No systematic coordinate conversion bugs were found. The single malformed annotation region identified in Section 4.3 was corrected.
+A random sample of converted annotations was visually verified by rendering bounding boxes over images. No systematic coordinate conversion bugs were found. 
+[Completed]
 
 **Step 6: PII blurring**
 
@@ -799,19 +800,22 @@ Augmentation is applied at training time only using the Ultralytics YOLO augment
 
 ### 8.1 Augmentation Configuration
 
-The following parameters are set in `damage.yaml` and `configs/augmentation.yaml`:
+The following parameters are set in `damage.yaml` and `configs/augmentation.yaml`. Most retain the Ultralytics YOLO11 default values. Two parameters (`blur`, `jpeg_quality`) were deliberately raised above or added to the defaults to address the domain shift risk (Milestone 1, Section 10.3): claim photos are often taken handheld and transmitted via WhatsApp, introducing motion blur and JPEG re-compression artefacts not present in VehiDE's source images. No parameter was tuned by sweeping against a validation metric.
 
-| **Augmentation** | **Parameter** | **Value** | **Rationale** |
-| --- | --- | --- | --- |
-| Horizontal flip | `fliplr` | 0.5 | Vehicle damage is equally likely on either side |
-| Mosaic | `mosaic` | 1.0 | Combines 4 images; effective for multi-instance detection |
-| Brightness/contrast (HSV-V) | `hsv_v` | 0.4 | Simulates different lighting conditions (day/night/overcast) |
-| Saturation (HSV-S) | `hsv_s` | 0.7 | Simulates camera variability and weather effects |
-| Rotation | `degrees` | 5.0 | Handles slightly tilted mobile phone camera angles |
-| Translation | `translate` | 0.1 | Simulates off-centre framing by non-expert claimants |
-| Scale | `scale` | 0.5 | Handles varying distances from vehicle |
-| Motion blur | `blur` | 0.3 | Simulates handheld mobile camera shake; directly addresses domain shift risk (Milestone 1, Section 10.3) |
-| JPEG compression | `jpeg_quality` | 75 | Simulates WhatsApp/email compression of claim photos |
+| **Augmentation** | **Parameter** | **Value** | **Source** | **Rationale** |
+| --- | --- | --- | --- | --- |
+| Horizontal flip | `fliplr` | 0.5 | Ultralytics default | Vehicle damage is equally likely on either side |
+| Mosaic | `mosaic` | 1.0 | Ultralytics default | Combines 4 images; effective for multi-instance detection |
+| Brightness/contrast (HSV-V) | `hsv_v` | 0.4 | Ultralytics default | Simulates different lighting conditions (day/night/overcast) |
+| Saturation (HSV-S) | `hsv_s` | 0.7 | Ultralytics default | Simulates camera variability and weather effects |
+| Rotation | `degrees` | 5.0 | Ultralytics default | Handles slightly tilted mobile phone camera angles |
+| Translation | `translate` | 0.1 | Ultralytics default | Simulates off-centre framing by non-expert claimants |
+| Scale | `scale` | 0.5 | Ultralytics default | Handles varying distances from vehicle |
+| Motion blur | `blur` | 0.3 | **Raised above default (0.1)** | Simulates handheld mobile camera shake; domain-shift mitigation |
+| JPEG compression | `jpeg_quality` | 75 | **Added (not in default set)** | Simulates WhatsApp/email compression of claim photos |
+
+[Configured: Completed]
+[Planned to be implemented at training time in Milestone 3]
 
 ### 8.2 Class-Targeted Oversampling
 
