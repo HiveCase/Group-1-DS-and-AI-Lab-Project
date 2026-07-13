@@ -303,7 +303,7 @@ No dataset used in this project is owned by the team or by IIT Madras. All are t
 
 ### 4.3 Data Quality Validation
 
-The following automated checks were run as part of the preprocessing pipeline (`scripts/preprocess_vehide.py`):
+The following automated checks were run as part of the preprocessing pipeline (`scripts/preprocess_images.py`):
 
 | **Check** | **Method** | **Result** |
 | --- | --- | --- |
