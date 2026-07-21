@@ -1,0 +1,120 @@
+{
+  "claim_id": "CLAIM_07_glass_vandalism_window",
+  "incident_narrative": "Vandals smashed the rear window of the vehicle during a public disturbance event.",
+  "detections": [
+    {
+      "class_id": 4,
+      "class_name": "shattered_glass",
+      "confidence": 0.89,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.3162,
+        0.3162
+      ],
+      "area_ratio": 0.1,
+      "severity": "severe"
+    }
+  ],
+  "policy": {
+    "doc_id": "policy_2_safedrive_assurance",
+    "selection_method": "claimant_selected",
+    "insurer": "SafeDrive Assurance Corporation",
+    "product": "Standalone Own Damage cover with Nil-Depreciation add-on included",
+    "description": "Standalone own-damage cover with Nil Depreciation built in as standard for vehicles under 3 years (75% depreciation waiver for 3-5 years, none beyond 5 years). Separate detailed glass and tyre coverage sections.",
+    "clauses": {
+      "shattered_glass": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00052",
+            "text": "[We will pay for physical loss or damage to your vehicle caused by:] PART A1. GLASS COVERAGE DETAILS Glass components of the vehicle including the front windscreen, rear windscreen, quarter glass panels, and door windows are covered without any depreciation deduction regardless of vehicle age. This means the full invoice cost of",
+            "heading": "We will pay for physical loss or damage to your vehicle caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0653
+          },
+          {
+            "chunk_id": "chunk_00057",
+            "text": "[What is NOT covered under glass:] without concurrent vehicle body damage are not admissible.",
+            "heading": "What is NOT covered under glass:",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0643
+          },
+          {
+            "chunk_id": "chunk_00050",
+            "text": "[We will pay for physical loss or damage to your vehicle caused by:] contact. (cid:127) Damage to lighting units including headlamp assemblies, tail lamp clusters, fog lamps, indicator units, and reflectors, caused by impact or accident. (cid:127) Windscreen, rear windscreen, and door window glass damage - glass is covered at nil depreciation. The full",
+            "heading": "We will pay for physical loss or damage to your vehicle caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0625
+          },
+          {
+            "chunk_id": "chunk_00051",
+            "text": "[We will pay for physical loss or damage to your vehicle caused by:] cost of windscreen replacement is payable without any deduction for the age of the vehicle. (cid:127) Landslide or rockslide. (cid:127) Transit damage during transportation by road, rail, or sea. PART A1. GLASS COVERAGE DETAILS",
+            "heading": "We will pay for physical loss or damage to your vehicle caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0625
+          },
+          {
+            "chunk_id": "chunk_00055",
+            "text": "[What is NOT covered under glass:] (cid:127) Superficial glass scratches or micro-abrasions that do not constitute a break or chip. (cid:127) Glass damage sustained while the vehicle is in commercial transit not covered under this policy. (cid:127) Tinted film or protective coatings applied to glass after vehicle manufacture.",
+            "heading": "What is NOT covered under glass:",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0625
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00071",
+            "text": "[The following are excluded from this policy:] 7. Glass haze, delamination, or yellowing of polycarbonate headlamp covers from UV exposure over time, not caused by a specific impact event.",
+            "heading": "The following are excluded from this policy:",
+            "clause_type": "exclusion",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.06
+          },
+          {
+            "chunk_id": "chunk_00078",
+            "text": "PART E. DEDUCTIBLE You are responsible for the first Rs. 2,000 of each own damage claim under Part A of this policy. This compulsory excess applies per occurrence. An optional voluntary excess of Rs. 1,000, Rs. 2,000, or Rs. 5,000 may be selected at inception for a premium discount.",
+            "heading": "PART E. DEDUCTIBLE",
+            "clause_type": "sub_limit",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0545
+          },
+          {
+            "chunk_id": "chunk_00072",
+            "text": "[The following are excluded from this policy:] 8. Damage to tyres used beyond their rated load index or speed rating as specified by the vehicle manufacturer.",
+            "heading": "The following are excluded from this policy:",
+            "clause_type": "exclusion",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.051
+          },
+          {
+            "chunk_id": "chunk_00066",
+            "text": "[The following are excluded from this policy:] 2. Panel dents, scratches, or marks arising from gradual accumulation of minor incidents over time where no single identifiable accident can be attributed as the cause.",
+            "heading": "The following are excluded from this policy:",
+            "clause_type": "exclusion",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0441
+          },
+          {
+            "chunk_id": "chunk_00067",
+            "text": "[The following are excluded from this policy:] 3. Scratch damage resulting from routine washing and cleaning activities of the vehicle, classified under fair wear and tear.",
+            "heading": "The following are excluded from this policy:",
+            "clause_type": "exclusion",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0429
+          }
+        ],
+        "coverage_clause_found": true
+      }
+    }
+  },
+  "escalation": {
+    "low_confidence_detections": [],
+    "missing_coverage_clause_for": [],
+    "needs_human_review": false
+  }
+}

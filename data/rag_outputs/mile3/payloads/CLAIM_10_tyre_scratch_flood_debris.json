@@ -1,0 +1,204 @@
+{
+  "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+  "incident_narrative": "Driving through debris on a flooded road caused a tyre puncture and road rash scratches on the lower sill.",
+  "detections": [
+    {
+      "class_id": 5,
+      "class_name": "flat_tyre",
+      "confidence": 0.87,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.2646,
+        0.2646
+      ],
+      "area_ratio": 0.07,
+      "severity": "moderate"
+    },
+    {
+      "class_id": 1,
+      "class_name": "scratch",
+      "confidence": 0.82,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.1225,
+        0.1225
+      ],
+      "area_ratio": 0.015,
+      "severity": "minor"
+    }
+  ],
+  "policy": {
+    "doc_id": "policy_5_valuemotor",
+    "selection_method": "claimant_selected",
+    "insurer": "ValueMotor Comprehensive Insurance Ltd",
+    "product": "Affordable Comprehensive (Own Damage + Third Party)",
+    "description": "Budget comprehensive cover with standard age-based depreciation and no nil-depreciation add-on (glass is still always nil depreciation; rubber/plastic/tyre always 50% deduction). Tyre cover explicitly conditional on concurrent body damage.",
+    "clauses": {
+      "flat_tyre": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00152",
+            "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Tyre and tube damage at 50% of replacement cost, only when the vehicle has also been damaged in the same incident. (cid:127) Damage in transit by road, rail, or water. (cid:127) Landslide or rockslide damage.",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0573
+          },
+          {
+            "chunk_id": "chunk_00155",
+            "text": "[Your vehicle is covered for loss or damage caused by:] Exceeding 10 years 50% Rubber, plastic, tyre, battery, and airbag parts: always 50% deduction. Glass parts: always nil deduction. You get the full replacement cost.",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0543
+          },
+          {
+            "chunk_id": "chunk_00151",
+            "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Breakage of headlight, taillight, or indicator units by accident or collision during the policy period. (cid:127) Glass damage without depreciation deduction - your windscreen, rear windscreen, and door windows are covered at full replacement cost as standard.",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0534
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00173",
+            "text": "[3.7 Tyre exclusions] (cid:127) Damage to non-standard tyres, including competition tyres or oversized tyres not conforming to the vehicle's type approval. (cid:127) Tyre valve cap or core damage alone, without tyre body damage.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0646
+          },
+          {
+            "chunk_id": "chunk_00174",
+            "text": "[3.7 Tyre exclusions] (cid:127) Tyre damage from use of the vehicle in rallying, track days, or any competitive motorsport event.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0632
+          },
+          {
+            "chunk_id": "chunk_00180",
+            "text": "[3.7 Tyre exclusions] 7. HOW TO CLAIM (cid:127) Call our helpline or use the app within 24 hours of the accident. (cid:127) Take photos of the damage before moving the vehicle if it is safe to do so. (cid:127) Get a repair estimate from a garage and share it with us before repairs start.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0629
+          },
+          {
+            "chunk_id": "chunk_00172",
+            "text": "3.7 Tyre exclusions (cid:127) Tyre deterioration, tread wear, or sidewall cracking from age and use. (cid:127) Tyre damage when the vehicle was driven knowingly on a flat or underinflated tyre for a distance exceeding 2 km.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0627
+          },
+          {
+            "chunk_id": "chunk_00183",
+            "text": "[3.7 Tyre exclusions] 9. GENERAL EXCEPTIONS This policy does not cover any claim arising from war, nuclear risk, use of the vehicle in violation of permit conditions, or operation outside the specified geographical area.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0623
+          }
+        ],
+        "coverage_clause_found": true
+      },
+      "scratch": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00149",
+            "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Accidental collision or impact - loss or damage caused by your vehicle colliding with another vehicle or object, resulting in dents to the vehicle body, bumpers, or wheel arches. (cid:127) Cosmetic damage from accident or vandalism - scratching, keying, or paint abrasion caused by an",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0604
+          },
+          {
+            "chunk_id": "chunk_00151",
+            "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Breakage of headlight, taillight, or indicator units by accident or collision during the policy period. (cid:127) Glass damage without depreciation deduction - your windscreen, rear windscreen, and door windows are covered at full replacement cost as standard.",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0599
+          },
+          {
+            "chunk_id": "chunk_00155",
+            "text": "[Your vehicle is covered for loss or damage caused by:] Exceeding 10 years 50% Rubber, plastic, tyre, battery, and airbag parts: always 50% deduction. Glass parts: always nil deduction. You get the full replacement cost.",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0574
+          },
+          {
+            "chunk_id": "chunk_00150",
+            "text": "[Your vehicle is covered for loss or damage caused by:] identifiable accidental or malicious event. (cid:127) Cracking or fracturing of exterior components by accidental means - this includes cracks in bumpers, door panels, trims, and sills caused by impact.",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0566
+          },
+          {
+            "chunk_id": "chunk_00146",
+            "text": "VALUEMOTOR COMPREHENSIVE INSURANCE LTD VALUEMOTOR COMPREHENSIVE MOTOR POLICY Affordable Comprehensive Own Damage and Third Party Cover Thank you for choosing ValueMotor Comprehensive Insurance. This document explains what is and is not covered",
+            "heading": "",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0552
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00164",
+            "text": "[3.3 Scratch and paint exclusions] (cid:127) Scratch damage to the interior of the vehicle including seats, dashboard, and door cards. VALUEMOTOR COMPREHENSIVE INSURANCE LTD",
+            "heading": "3.3 Scratch and paint exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0656
+          },
+          {
+            "chunk_id": "chunk_00162",
+            "text": "3.3 Scratch and paint exclusions (cid:127) Paint scratches from automatic car wash equipment with worn or dirty brushes. (cid:127) Surface oxidation, paint fade, or chalking from prolonged UV exposure.",
+            "heading": "3.3 Scratch and paint exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0635
+          },
+          {
+            "chunk_id": "chunk_00163",
+            "text": "[3.3 Scratch and paint exclusions] (cid:127) Chemical paint damage from acid rain, industrial fallout, or bird droppings not linked to a sudden identifiable event. (cid:127) Boot lid or sill scratches from loading and unloading luggage and goods.",
+            "heading": "3.3 Scratch and paint exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0625
+          },
+          {
+            "chunk_id": "chunk_00179",
+            "text": "[3.7 Tyre exclusions] 6. NO CLAIM BONUS Your claim history Your NCB discount 1 claim-free year 20% 2 claim-free years 25% 3 claim-free years 35% 4 claim-free years 45% 5+ claim-free years 50% Your NCB resets to 0% if you make a claim in any year.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0623
+          },
+          {
+            "chunk_id": "chunk_00184",
+            "text": "[3.7 Tyre exclusions] This is a synthetic specimen policy document created for AI research and educational purposes only. This document does not constitute a valid, binding, or enforceable insurance contract.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0583
+          }
+        ],
+        "coverage_clause_found": true
+      }
+    }
+  },
+  "escalation": {
+    "low_confidence_detections": [],
+    "missing_coverage_clause_for": [],
+    "needs_human_review": false
+  }
+}

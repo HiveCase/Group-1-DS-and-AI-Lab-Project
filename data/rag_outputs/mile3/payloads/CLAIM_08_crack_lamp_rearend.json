@@ -1,0 +1,220 @@
+{
+  "claim_id": "CLAIM_08_crack_lamp_rearend",
+  "incident_narrative": "A rear-end shunt in traffic cracked the tail-light housing and the bumper below it.",
+  "detections": [
+    {
+      "class_id": 2,
+      "class_name": "crack",
+      "confidence": 0.86,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.2236,
+        0.2236
+      ],
+      "area_ratio": 0.05,
+      "severity": "moderate"
+    },
+    {
+      "class_id": 3,
+      "class_name": "broken_lamp",
+      "confidence": 0.84,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.1732,
+        0.1732
+      ],
+      "area_ratio": 0.03,
+      "severity": "moderate"
+    }
+  ],
+  "policy": {
+    "doc_id": "policy_4_autoguard_premium",
+    "selection_method": "claimant_selected",
+    "insurer": "AutoGuard Premium Insurance Services Ltd",
+    "product": "Own Damage with Full-Cover Add-On Suite",
+    "description": "Premium-tier product presenting cover as a summary table, with a Full-Cover Add-On Suite (Nil Depreciation, Return-to-Invoice, Consumables). Glass nil depreciation standard. Compulsory deductible Rs. 2,500 per claim.",
+    "clauses": {
+      "broken_lamp": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00121",
+            "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface damage vandalism Exterior surfaces Panel fractures Cracks to bumpers, door panels, trims from impact Exterior components Headlamps, tail lamps, fog lamps, indicators broken All lamps and Lighting assembly damage by impact reflectors Windscreen, rear screen, side windows - nil",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0656
+          },
+          {
+            "chunk_id": "chunk_00120",
+            "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Theft Burglary, housebreaking, theft Whole vehicle Natural calamity Flood, cyclone, earthquake, hailstorm All components Dents to panels, bumpers, arches from collision or Bodily damage from impact object impact Exterior body panels Paint abrasion and exterior scratches from accident or",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0615
+          },
+          {
+            "chunk_id": "chunk_00122",
+            "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Glass damage depreciation All vehicle glazing At 50% of replacement cost if concurrent vehicle Tyre and tube damage damage present Tyres and tubes only",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.06
+          },
+          {
+            "chunk_id": "chunk_00119",
+            "text": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE The following events are covered under this policy, subject to the terms, exclusions, and sub-limits defined in Chapter 3: Event Coverage detail Applies to Fire and allied perils Fire, explosion, lightning, self-ignition All components",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0584
+          },
+          {
+            "chunk_id": "chunk_00143",
+            "text": "[CHAPTER 5. PREMIUM ADD-ON COVERS] Add-On C: Consumables Cover Consumable items including engine oil, coolant, AC gas, nuts, bolts, and sealants replaced during an admissible partial loss repair are covered, subject to a limit of 1% of IDV or 5% of the claim amount, whichever is lower.",
+            "heading": "CHAPTER 5. PREMIUM ADD-ON COVERS",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0541
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00132",
+            "text": "3.4 Lamp Exclusions (cid:127) Electrical failure of lamp control modules or LED drivers without physical damage to the lamp housing or lens. (cid:127) Damage to decorative or customisation lighting not forming part of the vehicle's regulatory lighting system.",
+            "heading": "3.4 Lamp Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0653
+          },
+          {
+            "chunk_id": "chunk_00134",
+            "text": "[3.4 Lamp Exclusions] section. (cid:127) Corrosion of lamp contacts or connectors from moisture ingress through an undamaged seal.",
+            "heading": "3.4 Lamp Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0648
+          },
+          {
+            "chunk_id": "chunk_00133",
+            "text": "[3.4 Lamp Exclusions] (cid:127) DRL (Daytime Running Light) malfunction not associated with an accident. (cid:127) Lamp damage on a second vehicle involved in the same incident, payable instead from the third-party liability section.",
+            "heading": "3.4 Lamp Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0635
+          },
+          {
+            "chunk_id": "chunk_00136",
+            "text": "[3.5 Glass Exclusions] (cid:127) Laminated windscreen separation or delamination from age or manufacturing defect, recoverable under warranty. (cid:127) Sunroof glass breakage unless the Sunroof Add-On is endorsed on the Schedule. (cid:127) Glass scratches from windscreen wiper blades operating on a dry screen.",
+            "heading": "3.5 Glass Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0578
+          },
+          {
+            "chunk_id": "chunk_00130",
+            "text": "3.3 Crack Exclusions (cid:127) Cracks in the engine block, cylinder head, or differential casing, unless caused by a primary accidental external event that is separately claimed. (cid:127) Cracks in interior plastic trim, dashboard, or door card material from thermal or UV degradation.",
+            "heading": "3.3 Crack Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.057
+          }
+        ],
+        "coverage_clause_found": true
+      },
+      "crack": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00121",
+            "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface damage vandalism Exterior surfaces Panel fractures Cracks to bumpers, door panels, trims from impact Exterior components Headlamps, tail lamps, fog lamps, indicators broken All lamps and Lighting assembly damage by impact reflectors Windscreen, rear screen, side windows - nil",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0653
+          },
+          {
+            "chunk_id": "chunk_00120",
+            "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Theft Burglary, housebreaking, theft Whole vehicle Natural calamity Flood, cyclone, earthquake, hailstorm All components Dents to panels, bumpers, arches from collision or Bodily damage from impact object impact Exterior body panels Paint abrasion and exterior scratches from accident or",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0612
+          },
+          {
+            "chunk_id": "chunk_00122",
+            "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Glass damage depreciation All vehicle glazing At 50% of replacement cost if concurrent vehicle Tyre and tube damage damage present Tyres and tubes only",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0565
+          },
+          {
+            "chunk_id": "chunk_00119",
+            "text": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE The following events are covered under this policy, subject to the terms, exclusions, and sub-limits defined in Chapter 3: Event Coverage detail Applies to Fire and allied perils Fire, explosion, lightning, self-ignition All components",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0562
+          },
+          {
+            "chunk_id": "chunk_00143",
+            "text": "[CHAPTER 5. PREMIUM ADD-ON COVERS] Add-On C: Consumables Cover Consumable items including engine oil, coolant, AC gas, nuts, bolts, and sealants replaced during an admissible partial loss repair are covered, subject to a limit of 1% of IDV or 5% of the claim amount, whichever is lower.",
+            "heading": "CHAPTER 5. PREMIUM ADD-ON COVERS",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0539
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00130",
+            "text": "3.3 Crack Exclusions (cid:127) Cracks in the engine block, cylinder head, or differential casing, unless caused by a primary accidental external event that is separately claimed. (cid:127) Cracks in interior plastic trim, dashboard, or door card material from thermal or UV degradation.",
+            "heading": "3.3 Crack Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0653
+          },
+          {
+            "chunk_id": "chunk_00131",
+            "text": "[3.3 Crack Exclusions] (cid:127) Stress fractures in suspension components from prolonged use on poor roads. (cid:127) Cracks in aftermarket bodywork additions, spoilers, or ground effects kits not part of the manufacturer's original specification. (cid:127) Fractures in tow bars or roof-mounted cycle or ski racks.",
+            "heading": "3.3 Crack Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0643
+          },
+          {
+            "chunk_id": "chunk_00137",
+            "text": "3.6 Tyre Exclusions (cid:127) Tyre damage from deliberate spiked road obstacles (road spikes) in a disputed ownership or legal proceeding situation. (cid:127) Damage to speciality or competition tyres not approved for road use under Central Motor Vehicles Rules.",
+            "heading": "3.6 Tyre Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.06
+          },
+          {
+            "chunk_id": "chunk_00128",
+            "text": "3.2 Scratch Exclusions (cid:127) Scratches from improper car wash technique, including dry wiping or use of coarse sponges, constituting owner-induced damage. (cid:127) Paint keying or scratching by the insured or members of the insured's household.",
+            "heading": "3.2 Scratch Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0593
+          },
+          {
+            "chunk_id": "chunk_00135",
+            "text": "3.5 Glass Exclusions (cid:127) Glass damage on a vehicle registered as a commercial goods carrier under a different class of insurance. (cid:127) Tinting films, privacy glass coatings, or heat-rejection treatments applied to the original vehicle glass.",
+            "heading": "3.5 Glass Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.057
+          }
+        ],
+        "coverage_clause_found": true
+      }
+    }
+  },
+  "escalation": {
+    "low_confidence_detections": [],
+    "missing_coverage_clause_for": [],
+    "needs_human_review": false
+  }
+}

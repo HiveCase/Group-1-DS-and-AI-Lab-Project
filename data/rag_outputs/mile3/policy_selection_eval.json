@@ -1,0 +1,571 @@
+{
+  "exhaustive_n": 315,
+  "note": "Full census of all 63 non-empty damage-class subsets x 5 docs -- not a sample, no confidence interval needed.",
+  "primary_heuristics": {
+    "mean_top_score": {
+      "n_claims": 315,
+      "top1_accuracy": 0.2,
+      "top2_accuracy": 0.4,
+      "mrr": 0.457,
+      "n_confusions": 252,
+      "sample_confusions": [
+        {
+          "claim_id": "policy_1_bharat_suraksha__scratch",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_3_quickclaim_general",
+          "true_doc_rank": 4,
+          "damage_classes": [
+            "scratch"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__crack",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 3,
+          "damage_classes": [
+            "crack"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__broken_lamp",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_2_safedrive_assurance",
+          "true_doc_rank": 5,
+          "damage_classes": [
+            "broken_lamp"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__shattered_glass",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_4_autoguard_premium",
+          "true_doc_rank": 3,
+          "damage_classes": [
+            "shattered_glass"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__flat_tyre",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_4_autoguard_premium",
+          "true_doc_rank": 3,
+          "damage_classes": [
+            "flat_tyre"
+          ]
+        }
+      ]
+    },
+    "max_score": {
+      "n_claims": 315,
+      "top1_accuracy": 0.2,
+      "top2_accuracy": 0.4,
+      "mrr": 0.457,
+      "n_confusions": 252,
+      "sample_confusions": [
+        {
+          "claim_id": "policy_1_bharat_suraksha__scratch",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_3_quickclaim_general",
+          "true_doc_rank": 4,
+          "damage_classes": [
+            "scratch"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__crack",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 3,
+          "damage_classes": [
+            "crack"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__broken_lamp",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_2_safedrive_assurance",
+          "true_doc_rank": 5,
+          "damage_classes": [
+            "broken_lamp"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__shattered_glass",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_4_autoguard_premium",
+          "true_doc_rank": 3,
+          "damage_classes": [
+            "shattered_glass"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__flat_tyre",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_4_autoguard_premium",
+          "true_doc_rank": 3,
+          "damage_classes": [
+            "flat_tyre"
+          ]
+        }
+      ]
+    }
+  },
+  "best_primary_heuristic": "mean_top_score",
+  "pool_k_comparison": {
+    "pool_k=1": {
+      "mean_top_score": {
+        "n_claims": 315,
+        "top1_accuracy": 0.2,
+        "top2_accuracy": 0.4,
+        "mrr": 0.457,
+        "n_confusions": 252,
+        "sample_confusions": [
+          {
+            "claim_id": "policy_1_bharat_suraksha__scratch",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_3_quickclaim_general",
+            "true_doc_rank": 4,
+            "damage_classes": [
+              "scratch"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__crack",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_5_valuemotor",
+            "true_doc_rank": 3,
+            "damage_classes": [
+              "crack"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__broken_lamp",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_2_safedrive_assurance",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "broken_lamp"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__shattered_glass",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_4_autoguard_premium",
+            "true_doc_rank": 3,
+            "damage_classes": [
+              "shattered_glass"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__flat_tyre",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_4_autoguard_premium",
+            "true_doc_rank": 3,
+            "damage_classes": [
+              "flat_tyre"
+            ]
+          }
+        ]
+      },
+      "max_score": {
+        "n_claims": 315,
+        "top1_accuracy": 0.2,
+        "top2_accuracy": 0.4,
+        "mrr": 0.457,
+        "n_confusions": 252,
+        "sample_confusions": [
+          {
+            "claim_id": "policy_1_bharat_suraksha__scratch",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_3_quickclaim_general",
+            "true_doc_rank": 4,
+            "damage_classes": [
+              "scratch"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__crack",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_5_valuemotor",
+            "true_doc_rank": 3,
+            "damage_classes": [
+              "crack"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__broken_lamp",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_2_safedrive_assurance",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "broken_lamp"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__shattered_glass",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_4_autoguard_premium",
+            "true_doc_rank": 3,
+            "damage_classes": [
+              "shattered_glass"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__flat_tyre",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_4_autoguard_premium",
+            "true_doc_rank": 3,
+            "damage_classes": [
+              "flat_tyre"
+            ]
+          }
+        ]
+      }
+    },
+    "pool_k=5": {
+      "mean_top_score": {
+        "n_claims": 315,
+        "top1_accuracy": 0.2,
+        "top2_accuracy": 0.4,
+        "mrr": 0.457,
+        "n_confusions": 252,
+        "sample_confusions": [
+          {
+            "claim_id": "policy_1_bharat_suraksha__dent",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_4_autoguard_premium",
+            "true_doc_rank": 3,
+            "damage_classes": [
+              "dent"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__scratch",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_3_quickclaim_general",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "scratch"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__crack",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_5_valuemotor",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "crack"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__broken_lamp",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_5_valuemotor",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "broken_lamp"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__shattered_glass",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_5_valuemotor",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "shattered_glass"
+            ]
+          }
+        ]
+      },
+      "max_score": {
+        "n_claims": 315,
+        "top1_accuracy": 0.2,
+        "top2_accuracy": 0.4,
+        "mrr": 0.457,
+        "n_confusions": 252,
+        "sample_confusions": [
+          {
+            "claim_id": "policy_1_bharat_suraksha__dent",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_4_autoguard_premium",
+            "true_doc_rank": 3,
+            "damage_classes": [
+              "dent"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__scratch",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_3_quickclaim_general",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "scratch"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__crack",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_5_valuemotor",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "crack"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__broken_lamp",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_5_valuemotor",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "broken_lamp"
+            ]
+          },
+          {
+            "claim_id": "policy_1_bharat_suraksha__shattered_glass",
+            "true": "policy_1_bharat_suraksha",
+            "predicted": "policy_5_valuemotor",
+            "true_doc_rank": 5,
+            "damage_classes": [
+              "shattered_glass"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "severity_weighted_analysis": {
+    "n_multiclass_claims": 285,
+    "mean_top_score_baseline": {
+      "n_claims": 285,
+      "top1_accuracy": 0.2,
+      "top2_accuracy": 0.4,
+      "mrr": 0.457,
+      "n_confusions": 228,
+      "sample_confusions": [
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-scratch",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 2,
+          "damage_classes": [
+            "dent",
+            "scratch"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-crack",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 2,
+          "damage_classes": [
+            "dent",
+            "crack"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-broken_lamp",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_2_safedrive_assurance",
+          "true_doc_rank": 4,
+          "damage_classes": [
+            "dent",
+            "broken_lamp"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-flat_tyre",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_2_safedrive_assurance",
+          "true_doc_rank": 2,
+          "damage_classes": [
+            "dent",
+            "flat_tyre"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__scratch-crack",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 4,
+          "damage_classes": [
+            "scratch",
+            "crack"
+          ]
+        }
+      ]
+    },
+    "severity_weighted_first_severe": {
+      "n_claims": 285,
+      "top1_accuracy": 0.2,
+      "top2_accuracy": 0.4,
+      "mrr": 0.457,
+      "n_confusions": 228,
+      "sample_confusions": [
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-crack__first_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 2,
+          "damage_classes": [
+            "dent",
+            "crack"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-broken_lamp__first_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_2_safedrive_assurance",
+          "true_doc_rank": 3,
+          "damage_classes": [
+            "dent",
+            "broken_lamp"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-flat_tyre__first_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_2_safedrive_assurance",
+          "true_doc_rank": 2,
+          "damage_classes": [
+            "dent",
+            "flat_tyre"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__scratch-crack__first_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 4,
+          "damage_classes": [
+            "scratch",
+            "crack"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__scratch-broken_lamp__first_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_4_autoguard_premium",
+          "true_doc_rank": 5,
+          "damage_classes": [
+            "scratch",
+            "broken_lamp"
+          ]
+        }
+      ]
+    },
+    "severity_weighted_last_severe": {
+      "n_claims": 285,
+      "top1_accuracy": 0.2,
+      "top2_accuracy": 0.4,
+      "mrr": 0.457,
+      "n_confusions": 228,
+      "sample_confusions": [
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-scratch__last_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 4,
+          "damage_classes": [
+            "dent",
+            "scratch"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-crack__last_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 3,
+          "damage_classes": [
+            "dent",
+            "crack"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-broken_lamp__last_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_2_safedrive_assurance",
+          "true_doc_rank": 5,
+          "damage_classes": [
+            "dent",
+            "broken_lamp"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-shattered_glass__last_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_5_valuemotor",
+          "true_doc_rank": 2,
+          "damage_classes": [
+            "dent",
+            "shattered_glass"
+          ]
+        },
+        {
+          "claim_id": "policy_1_bharat_suraksha__dent-flat_tyre__last_severe",
+          "true": "policy_1_bharat_suraksha",
+          "predicted": "policy_4_autoguard_premium",
+          "true_doc_rank": 3,
+          "damage_classes": [
+            "dent",
+            "flat_tyre"
+          ]
+        }
+      ]
+    }
+  },
+  "severity_weighting_flip_analysis": {
+    "first_severe": {
+      "n_flips": 65,
+      "flip_helped": 13,
+      "flip_hurt": 13
+    },
+    "last_severe": {
+      "n_flips": 50,
+      "flip_helped": 10,
+      "flip_hurt": 10
+    }
+  },
+  "score_matrix": {
+    "policy_1_bharat_suraksha": {
+      "dent": 0.0656,
+      "scratch": 0.064,
+      "crack": 0.0645,
+      "broken_lamp": 0.0625,
+      "shattered_glass": 0.0653,
+      "flat_tyre": 0.0646
+    },
+    "policy_2_safedrive_assurance": {
+      "dent": 0.0656,
+      "scratch": 0.0633,
+      "crack": 0.0643,
+      "broken_lamp": 0.0656,
+      "shattered_glass": 0.0653,
+      "flat_tyre": 0.0651
+    },
+    "policy_3_quickclaim_general": {
+      "dent": 0.063,
+      "scratch": 0.0651,
+      "crack": 0.064,
+      "broken_lamp": 0.0648,
+      "shattered_glass": 0.0653,
+      "flat_tyre": 0.0646
+    },
+    "policy_4_autoguard_premium": {
+      "dent": 0.0643,
+      "scratch": 0.0648,
+      "crack": 0.0653,
+      "broken_lamp": 0.0656,
+      "shattered_glass": 0.0656,
+      "flat_tyre": 0.0656
+    },
+    "policy_5_valuemotor": {
+      "dent": 0.0653,
+      "scratch": 0.0648,
+      "crack": 0.0656,
+      "broken_lamp": 0.0653,
+      "shattered_glass": 0.0656,
+      "flat_tyre": 0.0643
+    }
+  }
+}

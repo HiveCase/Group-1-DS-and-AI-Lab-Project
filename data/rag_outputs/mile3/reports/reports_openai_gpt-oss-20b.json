@@ -1,0 +1,271 @@
+[
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_01_dent_minor_clean\",\"policy_doc_id\":\"policy_1_bharat_suraksha\",\"items\":[{\"damage_class\":\"dent\",\"verdict\":\"covered\",\"rationale\":\"The policy covers loss or damage to the vehicle insured from accidental external means, which includes dents, as stated in the coverage clause. The claim meets the policy\u2019s definition of accidental external means and is subject to the general condition of observing all terms.\",\"cited_chunk_ids\":[\"chunk_00004\",\"chunk_00002\"]}],\"overall_recommendation\":\"approve\",\"escalate_to_human\":false,\"escalation_reason\":null}",
+    "parsed": {
+      "claim_id": "CLAIM_01_dent_minor_clean",
+      "policy_doc_id": "policy_1_bharat_suraksha",
+      "items": [
+        {
+          "damage_class": "dent",
+          "verdict": "covered",
+          "rationale": "The policy covers loss or damage to the vehicle insured from accidental external means, which includes dents, as stated in the coverage clause. The claim meets the policy\u2019s definition of accidental external means and is subject to the general condition of observing all terms.",
+          "cited_chunk_ids": [
+            "chunk_00004",
+            "chunk_00002"
+          ]
+        }
+      ],
+      "overall_recommendation": "approve",
+      "escalate_to_human": false,
+      "escalation_reason": null
+    },
+    "claim_id": "CLAIM_01_dent_minor_clean",
+    "model": "openai/gpt-oss-20b"
+  },
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_02_glass_severe_stone\",\"policy_doc_id\":\"policy_4_autoguard_premium\",\"items\":[{\"damage_class\":\"shattered_glass\",\"verdict\":\"covered\",\"rationale\":\"The policy explicitly covers windscreen damage under the covered events clause, and no exclusion applies to stone\u2011projected impact. The coverage clause (chunk_00121) confirms windscreen coverage, while chunk_00122 indicates depreciation applies only if concurrent tyre damage is present, which is not mentioned in the narrative.\",\"cited_chunk_ids\":[\"chunk_00121\",\"chunk_00122\"]}],\"overall_recommendation\":\"Proceed with claim processing as the windscreen damage is covered.\",\"escalate_to_human\":false,\"escalation_reason\":null}",
+    "parsed": {
+      "claim_id": "CLAIM_02_glass_severe_stone",
+      "policy_doc_id": "policy_4_autoguard_premium",
+      "items": [
+        {
+          "damage_class": "shattered_glass",
+          "verdict": "covered",
+          "rationale": "The policy explicitly covers windscreen damage under the covered events clause, and no exclusion applies to stone\u2011projected impact. The coverage clause (chunk_00121) confirms windscreen coverage, while chunk_00122 indicates depreciation applies only if concurrent tyre damage is present, which is not mentioned in the narrative.",
+          "cited_chunk_ids": [
+            "chunk_00121",
+            "chunk_00122"
+          ]
+        }
+      ],
+      "overall_recommendation": "Proceed with claim processing as the windscreen damage is covered.",
+      "escalate_to_human": false,
+      "escalation_reason": null
+    },
+    "claim_id": "CLAIM_02_glass_severe_stone",
+    "model": "openai/gpt-oss-20b"
+  },
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_03_flat_tyre_alone_no_body_damage\",\"policy_doc_id\":\"policy_5_valuemotor\",\"items\":[{\"damage_class\":\"flat_tyre\",\"verdict\":\"conditional\",\"rationale\":\"The policy covers tyre and tube damage at 50% of replacement cost only when the vehicle has also been damaged in the same incident. The incident narrative indicates no other part of the vehicle was affected, so the condition for coverage is not met.\",\"cited_chunk_ids\":[\"chunk_00152\"]}],\"overall_recommendation\":\"Proceed with claim review pending confirmation of concurrent body damage.\",\"escalate_to_human\":false,\"escalation_reason\":null}",
+    "parsed": {
+      "claim_id": "CLAIM_03_flat_tyre_alone_no_body_damage",
+      "policy_doc_id": "policy_5_valuemotor",
+      "items": [
+        {
+          "damage_class": "flat_tyre",
+          "verdict": "conditional",
+          "rationale": "The policy covers tyre and tube damage at 50% of replacement cost only when the vehicle has also been damaged in the same incident. The incident narrative indicates no other part of the vehicle was affected, so the condition for coverage is not met.",
+          "cited_chunk_ids": [
+            "chunk_00152"
+          ]
+        }
+      ],
+      "overall_recommendation": "Proceed with claim review pending confirmation of concurrent body damage.",
+      "escalate_to_human": false,
+      "escalation_reason": null
+    },
+    "claim_id": "CLAIM_03_flat_tyre_alone_no_body_damage",
+    "model": "openai/gpt-oss-20b"
+  },
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_04_multi_pileup_severe\",\"policy_doc_id\":\"policy_3_quickclaim_general\",\"items\":[{\"damage_class\":\"dent\",\"verdict\":\"covered\",\"rationale\":\"The operative clause (chunk_00086) confirms indemnity for accidental loss or damage to the vehicle, covering body panel dents. Exclusion chunk_00095 only excludes dents from metal fatigue, long\u2011term vibration stress or corrosion, which are not applicable to impact\u2011induced dents in this incident.\",\"cited_chunk_ids\":[\"chunk_00086\"]},{\"damage_class\":\"crack\",\"verdict\":\"needs_review\",\"rationale\":\"Coverage clause chunk_00093 refers to tyre damage and does not address cracks in body panels. Exclusion chunk_00102 limits coverage to internal mechanical component cracks, which does not apply here. Without a specific coverage clause for panel cracks, the claim cannot be confirmed as covered.\",\"cited_chunk_ids\":[\"chunk_00093\"]},{\"damage_class\":\"broken_lamp\",\"verdict\":\"needs_review\",\"rationale\":\"Coverage clause chunk_00093 is unrelated to lamp damage. Exclusion clauses (chunks_00105, 00106, 00107) exclude lamp damage caused by electrical faults, non\u2011OEM bulbs, or interior lighting, but do not cover impact\u2011induced headlamp breakage. Lacking a dedicated coverage clause for lamp damage, the claim status is uncertain.\",\"cited_chunk_ids\":[\"chunk_00093\"]}],\"overall_recommendation\":\"Proceed with claim for dent; further review required for crack and broken lamp damage.\",\"escalate_to_human\":false,\"escalation_reason\":null}",
+    "parsed": {
+      "claim_id": "CLAIM_04_multi_pileup_severe",
+      "policy_doc_id": "policy_3_quickclaim_general",
+      "items": [
+        {
+          "damage_class": "dent",
+          "verdict": "covered",
+          "rationale": "The operative clause (chunk_00086) confirms indemnity for accidental loss or damage to the vehicle, covering body panel dents. Exclusion chunk_00095 only excludes dents from metal fatigue, long\u2011term vibration stress or corrosion, which are not applicable to impact\u2011induced dents in this incident.",
+          "cited_chunk_ids": [
+            "chunk_00086"
+          ]
+        },
+        {
+          "damage_class": "crack",
+          "verdict": "needs_review",
+          "rationale": "Coverage clause chunk_00093 refers to tyre damage and does not address cracks in body panels. Exclusion chunk_00102 limits coverage to internal mechanical component cracks, which does not apply here. Without a specific coverage clause for panel cracks, the claim cannot be confirmed as covered.",
+          "cited_chunk_ids": [
+            "chunk_00093"
+          ]
+        },
+        {
+          "damage_class": "broken_lamp",
+          "verdict": "needs_review",
+          "rationale": "Coverage clause chunk_00093 is unrelated to lamp damage. Exclusion clauses (chunks_00105, 00106, 00107) exclude lamp damage caused by electrical faults, non\u2011OEM bulbs, or interior lighting, but do not cover impact\u2011induced headlamp breakage. Lacking a dedicated coverage clause for lamp damage, the claim status is uncertain.",
+          "cited_chunk_ids": [
+            "chunk_00093"
+          ]
+        }
+      ],
+      "overall_recommendation": "Proceed with claim for dent; further review required for crack and broken lamp damage.",
+      "escalate_to_human": false,
+      "escalation_reason": null
+    },
+    "claim_id": "CLAIM_04_multi_pileup_severe",
+    "model": "openai/gpt-oss-20b"
+  },
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_05_scratch_vandalism_keyed\",\"policy_doc_id\":\"policy_2_safedrive_assurance\",\"items\":[{\"damage_class\":\"scratch\",\"verdict\":\"covered\",\"rationale\":\"The policy explicitly covers surface damage including paint and body abrasions arising from intentional acts, such as vandalism, as stated in chunk_00048.\",\"cited_chunk_ids\":[\"chunk_00048\"]}],\"overall_recommendation\":\"Proceed with claim processing\",\"escalate_to_human\":false,\"escalation_reason\":null}",
+    "parsed": {
+      "claim_id": "CLAIM_05_scratch_vandalism_keyed",
+      "policy_doc_id": "policy_2_safedrive_assurance",
+      "items": [
+        {
+          "damage_class": "scratch",
+          "verdict": "covered",
+          "rationale": "The policy explicitly covers surface damage including paint and body abrasions arising from intentional acts, such as vandalism, as stated in chunk_00048.",
+          "cited_chunk_ids": [
+            "chunk_00048"
+          ]
+        }
+      ],
+      "overall_recommendation": "Proceed with claim processing",
+      "escalate_to_human": false,
+      "escalation_reason": null
+    },
+    "claim_id": "CLAIM_05_scratch_vandalism_keyed",
+    "model": "openai/gpt-oss-20b"
+  },
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_06_low_confidence_dent\",\"policy_doc_id\":\"policy_1_bharat_suraksha\",\"items\":[{\"damage_class\":\"dent\",\"verdict\":\"covered\",\"rationale\":\"The policy defines accidental external means, including dents, as covered under Section I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED. The incident narrative indicates a possible minor contact damage, which falls under this definition. No exclusion clauses for dent are present.\",\"cited_chunk_ids\":[\"chunk_00004\",\"chunk_00002\"]}],\"overall_recommendation\":\"Proceed with claim processing pending human review\",\"escalate_to_human\":true,\"escalation_reason\":\"Low confidence detection of dent (confidence 0.35) and unclear if damage is fresh; requires human review to confirm claim validity.\"}",
+    "parsed": {
+      "claim_id": "CLAIM_06_low_confidence_dent",
+      "policy_doc_id": "policy_1_bharat_suraksha",
+      "items": [
+        {
+          "damage_class": "dent",
+          "verdict": "covered",
+          "rationale": "The policy defines accidental external means, including dents, as covered under Section I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED. The incident narrative indicates a possible minor contact damage, which falls under this definition. No exclusion clauses for dent are present.",
+          "cited_chunk_ids": [
+            "chunk_00004",
+            "chunk_00002"
+          ]
+        }
+      ],
+      "overall_recommendation": "Proceed with claim processing pending human review",
+      "escalate_to_human": true,
+      "escalation_reason": "Low confidence detection of dent (confidence 0.35) and unclear if damage is fresh; requires human review to confirm claim validity."
+    },
+    "claim_id": "CLAIM_06_low_confidence_dent",
+    "model": "openai/gpt-oss-20b"
+  },
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_07_glass_vandalism_window\",\"policy_doc_id\":\"policy_2_safedrive_assurance\",\"items\":[{\"damage_class\":\"shattered_glass\",\"verdict\":\"covered\",\"rationale\":\"The policy\u2019s GLASS COVERAGE DETAILS (chunk_00052) and the detailed coverage clause (chunk_00050) state that rear windscreen glass damage is covered without depreciation. No exclusion clauses in the retrieved policy apply to this type of damage, and the incident narrative does not trigger any listed exclusions.\",\"cited_chunk_ids\":[\"chunk_00052\",\"chunk_00050\"]}],\"overall_recommendation\":\"Proceed with claim processing\",\"escalate_to_human\":false,\"escalation_reason\":null}",
+    "parsed": {
+      "claim_id": "CLAIM_07_glass_vandalism_window",
+      "policy_doc_id": "policy_2_safedrive_assurance",
+      "items": [
+        {
+          "damage_class": "shattered_glass",
+          "verdict": "covered",
+          "rationale": "The policy\u2019s GLASS COVERAGE DETAILS (chunk_00052) and the detailed coverage clause (chunk_00050) state that rear windscreen glass damage is covered without depreciation. No exclusion clauses in the retrieved policy apply to this type of damage, and the incident narrative does not trigger any listed exclusions.",
+          "cited_chunk_ids": [
+            "chunk_00052",
+            "chunk_00050"
+          ]
+        }
+      ],
+      "overall_recommendation": "Proceed with claim processing",
+      "escalate_to_human": false,
+      "escalation_reason": null
+    },
+    "claim_id": "CLAIM_07_glass_vandalism_window",
+    "model": "openai/gpt-oss-20b"
+  },
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_08_crack_lamp_rearend\",\"policy_doc_id\":\"policy_4_autoguard_premium\",\"items\":[{\"damage_class\":\"crack\",\"verdict\":\"excluded\",\"rationale\":\"The coverage clause for cracks (chunk_00121) specifies coverage for cracks to bumpers, door panels, and trims from impact. The incident describes a crack in the tail\u2011light housing, which is part of the lighting assembly, not a bumper or trim. No clause covers cracks in lamp housings, and no exclusion applies to this type of crack. Therefore the crack is excluded.\",\"cited_chunk_ids\":[\"chunk_00121\"]},{\"damage_class\":\"broken_lamp\",\"verdict\":\"covered\",\"rationale\":\"The coverage clause for broken lamps (chunk_00121) explicitly lists tail lamps as covered when broken by impact. The incident narrative confirms a broken tail\u2011light housing due to a rear\u2011end shunt. None of the lamp exclusions (chunks_00132, 00134, 00133) apply because the damage is physical and caused by an accident. Hence the broken lamp is covered.\",\"cited_chunk_ids\":[\"chunk_00121\"]}],\"overall_recommendation\":\"Approve claim for broken lamp; deny claim for crack in tail\u2011light housing.\",\"escalate_to_human\":false,\"escalation_reason\":null}",
+    "parsed": {
+      "claim_id": "CLAIM_08_crack_lamp_rearend",
+      "policy_doc_id": "policy_4_autoguard_premium",
+      "items": [
+        {
+          "damage_class": "crack",
+          "verdict": "excluded",
+          "rationale": "The coverage clause for cracks (chunk_00121) specifies coverage for cracks to bumpers, door panels, and trims from impact. The incident describes a crack in the tail\u2011light housing, which is part of the lighting assembly, not a bumper or trim. No clause covers cracks in lamp housings, and no exclusion applies to this type of crack. Therefore the crack is excluded.",
+          "cited_chunk_ids": [
+            "chunk_00121"
+          ]
+        },
+        {
+          "damage_class": "broken_lamp",
+          "verdict": "covered",
+          "rationale": "The coverage clause for broken lamps (chunk_00121) explicitly lists tail lamps as covered when broken by impact. The incident narrative confirms a broken tail\u2011light housing due to a rear\u2011end shunt. None of the lamp exclusions (chunks_00132, 00134, 00133) apply because the damage is physical and caused by an accident. Hence the broken lamp is covered.",
+          "cited_chunk_ids": [
+            "chunk_00121"
+          ]
+        }
+      ],
+      "overall_recommendation": "Approve claim for broken lamp; deny claim for crack in tail\u2011light housing.",
+      "escalate_to_human": false,
+      "escalation_reason": null
+    },
+    "claim_id": "CLAIM_08_crack_lamp_rearend",
+    "model": "openai/gpt-oss-20b"
+  },
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_09_multi_instance_hail_dents\",\"policy_doc_id\":\"policy_1_bharat_suraksha\",\"items\":[{\"damage_class\":\"dent\",\"verdict\":\"covered\",\"rationale\":\"The policy explicitly covers dents as part of accidental external means under Section I. Loss of or damage to the vehicle insured, which includes dents, scratches, cracks, and breakage of exterior fittings. No exclusion clauses in the retrieved policy text negate coverage for dents.\",\"cited_chunk_ids\":[\"chunk_00004\",\"chunk_00002\"]}],\"overall_recommendation\":\"Approve claim for dent damage\",\"escalate_to_human\":false,\"escalation_reason\":null}",
+    "parsed": {
+      "claim_id": "CLAIM_09_multi_instance_hail_dents",
+      "policy_doc_id": "policy_1_bharat_suraksha",
+      "items": [
+        {
+          "damage_class": "dent",
+          "verdict": "covered",
+          "rationale": "The policy explicitly covers dents as part of accidental external means under Section I. Loss of or damage to the vehicle insured, which includes dents, scratches, cracks, and breakage of exterior fittings. No exclusion clauses in the retrieved policy text negate coverage for dents.",
+          "cited_chunk_ids": [
+            "chunk_00004",
+            "chunk_00002"
+          ]
+        }
+      ],
+      "overall_recommendation": "Approve claim for dent damage",
+      "escalate_to_human": false,
+      "escalation_reason": null
+    },
+    "claim_id": "CLAIM_09_multi_instance_hail_dents",
+    "model": "openai/gpt-oss-20b"
+  },
+  {
+    "ok": true,
+    "raw": "{\"claim_id\":\"CLAIM_10_tyre_scratch_flood_debris\",\"policy_doc_id\":\"policy_5_valuemotor\",\"items\":[{\"damage_class\":\"flat_tyre\",\"verdict\":\"covered\",\"rationale\":\"Tyre damage is covered at 50% replacement cost, and the policy specifies this coverage only when the vehicle has also sustained body damage in the same incident. The incident narrative indicates a tyre puncture and road rash scratches on the lower sill, confirming concurrent body damage. Therefore the condition is satisfied and the claim is covered.\",\"cited_chunk_ids\":[\"chunk_00152\",\"chunk_00155\"]},{\"damage_class\":\"scratch\",\"verdict\":\"covered\",\"rationale\":\"The policy covers cosmetic damage such as scratches caused by accidental collision or impact. The incident narrative describes scratches on the lower sill, which falls under this coverage. No exclusions apply to this type of scratch in the provided clauses.\",\"cited_chunk_ids\":[\"chunk_00149\",\"chunk_00150\"]}],\"overall_recommendation\":\"Proceed with claim processing for both flat tyre and scratch as covered.\",\"escalate_to_human\":false,\"escalation_reason\":null}",
+    "parsed": {
+      "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+      "policy_doc_id": "policy_5_valuemotor",
+      "items": [
+        {
+          "damage_class": "flat_tyre",
+          "verdict": "covered",
+          "rationale": "Tyre damage is covered at 50% replacement cost, and the policy specifies this coverage only when the vehicle has also sustained body damage in the same incident. The incident narrative indicates a tyre puncture and road rash scratches on the lower sill, confirming concurrent body damage. Therefore the condition is satisfied and the claim is covered.",
+          "cited_chunk_ids": [
+            "chunk_00152",
+            "chunk_00155"
+          ]
+        },
+        {
+          "damage_class": "scratch",
+          "verdict": "covered",
+          "rationale": "The policy covers cosmetic damage such as scratches caused by accidental collision or impact. The incident narrative describes scratches on the lower sill, which falls under this coverage. No exclusions apply to this type of scratch in the provided clauses.",
+          "cited_chunk_ids": [
+            "chunk_00149",
+            "chunk_00150"
+          ]
+        }
+      ],
+      "overall_recommendation": "Proceed with claim processing for both flat tyre and scratch as covered.",
+      "escalate_to_human": false,
+      "escalation_reason": null
+    },
+    "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+    "model": "openai/gpt-oss-20b"
+  }
+]

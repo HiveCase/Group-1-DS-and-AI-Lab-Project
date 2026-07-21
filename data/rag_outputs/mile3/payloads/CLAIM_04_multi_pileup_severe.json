@@ -1,0 +1,232 @@
+{
+  "claim_id": "CLAIM_04_multi_pileup_severe",
+  "incident_narrative": "A three-vehicle pileup caused front dents, cracked bumper panels, and broken headlight units.",
+  "detections": [
+    {
+      "class_id": 0,
+      "class_name": "dent",
+      "confidence": 0.9,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.3,
+        0.3
+      ],
+      "area_ratio": 0.09,
+      "severity": "severe"
+    },
+    {
+      "class_id": 2,
+      "class_name": "crack",
+      "confidence": 0.85,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.2449,
+        0.2449
+      ],
+      "area_ratio": 0.06,
+      "severity": "moderate"
+    },
+    {
+      "class_id": 3,
+      "class_name": "broken_lamp",
+      "confidence": 0.83,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.2,
+        0.2
+      ],
+      "area_ratio": 0.04,
+      "severity": "moderate"
+    }
+  ],
+  "policy": {
+    "doc_id": "policy_3_quickclaim_general",
+    "selection_method": "claimant_selected",
+    "insurer": "QuickClaim General Insurance Ltd",
+    "product": "Motor Vehicle Package (Comprehensive Own Damage + compulsory Third Party)",
+    "description": "Comprehensive package with the most detailed exclusion schedules of the five (six named schedules, A-F). Glass at nil depreciation. Notable conditions: scratch/paint claims must be reported within 30 days; a pre-inspection report governs pre-existing damage.",
+    "clauses": {
+      "broken_lamp": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00093",
+            "text": "[arising from and directly caused by the following events during the policy period:] SPECIAL CONDITIONS - TYRE DAMAGE Loss or damage to tyres and inner tubes is covered subject to a deduction of 50% of the cost of replacement, provided that the vehicle insured has sustained concurrent physical damage in the same incident. Coverage under this clause",
+            "heading": "arising from and directly caused by the following events during the policy period:",
+            "clause_type": "coverage",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0567
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00105",
+            "text": "D. Exclusions Relating to Lamp Damage D1. Failure of lamp units due to electrical faults in the vehicle wiring, including short circuits, voltage spikes, or faulty relays, without concurrent physical damage to the lamp housing.",
+            "heading": "D. Exclusions Relating to Lamp Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0656
+          },
+          {
+            "chunk_id": "chunk_00107",
+            "text": "[D. Exclusions Relating to Lamp Damage] vehicle's regulatory lighting. D4. Discolouration, cloudiness, or UV hazing of polycarbonate headlamp covers, not resulting from a specific impact event. D5. Lamp assembly damage to vehicles modified for commercial hire or rental use, contrary to the permitted use under this policy.",
+            "heading": "D. Exclusions Relating to Lamp Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0645
+          },
+          {
+            "chunk_id": "chunk_00106",
+            "text": "[D. Exclusions Relating to Lamp Damage] D2. Lamp damage arising from thermal stress caused by the use of non-OEM replacement bulbs with wattage exceeding the manufacturer's specification. D3. Damage to interior cabin lighting, instrument cluster lighting, or decorative LED strips not forming part of the vehicle's regulatory lighting.",
+            "heading": "D. Exclusions Relating to Lamp Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0632
+          },
+          {
+            "chunk_id": "chunk_00115",
+            "text": "[F. Exclusions Relating to Tyre Damage] Exceeding 4 years but not exceeding 5 years 50% Total Loss is declared when repair cost exceeds 75% of IDV. CLAIM INTIMATION Intimation of any claim must be made to the Company within 48 hours of the occurrence. Failure to comply with this",
+            "heading": "F. Exclusions Relating to Tyre Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0608
+          },
+          {
+            "chunk_id": "chunk_00110",
+            "text": "[E. Exclusions Relating to Glass Damage] E5. Glass repair (as distinct from replacement) where the repaired area exceeds the diameter threshold specified in the Surveyor's Guidelines issued by IRDAI from time to time.",
+            "heading": "E. Exclusions Relating to Glass Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0602
+          }
+        ],
+        "coverage_clause_found": true
+      },
+      "crack": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00093",
+            "text": "[arising from and directly caused by the following events during the policy period:] SPECIAL CONDITIONS - TYRE DAMAGE Loss or damage to tyres and inner tubes is covered subject to a deduction of 50% of the cost of replacement, provided that the vehicle insured has sustained concurrent physical damage in the same incident. Coverage under this clause",
+            "heading": "arising from and directly caused by the following events during the policy period:",
+            "clause_type": "coverage",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.053
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00102",
+            "text": "[C. Exclusions Relating to Cracks] C2. Cracks in engine block, cylinder head, or other internal mechanical components, even where resulting from an external impact, unless such impact is also separately claimed under the body damage section.",
+            "heading": "C. Exclusions Relating to Cracks",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0637
+          },
+          {
+            "chunk_id": "chunk_00104",
+            "text": "[C. Exclusions Relating to Cracks] manufacturer's specification. C5. Stress cracks in the vehicle chassis or monocoque arising from prolonged use on uneven roads, classified as structural fatigue. QUICKCLAIM GENERAL INSURANCE LIMITED",
+            "heading": "C. Exclusions Relating to Cracks",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0627
+          },
+          {
+            "chunk_id": "chunk_00116",
+            "text": "[F. Exclusions Relating to Tyre Damage] condition may prejudice the insured's entitlement to indemnity. This is a synthetic specimen policy for research and educational use only. Not a valid insurance contract.",
+            "heading": "F. Exclusions Relating to Tyre Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0604
+          },
+          {
+            "chunk_id": "chunk_00115",
+            "text": "[F. Exclusions Relating to Tyre Damage] Exceeding 4 years but not exceeding 5 years 50% Total Loss is declared when repair cost exceeds 75% of IDV. CLAIM INTIMATION Intimation of any claim must be made to the Company within 48 hours of the occurrence. Failure to comply with this",
+            "heading": "F. Exclusions Relating to Tyre Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0602
+          },
+          {
+            "chunk_id": "chunk_00101",
+            "text": "C. Exclusions Relating to Cracks C1. Hairline cracks in laminated safety glass that do not progress into full fractures and do not impair the driver's field of vision as defined in Rule 100 of the Central Motor Vehicles Rules, 1989.",
+            "heading": "C. Exclusions Relating to Cracks",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0602
+          }
+        ],
+        "coverage_clause_found": true
+      },
+      "dent": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00086",
+            "text": "OPERATIVE CLAUSE - OWN DAMAGE SECTION The Company undertakes to indemnify the insured in respect of accidental loss or damage to the vehicle insured,",
+            "heading": "",
+            "clause_type": "coverage",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0618
+          },
+          {
+            "chunk_id": "chunk_00093",
+            "text": "[arising from and directly caused by the following events during the policy period:] SPECIAL CONDITIONS - TYRE DAMAGE Loss or damage to tyres and inner tubes is covered subject to a deduction of 50% of the cost of replacement, provided that the vehicle insured has sustained concurrent physical damage in the same incident. Coverage under this clause",
+            "heading": "arising from and directly caused by the following events during the policy period:",
+            "clause_type": "coverage",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.057
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00095",
+            "text": "A. Exclusions Relating to Panel and Body Damage A1. Dents or deformations of body panels arising from metal fatigue, long-term vibration stress, or corrosion from within, even where the resulting deformation is externally visible.",
+            "heading": "A. Exclusions Relating to Panel and Body Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0639
+          },
+          {
+            "chunk_id": "chunk_00116",
+            "text": "[F. Exclusions Relating to Tyre Damage] condition may prejudice the insured's entitlement to indemnity. This is a synthetic specimen policy for research and educational use only. Not a valid insurance contract.",
+            "heading": "F. Exclusions Relating to Tyre Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0633
+          },
+          {
+            "chunk_id": "chunk_00102",
+            "text": "[C. Exclusions Relating to Cracks] C2. Cracks in engine block, cylinder head, or other internal mechanical components, even where resulting from an external impact, unless such impact is also separately claimed under the body damage section.",
+            "heading": "C. Exclusions Relating to Cracks",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0599
+          },
+          {
+            "chunk_id": "chunk_00115",
+            "text": "[F. Exclusions Relating to Tyre Damage] Exceeding 4 years but not exceeding 5 years 50% Total Loss is declared when repair cost exceeds 75% of IDV. CLAIM INTIMATION Intimation of any claim must be made to the Company within 48 hours of the occurrence. Failure to comply with this",
+            "heading": "F. Exclusions Relating to Tyre Damage",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0596
+          },
+          {
+            "chunk_id": "chunk_00104",
+            "text": "[C. Exclusions Relating to Cracks] manufacturer's specification. C5. Stress cracks in the vehicle chassis or monocoque arising from prolonged use on uneven roads, classified as structural fatigue. QUICKCLAIM GENERAL INSURANCE LIMITED",
+            "heading": "C. Exclusions Relating to Cracks",
+            "clause_type": "exclusion",
+            "doc_id": "policy_3_quickclaim_general",
+            "score": 0.0584
+          }
+        ],
+        "coverage_clause_found": true
+      }
+    }
+  },
+  "escalation": {
+    "low_confidence_detections": [],
+    "missing_coverage_clause_for": [],
+    "needs_human_review": false
+  }
+}

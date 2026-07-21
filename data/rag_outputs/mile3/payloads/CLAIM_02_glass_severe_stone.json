@@ -1,0 +1,120 @@
+{
+  "claim_id": "CLAIM_02_glass_severe_stone",
+  "incident_narrative": "The windscreen shattered after a large stone was projected by a passing truck on the expressway.",
+  "detections": [
+    {
+      "class_id": 4,
+      "class_name": "shattered_glass",
+      "confidence": 0.95,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.469,
+        0.469
+      ],
+      "area_ratio": 0.22,
+      "severity": "severe"
+    }
+  ],
+  "policy": {
+    "doc_id": "policy_4_autoguard_premium",
+    "selection_method": "claimant_selected",
+    "insurer": "AutoGuard Premium Insurance Services Ltd",
+    "product": "Own Damage with Full-Cover Add-On Suite",
+    "description": "Premium-tier product presenting cover as a summary table, with a Full-Cover Add-On Suite (Nil Depreciation, Return-to-Invoice, Consumables). Glass nil depreciation standard. Compulsory deductible Rs. 2,500 per claim.",
+    "clauses": {
+      "shattered_glass": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00121",
+            "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface damage vandalism Exterior surfaces Panel fractures Cracks to bumpers, door panels, trims from impact Exterior components Headlamps, tail lamps, fog lamps, indicators broken All lamps and Lighting assembly damage by impact reflectors Windscreen, rear screen, side windows - nil",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.064
+          },
+          {
+            "chunk_id": "chunk_00122",
+            "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Glass damage depreciation All vehicle glazing At 50% of replacement cost if concurrent vehicle Tyre and tube damage damage present Tyres and tubes only",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.063
+          },
+          {
+            "chunk_id": "chunk_00120",
+            "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Theft Burglary, housebreaking, theft Whole vehicle Natural calamity Flood, cyclone, earthquake, hailstorm All components Dents to panels, bumpers, arches from collision or Bodily damage from impact object impact Exterior body panels Paint abrasion and exterior scratches from accident or",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0613
+          },
+          {
+            "chunk_id": "chunk_00119",
+            "text": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE The following events are covered under this policy, subject to the terms, exclusions, and sub-limits defined in Chapter 3: Event Coverage detail Applies to Fire and allied perils Fire, explosion, lightning, self-ignition All components",
+            "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0608
+          },
+          {
+            "chunk_id": "chunk_00143",
+            "text": "[CHAPTER 5. PREMIUM ADD-ON COVERS] Add-On C: Consumables Cover Consumable items including engine oil, coolant, AC gas, nuts, bolts, and sealants replaced during an admissible partial loss repair are covered, subject to a limit of 1% of IDV or 5% of the claim amount, whichever is lower.",
+            "heading": "CHAPTER 5. PREMIUM ADD-ON COVERS",
+            "clause_type": "coverage",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0595
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00135",
+            "text": "3.5 Glass Exclusions (cid:127) Glass damage on a vehicle registered as a commercial goods carrier under a different class of insurance. (cid:127) Tinting films, privacy glass coatings, or heat-rejection treatments applied to the original vehicle glass.",
+            "heading": "3.5 Glass Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0656
+          },
+          {
+            "chunk_id": "chunk_00136",
+            "text": "[3.5 Glass Exclusions] (cid:127) Laminated windscreen separation or delamination from age or manufacturing defect, recoverable under warranty. (cid:127) Sunroof glass breakage unless the Sunroof Add-On is endorsed on the Schedule. (cid:127) Glass scratches from windscreen wiper blades operating on a dry screen.",
+            "heading": "3.5 Glass Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0632
+          },
+          {
+            "chunk_id": "chunk_00137",
+            "text": "3.6 Tyre Exclusions (cid:127) Tyre damage from deliberate spiked road obstacles (road spikes) in a disputed ownership or legal proceeding situation. (cid:127) Damage to speciality or competition tyres not approved for road use under Central Motor Vehicles Rules.",
+            "heading": "3.6 Tyre Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0571
+          },
+          {
+            "chunk_id": "chunk_00138",
+            "text": "[3.6 Tyre Exclusions] (cid:127) Tyre damage from use of incorrect tyre size not conforming to vehicle type approval. (cid:127) Gradual loss of tyre pressure from micro-porosity without a definable puncture event. (cid:127) Damage to tyre foam inserts or run-flat inserts not covered as standard tyres.",
+            "heading": "3.6 Tyre Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0552
+          },
+          {
+            "chunk_id": "chunk_00127",
+            "text": "[3.1 Panel and Dent Exclusions] body panel. (cid:127) Body panel damage from shopping trolley impact in private parking facilities where the insured had parked against the facility's instructions. (cid:127) Pre-existing dents and panel deformations recorded in the pre-policy inspection report.",
+            "heading": "3.1 Panel and Dent Exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_4_autoguard_premium",
+            "score": 0.0551
+          }
+        ],
+        "coverage_clause_found": true
+      }
+    }
+  },
+  "escalation": {
+    "low_confidence_detections": [],
+    "missing_coverage_clause_for": [],
+    "needs_human_review": false
+  }
+}

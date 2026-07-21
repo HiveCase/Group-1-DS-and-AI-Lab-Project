@@ -69,27 +69,43 @@ class HybridRetriever:
         self.collection = self.client.get_collection(collection)
 
         chunk_ids, chunk_texts = [], []
+        self.chunk_meta = {}  # chunk_id -> {doc_id, heading, clause_type, damage_classes, text}
         with open(CHUNKS_TSV, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f, delimiter="\t"):
                 chunk_ids.append(row["chunk_id"])
                 chunk_texts.append(row["text"])
+                self.chunk_meta[row["chunk_id"]] = {
+                    "doc_id": row["doc_id"],
+                    "heading": row["heading"],
+                    "clause_type": row["clause_type"],
+                    "damage_classes": row["damage_classes"],
+                    "text": row["text"],
+                }
         self.chunk_ids = chunk_ids
         self.vectorizer = TfidfVectorizer(stop_words="english")
         self.tfidf_matrix = self.vectorizer.fit_transform(chunk_texts)
 
-    def retrieve(self, query: str, top_k: int = 3,
-                 dense_weight: float = DENSE_WEIGHT,
-                 sparse_weight: float = SPARSE_WEIGHT,
-                 pool: int = CANDIDATE_POOL) -> list:
-        """Return the top_k chunk_ids for query, fused across dense and
-        sparse rankings via weighted Reciprocal Rank Fusion."""
+    def _fused_ranking(self, query: str, dense_weight: float, sparse_weight: float,
+                        pool: int, doc_filter: str = None) -> list:
+        """Return [(chunk_id, fused_score), ...] sorted descending, fusing
+        dense (ChromaDB) and sparse (TF-IDF) rankings via weighted RRF.
+        When doc_filter is set, both rankings are restricted to chunks whose
+        doc_id matches it -- dense via a ChromaDB `where` filter, sparse by
+        masking out non-matching rows before taking the top pool."""
+        where = {"doc_id": doc_filter} if doc_filter else None
+
         q_emb = self.model.encode(query).tolist()
         dense_ids = self.collection.query(
-            query_embeddings=[q_emb], n_results=pool, include=[]
+            query_embeddings=[q_emb], n_results=pool, include=[], where=where
         )["ids"][0]
 
         q_vec = self.vectorizer.transform([query])
         sims = cosine_similarity(q_vec, self.tfidf_matrix)[0]
+        if doc_filter:
+            sims = sims.copy()
+            for i, cid in enumerate(self.chunk_ids):
+                if self.chunk_meta[cid]["doc_id"] != doc_filter:
+                    sims[i] = -1.0
         sparse_ids = [self.chunk_ids[i] for i in sims.argsort()[::-1][:pool]]
 
         scores = {}
@@ -98,8 +114,28 @@ class HybridRetriever:
         for rank, cid in enumerate(sparse_ids, 1):
             scores[cid] = scores.get(cid, 0.0) + sparse_weight / (RRF_K + rank)
 
-        fused = sorted(scores.items(), key=lambda kv: -kv[1])
+        return sorted(scores.items(), key=lambda kv: -kv[1])
+
+    def retrieve(self, query: str, top_k: int = 3,
+                 dense_weight: float = DENSE_WEIGHT,
+                 sparse_weight: float = SPARSE_WEIGHT,
+                 pool: int = CANDIDATE_POOL, doc_filter: str = None) -> list:
+        """Return the top_k chunk_ids for query, fused across dense and
+        sparse rankings via weighted Reciprocal Rank Fusion. If doc_filter is
+        given (a doc_id from chunks_all.tsv), restrict retrieval to that
+        single policy document."""
+        fused = self._fused_ranking(query, dense_weight, sparse_weight, pool, doc_filter)
         return [cid for cid, _ in fused[:top_k]]
+
+    def retrieve_scored(self, query: str, top_k: int = 3,
+                         dense_weight: float = DENSE_WEIGHT,
+                         sparse_weight: float = SPARSE_WEIGHT,
+                         pool: int = CANDIDATE_POOL, doc_filter: str = None) -> list:
+        """Same as retrieve(), but returns [(chunk_id, fused_score), ...] --
+        used by callers that need the score itself (policy selection) or the
+        chunk metadata to post-filter by clause_type (scoped clause retrieval)."""
+        fused = self._fused_ranking(query, dense_weight, sparse_weight, pool, doc_filter)
+        return fused[:top_k]
 
 
 def _relevant(gt, chunk_id, target_classes):

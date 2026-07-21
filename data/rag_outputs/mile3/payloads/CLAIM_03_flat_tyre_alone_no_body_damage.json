@@ -1,0 +1,104 @@
+{
+  "claim_id": "CLAIM_03_flat_tyre_alone_no_body_damage",
+  "incident_narrative": "A nail embedded in the road punctured the rear left tyre, causing a sudden blowout on the highway. No other part of the vehicle was affected.",
+  "detections": [
+    {
+      "class_id": 5,
+      "class_name": "flat_tyre",
+      "confidence": 0.88,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.1732,
+        0.1732
+      ],
+      "area_ratio": 0.03,
+      "severity": "moderate"
+    }
+  ],
+  "policy": {
+    "doc_id": "policy_5_valuemotor",
+    "selection_method": "claimant_selected",
+    "insurer": "ValueMotor Comprehensive Insurance Ltd",
+    "product": "Affordable Comprehensive (Own Damage + Third Party)",
+    "description": "Budget comprehensive cover with standard age-based depreciation and no nil-depreciation add-on (glass is still always nil depreciation; rubber/plastic/tyre always 50% deduction). Tyre cover explicitly conditional on concurrent body damage.",
+    "clauses": {
+      "flat_tyre": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00152",
+            "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Tyre and tube damage at 50% of replacement cost, only when the vehicle has also been damaged in the same incident. (cid:127) Damage in transit by road, rail, or water. (cid:127) Landslide or rockslide damage.",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0573
+          },
+          {
+            "chunk_id": "chunk_00155",
+            "text": "[Your vehicle is covered for loss or damage caused by:] Exceeding 10 years 50% Rubber, plastic, tyre, battery, and airbag parts: always 50% deduction. Glass parts: always nil deduction. You get the full replacement cost.",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0543
+          },
+          {
+            "chunk_id": "chunk_00151",
+            "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Breakage of headlight, taillight, or indicator units by accident or collision during the policy period. (cid:127) Glass damage without depreciation deduction - your windscreen, rear windscreen, and door windows are covered at full replacement cost as standard.",
+            "heading": "Your vehicle is covered for loss or damage caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0534
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00173",
+            "text": "[3.7 Tyre exclusions] (cid:127) Damage to non-standard tyres, including competition tyres or oversized tyres not conforming to the vehicle's type approval. (cid:127) Tyre valve cap or core damage alone, without tyre body damage.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0646
+          },
+          {
+            "chunk_id": "chunk_00174",
+            "text": "[3.7 Tyre exclusions] (cid:127) Tyre damage from use of the vehicle in rallying, track days, or any competitive motorsport event.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0632
+          },
+          {
+            "chunk_id": "chunk_00180",
+            "text": "[3.7 Tyre exclusions] 7. HOW TO CLAIM (cid:127) Call our helpline or use the app within 24 hours of the accident. (cid:127) Take photos of the damage before moving the vehicle if it is safe to do so. (cid:127) Get a repair estimate from a garage and share it with us before repairs start.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0629
+          },
+          {
+            "chunk_id": "chunk_00172",
+            "text": "3.7 Tyre exclusions (cid:127) Tyre deterioration, tread wear, or sidewall cracking from age and use. (cid:127) Tyre damage when the vehicle was driven knowingly on a flat or underinflated tyre for a distance exceeding 2 km.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0627
+          },
+          {
+            "chunk_id": "chunk_00183",
+            "text": "[3.7 Tyre exclusions] 9. GENERAL EXCEPTIONS This policy does not cover any claim arising from war, nuclear risk, use of the vehicle in violation of permit conditions, or operation outside the specified geographical area.",
+            "heading": "3.7 Tyre exclusions",
+            "clause_type": "exclusion",
+            "doc_id": "policy_5_valuemotor",
+            "score": 0.0623
+          }
+        ],
+        "coverage_clause_found": true
+      }
+    }
+  },
+  "escalation": {
+    "low_confidence_detections": [],
+    "missing_coverage_clause_for": [],
+    "needs_human_review": false
+  }
+}

@@ -1,0 +1,1486 @@
+[
+  {
+    "claim_id": "CLAIM_01_dent_minor_clean",
+    "incident_narrative": "While parking, the vehicle was struck by an adjacent car door, leaving a noticeable dent on the front left door panel.",
+    "detections": [
+      {
+        "class_id": 0,
+        "class_name": "dent",
+        "confidence": 0.91,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.1,
+          0.1
+        ],
+        "area_ratio": 0.01,
+        "severity": "minor"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_1_bharat_suraksha",
+      "selection_method": "claimant_selected",
+      "insurer": "Bharat Suraksha Motor Insurance Co. Ltd",
+      "product": "Motor Private Car Comprehensive (Own Damage + Third Party Liability)",
+      "description": "Comprehensive cover with all damage types indemnified under one accidental-external-means clause. Standard age-based depreciation (Nil to 50%); glass at nil depreciation; fibre-glass parts at 30%. No add-on covers.",
+      "clauses": {
+        "dent": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00004",
+              "text": "[SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED] (cid:127) By accidental external means, including collision, impact with another vehicle or stationary object, and resulting dents, scratches, cracks, and breakage of lamps or other exterior fittings.",
+              "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED",
+              "clause_type": "definition",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0656
+            },
+            {
+              "chunk_id": "chunk_00032",
+              "text": "[SECTION V. ADD-ON COVERS] Add-On 3: Engine Protection Cover Consequential damage to engine parts and gearbox components arising from water ingression due to flood or inundation is covered under this add-on, subject to the claim under Section I being admissible and the vehicle being",
+              "heading": "SECTION V. ADD-ON COVERS",
+              "clause_type": "coverage",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0606
+            },
+            {
+              "chunk_id": "chunk_00002",
+              "text": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED The Company will indemnify the insured against loss or damage to the vehicle insured and its accessories whilst thereon, arising from the following perils: (cid:127) By fire, explosion, self-ignition, or lightning.",
+              "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED",
+              "clause_type": "coverage",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0593
+            },
+            {
+              "chunk_id": "chunk_00033",
+              "text": "[SECTION V. ADD-ON COVERS] retrieved from the waterlogged area within 72 hours. Exclusion under Engine Protection: Damage to engine or gearbox arising from delay in intimation, from driving the vehicle after it has ingested water, or from gradual corrosion of engine parts, is not covered.",
+              "heading": "SECTION V. ADD-ON COVERS",
+              "clause_type": "coverage",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0549
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00034",
+              "text": "A No Claim Bonus discount is applicable on Own Damage premium at renewal: Claim History NCB Discount on OD Premium 1 claim-free year 20% 2 consecutive claim-free years 25% 3 consecutive claim-free years 35% 4 consecutive claim-free years 45% 5 or more consecutive claim-free years 50%",
+              "heading": "A No Claim Bonus discount is applicable on Own Damage premium at renewal:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0596
+            },
+            {
+              "chunk_id": "chunk_00044",
+              "text": "[SECTION IX. GENERAL EXCEPTIONS] area, or in violation of the Driver's Clause, are also excluded. Insurance is the subject matter of solicitation. Please read all terms and conditions carefully. This is a synthetic specimen policy issued for educational and research purposes only and does not constitute a valid insurance contract.",
+              "heading": "SECTION IX. GENERAL EXCEPTIONS",
+              "clause_type": "exclusion",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0595
+            },
+            {
+              "chunk_id": "chunk_00011",
+              "text": "[The following depreciation rates apply to parts necessarily replaced:] insured has also sustained damage at the same time. Where the vehicle has not been damaged simultaneously, tyre and tube damage alone is not recoverable under this section. EXCLUSIONS UNDER SECTION I",
+              "heading": "The following depreciation rates apply to parts necessarily replaced:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0581
+            },
+            {
+              "chunk_id": "chunk_00040",
+              "text": "[SECTION VII. GENERAL CONDITIONS] 5. The due observance of all terms, conditions, and endorsements of this policy is a condition precedent to any liability of the Company.",
+              "heading": "SECTION VII. GENERAL CONDITIONS",
+              "clause_type": "condition",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0581
+            },
+            {
+              "chunk_id": "chunk_00027",
+              "text": "SECTION III. DEDUCTIBLE The Company shall not be liable for the first Rs. 1,000 of each and every claim under Section I of this policy. This deductible applies to each occurrence independently, including occurrences giving rise to a Total Loss or Constructive Total Loss claim.",
+              "heading": "SECTION III. DEDUCTIBLE",
+              "clause_type": "sub_limit",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0541
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": false
+    }
+  },
+  {
+    "claim_id": "CLAIM_02_glass_severe_stone",
+    "incident_narrative": "The windscreen shattered after a large stone was projected by a passing truck on the expressway.",
+    "detections": [
+      {
+        "class_id": 4,
+        "class_name": "shattered_glass",
+        "confidence": 0.95,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.469,
+          0.469
+        ],
+        "area_ratio": 0.22,
+        "severity": "severe"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_4_autoguard_premium",
+      "selection_method": "claimant_selected",
+      "insurer": "AutoGuard Premium Insurance Services Ltd",
+      "product": "Own Damage with Full-Cover Add-On Suite",
+      "description": "Premium-tier product presenting cover as a summary table, with a Full-Cover Add-On Suite (Nil Depreciation, Return-to-Invoice, Consumables). Glass nil depreciation standard. Compulsory deductible Rs. 2,500 per claim.",
+      "clauses": {
+        "shattered_glass": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00121",
+              "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface damage vandalism Exterior surfaces Panel fractures Cracks to bumpers, door panels, trims from impact Exterior components Headlamps, tail lamps, fog lamps, indicators broken All lamps and Lighting assembly damage by impact reflectors Windscreen, rear screen, side windows - nil",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.064
+            },
+            {
+              "chunk_id": "chunk_00122",
+              "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Glass damage depreciation All vehicle glazing At 50% of replacement cost if concurrent vehicle Tyre and tube damage damage present Tyres and tubes only",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.063
+            },
+            {
+              "chunk_id": "chunk_00120",
+              "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Theft Burglary, housebreaking, theft Whole vehicle Natural calamity Flood, cyclone, earthquake, hailstorm All components Dents to panels, bumpers, arches from collision or Bodily damage from impact object impact Exterior body panels Paint abrasion and exterior scratches from accident or",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0613
+            },
+            {
+              "chunk_id": "chunk_00119",
+              "text": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE The following events are covered under this policy, subject to the terms, exclusions, and sub-limits defined in Chapter 3: Event Coverage detail Applies to Fire and allied perils Fire, explosion, lightning, self-ignition All components",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0608
+            },
+            {
+              "chunk_id": "chunk_00143",
+              "text": "[CHAPTER 5. PREMIUM ADD-ON COVERS] Add-On C: Consumables Cover Consumable items including engine oil, coolant, AC gas, nuts, bolts, and sealants replaced during an admissible partial loss repair are covered, subject to a limit of 1% of IDV or 5% of the claim amount, whichever is lower.",
+              "heading": "CHAPTER 5. PREMIUM ADD-ON COVERS",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0595
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00135",
+              "text": "3.5 Glass Exclusions (cid:127) Glass damage on a vehicle registered as a commercial goods carrier under a different class of insurance. (cid:127) Tinting films, privacy glass coatings, or heat-rejection treatments applied to the original vehicle glass.",
+              "heading": "3.5 Glass Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0656
+            },
+            {
+              "chunk_id": "chunk_00136",
+              "text": "[3.5 Glass Exclusions] (cid:127) Laminated windscreen separation or delamination from age or manufacturing defect, recoverable under warranty. (cid:127) Sunroof glass breakage unless the Sunroof Add-On is endorsed on the Schedule. (cid:127) Glass scratches from windscreen wiper blades operating on a dry screen.",
+              "heading": "3.5 Glass Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0632
+            },
+            {
+              "chunk_id": "chunk_00137",
+              "text": "3.6 Tyre Exclusions (cid:127) Tyre damage from deliberate spiked road obstacles (road spikes) in a disputed ownership or legal proceeding situation. (cid:127) Damage to speciality or competition tyres not approved for road use under Central Motor Vehicles Rules.",
+              "heading": "3.6 Tyre Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0571
+            },
+            {
+              "chunk_id": "chunk_00138",
+              "text": "[3.6 Tyre Exclusions] (cid:127) Tyre damage from use of incorrect tyre size not conforming to vehicle type approval. (cid:127) Gradual loss of tyre pressure from micro-porosity without a definable puncture event. (cid:127) Damage to tyre foam inserts or run-flat inserts not covered as standard tyres.",
+              "heading": "3.6 Tyre Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0552
+            },
+            {
+              "chunk_id": "chunk_00127",
+              "text": "[3.1 Panel and Dent Exclusions] body panel. (cid:127) Body panel damage from shopping trolley impact in private parking facilities where the insured had parked against the facility's instructions. (cid:127) Pre-existing dents and panel deformations recorded in the pre-policy inspection report.",
+              "heading": "3.1 Panel and Dent Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0551
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": false
+    }
+  },
+  {
+    "claim_id": "CLAIM_03_flat_tyre_alone_no_body_damage",
+    "incident_narrative": "A nail embedded in the road punctured the rear left tyre, causing a sudden blowout on the highway. No other part of the vehicle was affected.",
+    "detections": [
+      {
+        "class_id": 5,
+        "class_name": "flat_tyre",
+        "confidence": 0.88,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.1732,
+          0.1732
+        ],
+        "area_ratio": 0.03,
+        "severity": "moderate"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_5_valuemotor",
+      "selection_method": "claimant_selected",
+      "insurer": "ValueMotor Comprehensive Insurance Ltd",
+      "product": "Affordable Comprehensive (Own Damage + Third Party)",
+      "description": "Budget comprehensive cover with standard age-based depreciation and no nil-depreciation add-on (glass is still always nil depreciation; rubber/plastic/tyre always 50% deduction). Tyre cover explicitly conditional on concurrent body damage.",
+      "clauses": {
+        "flat_tyre": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00152",
+              "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Tyre and tube damage at 50% of replacement cost, only when the vehicle has also been damaged in the same incident. (cid:127) Damage in transit by road, rail, or water. (cid:127) Landslide or rockslide damage.",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0573
+            },
+            {
+              "chunk_id": "chunk_00155",
+              "text": "[Your vehicle is covered for loss or damage caused by:] Exceeding 10 years 50% Rubber, plastic, tyre, battery, and airbag parts: always 50% deduction. Glass parts: always nil deduction. You get the full replacement cost.",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0543
+            },
+            {
+              "chunk_id": "chunk_00151",
+              "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Breakage of headlight, taillight, or indicator units by accident or collision during the policy period. (cid:127) Glass damage without depreciation deduction - your windscreen, rear windscreen, and door windows are covered at full replacement cost as standard.",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0534
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00173",
+              "text": "[3.7 Tyre exclusions] (cid:127) Damage to non-standard tyres, including competition tyres or oversized tyres not conforming to the vehicle's type approval. (cid:127) Tyre valve cap or core damage alone, without tyre body damage.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0646
+            },
+            {
+              "chunk_id": "chunk_00174",
+              "text": "[3.7 Tyre exclusions] (cid:127) Tyre damage from use of the vehicle in rallying, track days, or any competitive motorsport event.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0632
+            },
+            {
+              "chunk_id": "chunk_00180",
+              "text": "[3.7 Tyre exclusions] 7. HOW TO CLAIM (cid:127) Call our helpline or use the app within 24 hours of the accident. (cid:127) Take photos of the damage before moving the vehicle if it is safe to do so. (cid:127) Get a repair estimate from a garage and share it with us before repairs start.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0629
+            },
+            {
+              "chunk_id": "chunk_00172",
+              "text": "3.7 Tyre exclusions (cid:127) Tyre deterioration, tread wear, or sidewall cracking from age and use. (cid:127) Tyre damage when the vehicle was driven knowingly on a flat or underinflated tyre for a distance exceeding 2 km.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0627
+            },
+            {
+              "chunk_id": "chunk_00183",
+              "text": "[3.7 Tyre exclusions] 9. GENERAL EXCEPTIONS This policy does not cover any claim arising from war, nuclear risk, use of the vehicle in violation of permit conditions, or operation outside the specified geographical area.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0623
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": false
+    }
+  },
+  {
+    "claim_id": "CLAIM_04_multi_pileup_severe",
+    "incident_narrative": "A three-vehicle pileup caused front dents, cracked bumper panels, and broken headlight units.",
+    "detections": [
+      {
+        "class_id": 0,
+        "class_name": "dent",
+        "confidence": 0.9,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.3,
+          0.3
+        ],
+        "area_ratio": 0.09,
+        "severity": "severe"
+      },
+      {
+        "class_id": 2,
+        "class_name": "crack",
+        "confidence": 0.85,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.2449,
+          0.2449
+        ],
+        "area_ratio": 0.06,
+        "severity": "moderate"
+      },
+      {
+        "class_id": 3,
+        "class_name": "broken_lamp",
+        "confidence": 0.83,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.2,
+          0.2
+        ],
+        "area_ratio": 0.04,
+        "severity": "moderate"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_3_quickclaim_general",
+      "selection_method": "claimant_selected",
+      "insurer": "QuickClaim General Insurance Ltd",
+      "product": "Motor Vehicle Package (Comprehensive Own Damage + compulsory Third Party)",
+      "description": "Comprehensive package with the most detailed exclusion schedules of the five (six named schedules, A-F). Glass at nil depreciation. Notable conditions: scratch/paint claims must be reported within 30 days; a pre-inspection report governs pre-existing damage.",
+      "clauses": {
+        "broken_lamp": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00093",
+              "text": "[arising from and directly caused by the following events during the policy period:] SPECIAL CONDITIONS - TYRE DAMAGE Loss or damage to tyres and inner tubes is covered subject to a deduction of 50% of the cost of replacement, provided that the vehicle insured has sustained concurrent physical damage in the same incident. Coverage under this clause",
+              "heading": "arising from and directly caused by the following events during the policy period:",
+              "clause_type": "coverage",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0567
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00105",
+              "text": "D. Exclusions Relating to Lamp Damage D1. Failure of lamp units due to electrical faults in the vehicle wiring, including short circuits, voltage spikes, or faulty relays, without concurrent physical damage to the lamp housing.",
+              "heading": "D. Exclusions Relating to Lamp Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0656
+            },
+            {
+              "chunk_id": "chunk_00107",
+              "text": "[D. Exclusions Relating to Lamp Damage] vehicle's regulatory lighting. D4. Discolouration, cloudiness, or UV hazing of polycarbonate headlamp covers, not resulting from a specific impact event. D5. Lamp assembly damage to vehicles modified for commercial hire or rental use, contrary to the permitted use under this policy.",
+              "heading": "D. Exclusions Relating to Lamp Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0645
+            },
+            {
+              "chunk_id": "chunk_00106",
+              "text": "[D. Exclusions Relating to Lamp Damage] D2. Lamp damage arising from thermal stress caused by the use of non-OEM replacement bulbs with wattage exceeding the manufacturer's specification. D3. Damage to interior cabin lighting, instrument cluster lighting, or decorative LED strips not forming part of the vehicle's regulatory lighting.",
+              "heading": "D. Exclusions Relating to Lamp Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0632
+            },
+            {
+              "chunk_id": "chunk_00115",
+              "text": "[F. Exclusions Relating to Tyre Damage] Exceeding 4 years but not exceeding 5 years 50% Total Loss is declared when repair cost exceeds 75% of IDV. CLAIM INTIMATION Intimation of any claim must be made to the Company within 48 hours of the occurrence. Failure to comply with this",
+              "heading": "F. Exclusions Relating to Tyre Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0608
+            },
+            {
+              "chunk_id": "chunk_00110",
+              "text": "[E. Exclusions Relating to Glass Damage] E5. Glass repair (as distinct from replacement) where the repaired area exceeds the diameter threshold specified in the Surveyor's Guidelines issued by IRDAI from time to time.",
+              "heading": "E. Exclusions Relating to Glass Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0602
+            }
+          ],
+          "coverage_clause_found": true
+        },
+        "crack": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00093",
+              "text": "[arising from and directly caused by the following events during the policy period:] SPECIAL CONDITIONS - TYRE DAMAGE Loss or damage to tyres and inner tubes is covered subject to a deduction of 50% of the cost of replacement, provided that the vehicle insured has sustained concurrent physical damage in the same incident. Coverage under this clause",
+              "heading": "arising from and directly caused by the following events during the policy period:",
+              "clause_type": "coverage",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.053
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00102",
+              "text": "[C. Exclusions Relating to Cracks] C2. Cracks in engine block, cylinder head, or other internal mechanical components, even where resulting from an external impact, unless such impact is also separately claimed under the body damage section.",
+              "heading": "C. Exclusions Relating to Cracks",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0637
+            },
+            {
+              "chunk_id": "chunk_00104",
+              "text": "[C. Exclusions Relating to Cracks] manufacturer's specification. C5. Stress cracks in the vehicle chassis or monocoque arising from prolonged use on uneven roads, classified as structural fatigue. QUICKCLAIM GENERAL INSURANCE LIMITED",
+              "heading": "C. Exclusions Relating to Cracks",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0627
+            },
+            {
+              "chunk_id": "chunk_00116",
+              "text": "[F. Exclusions Relating to Tyre Damage] condition may prejudice the insured's entitlement to indemnity. This is a synthetic specimen policy for research and educational use only. Not a valid insurance contract.",
+              "heading": "F. Exclusions Relating to Tyre Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0604
+            },
+            {
+              "chunk_id": "chunk_00115",
+              "text": "[F. Exclusions Relating to Tyre Damage] Exceeding 4 years but not exceeding 5 years 50% Total Loss is declared when repair cost exceeds 75% of IDV. CLAIM INTIMATION Intimation of any claim must be made to the Company within 48 hours of the occurrence. Failure to comply with this",
+              "heading": "F. Exclusions Relating to Tyre Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0602
+            },
+            {
+              "chunk_id": "chunk_00101",
+              "text": "C. Exclusions Relating to Cracks C1. Hairline cracks in laminated safety glass that do not progress into full fractures and do not impair the driver's field of vision as defined in Rule 100 of the Central Motor Vehicles Rules, 1989.",
+              "heading": "C. Exclusions Relating to Cracks",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0602
+            }
+          ],
+          "coverage_clause_found": true
+        },
+        "dent": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00086",
+              "text": "OPERATIVE CLAUSE - OWN DAMAGE SECTION The Company undertakes to indemnify the insured in respect of accidental loss or damage to the vehicle insured,",
+              "heading": "",
+              "clause_type": "coverage",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0618
+            },
+            {
+              "chunk_id": "chunk_00093",
+              "text": "[arising from and directly caused by the following events during the policy period:] SPECIAL CONDITIONS - TYRE DAMAGE Loss or damage to tyres and inner tubes is covered subject to a deduction of 50% of the cost of replacement, provided that the vehicle insured has sustained concurrent physical damage in the same incident. Coverage under this clause",
+              "heading": "arising from and directly caused by the following events during the policy period:",
+              "clause_type": "coverage",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.057
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00095",
+              "text": "A. Exclusions Relating to Panel and Body Damage A1. Dents or deformations of body panels arising from metal fatigue, long-term vibration stress, or corrosion from within, even where the resulting deformation is externally visible.",
+              "heading": "A. Exclusions Relating to Panel and Body Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0639
+            },
+            {
+              "chunk_id": "chunk_00116",
+              "text": "[F. Exclusions Relating to Tyre Damage] condition may prejudice the insured's entitlement to indemnity. This is a synthetic specimen policy for research and educational use only. Not a valid insurance contract.",
+              "heading": "F. Exclusions Relating to Tyre Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0633
+            },
+            {
+              "chunk_id": "chunk_00102",
+              "text": "[C. Exclusions Relating to Cracks] C2. Cracks in engine block, cylinder head, or other internal mechanical components, even where resulting from an external impact, unless such impact is also separately claimed under the body damage section.",
+              "heading": "C. Exclusions Relating to Cracks",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0599
+            },
+            {
+              "chunk_id": "chunk_00115",
+              "text": "[F. Exclusions Relating to Tyre Damage] Exceeding 4 years but not exceeding 5 years 50% Total Loss is declared when repair cost exceeds 75% of IDV. CLAIM INTIMATION Intimation of any claim must be made to the Company within 48 hours of the occurrence. Failure to comply with this",
+              "heading": "F. Exclusions Relating to Tyre Damage",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0596
+            },
+            {
+              "chunk_id": "chunk_00104",
+              "text": "[C. Exclusions Relating to Cracks] manufacturer's specification. C5. Stress cracks in the vehicle chassis or monocoque arising from prolonged use on uneven roads, classified as structural fatigue. QUICKCLAIM GENERAL INSURANCE LIMITED",
+              "heading": "C. Exclusions Relating to Cracks",
+              "clause_type": "exclusion",
+              "doc_id": "policy_3_quickclaim_general",
+              "score": 0.0584
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": false
+    }
+  },
+  {
+    "claim_id": "CLAIM_05_scratch_vandalism_keyed",
+    "incident_narrative": "A vandal keyed the vehicle overnight in the apartment parking, leaving deep scratches on both side doors.",
+    "detections": [
+      {
+        "class_id": 1,
+        "class_name": "scratch",
+        "confidence": 0.87,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.1225,
+          0.1225
+        ],
+        "area_ratio": 0.015,
+        "severity": "minor"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_2_safedrive_assurance",
+      "selection_method": "claimant_selected",
+      "insurer": "SafeDrive Assurance Corporation",
+      "product": "Standalone Own Damage cover with Nil-Depreciation add-on included",
+      "description": "Standalone own-damage cover with Nil Depreciation built in as standard for vehicles under 3 years (75% depreciation waiver for 3-5 years, none beyond 5 years). Separate detailed glass and tyre coverage sections.",
+      "clauses": {
+        "scratch": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00055",
+              "text": "[What is NOT covered under glass:] (cid:127) Superficial glass scratches or micro-abrasions that do not constitute a break or chip. (cid:127) Glass damage sustained while the vehicle is in commercial transit not covered under this policy. (cid:127) Tinted film or protective coatings applied to glass after vehicle manufacture.",
+              "heading": "What is NOT covered under glass:",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0621
+            },
+            {
+              "chunk_id": "chunk_00045",
+              "text": "SAFEDRIVE ASSURANCE CORPORATION PRIVATE MOTOR VEHICLE OWN DAMAGE POLICY Standalone Own Damage Cover with Nil Depreciation Add-On This policy document sets out the full terms and conditions of the insurance contract between the insured named in the",
+              "heading": "",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0611
+            },
+            {
+              "chunk_id": "chunk_00048",
+              "text": "[We will pay for physical loss or damage to your vehicle caused by:] (cid:127) Physical impact damage caused by collision with another vehicle, animal, or fixed object, resulting in dents to panels, bumpers, or wheel arches. (cid:127) Surface damage including paint and body abrasions arising from collision, intentional acts, or contact with",
+              "heading": "We will pay for physical loss or damage to your vehicle caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0596
+            },
+            {
+              "chunk_id": "chunk_00082",
+              "text": "PART H. GENERAL EXCEPTIONS This policy does not cover any loss arising from: war, nuclear risk, use of vehicle in violation of permit conditions, driving without a valid licence, or use of the vehicle outside the permitted geographical area.",
+              "heading": "PART H. GENERAL EXCEPTIONS",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0581
+            },
+            {
+              "chunk_id": "chunk_00056",
+              "text": "[What is NOT covered under glass:] PART A2. TYRE COVERAGE DETAILS Tyre damage is covered subject to a deduction of 50% of the cost of replacement of the damaged tyre and tube. This cover applies only if the vehicle itself has also sustained damage in the same incident. Stand-alone tyre claims",
+              "heading": "What is NOT covered under glass:",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0558
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00067",
+              "text": "[The following are excluded from this policy:] 3. Scratch damage resulting from routine washing and cleaning activities of the vehicle, classified under fair wear and tear.",
+              "heading": "The following are excluded from this policy:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0656
+            },
+            {
+              "chunk_id": "chunk_00079",
+              "text": "PART F. NO CLAIM BONUS Claim History NCB at Renewal NCB if Claim Made 0 claims in preceding year 20% 0% 0 claims in preceding 2 years 25% 0% 0 claims in preceding 3 years 35% 0% 0 claims in preceding 4 years 45% 0% 0 claims in preceding 5+ years 50% 0%",
+              "heading": "PART F. NO CLAIM BONUS",
+              "clause_type": "exclusion",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0611
+            },
+            {
+              "chunk_id": "chunk_00078",
+              "text": "PART E. DEDUCTIBLE You are responsible for the first Rs. 2,000 of each own damage claim under Part A of this policy. This compulsory excess applies per occurrence. An optional voluntary excess of Rs. 1,000, Rs. 2,000, or Rs. 5,000 may be selected at inception for a premium discount.",
+              "heading": "PART E. DEDUCTIBLE",
+              "clause_type": "sub_limit",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0573
+            },
+            {
+              "chunk_id": "chunk_00066",
+              "text": "[The following are excluded from this policy:] 2. Panel dents, scratches, or marks arising from gradual accumulation of minor incidents over time where no single identifiable accident can be attributed as the cause.",
+              "heading": "The following are excluded from this policy:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0484
+            },
+            {
+              "chunk_id": "chunk_00068",
+              "text": "[The following are excluded from this policy:] 4. Cracks in engine mountings, chassis members, or structural frame components arising from metal fatigue or prolonged vibration.",
+              "heading": "The following are excluded from this policy:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0476
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": false
+    }
+  },
+  {
+    "claim_id": "CLAIM_06_low_confidence_dent",
+    "incident_narrative": "Possible minor contact damage noticed on the rear bumper; unclear from the photo whether this is fresh damage.",
+    "detections": [
+      {
+        "class_id": 0,
+        "class_name": "dent",
+        "confidence": 0.35,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.0894,
+          0.0894
+        ],
+        "area_ratio": 0.008,
+        "severity": "minor"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_1_bharat_suraksha",
+      "selection_method": "claimant_selected",
+      "insurer": "Bharat Suraksha Motor Insurance Co. Ltd",
+      "product": "Motor Private Car Comprehensive (Own Damage + Third Party Liability)",
+      "description": "Comprehensive cover with all damage types indemnified under one accidental-external-means clause. Standard age-based depreciation (Nil to 50%); glass at nil depreciation; fibre-glass parts at 30%. No add-on covers.",
+      "clauses": {
+        "dent": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00004",
+              "text": "[SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED] (cid:127) By accidental external means, including collision, impact with another vehicle or stationary object, and resulting dents, scratches, cracks, and breakage of lamps or other exterior fittings.",
+              "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED",
+              "clause_type": "definition",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0656
+            },
+            {
+              "chunk_id": "chunk_00032",
+              "text": "[SECTION V. ADD-ON COVERS] Add-On 3: Engine Protection Cover Consequential damage to engine parts and gearbox components arising from water ingression due to flood or inundation is covered under this add-on, subject to the claim under Section I being admissible and the vehicle being",
+              "heading": "SECTION V. ADD-ON COVERS",
+              "clause_type": "coverage",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0606
+            },
+            {
+              "chunk_id": "chunk_00002",
+              "text": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED The Company will indemnify the insured against loss or damage to the vehicle insured and its accessories whilst thereon, arising from the following perils: (cid:127) By fire, explosion, self-ignition, or lightning.",
+              "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED",
+              "clause_type": "coverage",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0593
+            },
+            {
+              "chunk_id": "chunk_00033",
+              "text": "[SECTION V. ADD-ON COVERS] retrieved from the waterlogged area within 72 hours. Exclusion under Engine Protection: Damage to engine or gearbox arising from delay in intimation, from driving the vehicle after it has ingested water, or from gradual corrosion of engine parts, is not covered.",
+              "heading": "SECTION V. ADD-ON COVERS",
+              "clause_type": "coverage",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0549
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00034",
+              "text": "A No Claim Bonus discount is applicable on Own Damage premium at renewal: Claim History NCB Discount on OD Premium 1 claim-free year 20% 2 consecutive claim-free years 25% 3 consecutive claim-free years 35% 4 consecutive claim-free years 45% 5 or more consecutive claim-free years 50%",
+              "heading": "A No Claim Bonus discount is applicable on Own Damage premium at renewal:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0596
+            },
+            {
+              "chunk_id": "chunk_00044",
+              "text": "[SECTION IX. GENERAL EXCEPTIONS] area, or in violation of the Driver's Clause, are also excluded. Insurance is the subject matter of solicitation. Please read all terms and conditions carefully. This is a synthetic specimen policy issued for educational and research purposes only and does not constitute a valid insurance contract.",
+              "heading": "SECTION IX. GENERAL EXCEPTIONS",
+              "clause_type": "exclusion",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0595
+            },
+            {
+              "chunk_id": "chunk_00011",
+              "text": "[The following depreciation rates apply to parts necessarily replaced:] insured has also sustained damage at the same time. Where the vehicle has not been damaged simultaneously, tyre and tube damage alone is not recoverable under this section. EXCLUSIONS UNDER SECTION I",
+              "heading": "The following depreciation rates apply to parts necessarily replaced:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0581
+            },
+            {
+              "chunk_id": "chunk_00040",
+              "text": "[SECTION VII. GENERAL CONDITIONS] 5. The due observance of all terms, conditions, and endorsements of this policy is a condition precedent to any liability of the Company.",
+              "heading": "SECTION VII. GENERAL CONDITIONS",
+              "clause_type": "condition",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0581
+            },
+            {
+              "chunk_id": "chunk_00027",
+              "text": "SECTION III. DEDUCTIBLE The Company shall not be liable for the first Rs. 1,000 of each and every claim under Section I of this policy. This deductible applies to each occurrence independently, including occurrences giving rise to a Total Loss or Constructive Total Loss claim.",
+              "heading": "SECTION III. DEDUCTIBLE",
+              "clause_type": "sub_limit",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0541
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [
+        "dent"
+      ],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": true
+    }
+  },
+  {
+    "claim_id": "CLAIM_07_glass_vandalism_window",
+    "incident_narrative": "Vandals smashed the rear window of the vehicle during a public disturbance event.",
+    "detections": [
+      {
+        "class_id": 4,
+        "class_name": "shattered_glass",
+        "confidence": 0.89,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.3162,
+          0.3162
+        ],
+        "area_ratio": 0.1,
+        "severity": "severe"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_2_safedrive_assurance",
+      "selection_method": "claimant_selected",
+      "insurer": "SafeDrive Assurance Corporation",
+      "product": "Standalone Own Damage cover with Nil-Depreciation add-on included",
+      "description": "Standalone own-damage cover with Nil Depreciation built in as standard for vehicles under 3 years (75% depreciation waiver for 3-5 years, none beyond 5 years). Separate detailed glass and tyre coverage sections.",
+      "clauses": {
+        "shattered_glass": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00052",
+              "text": "[We will pay for physical loss or damage to your vehicle caused by:] PART A1. GLASS COVERAGE DETAILS Glass components of the vehicle including the front windscreen, rear windscreen, quarter glass panels, and door windows are covered without any depreciation deduction regardless of vehicle age. This means the full invoice cost of",
+              "heading": "We will pay for physical loss or damage to your vehicle caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0653
+            },
+            {
+              "chunk_id": "chunk_00057",
+              "text": "[What is NOT covered under glass:] without concurrent vehicle body damage are not admissible.",
+              "heading": "What is NOT covered under glass:",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0643
+            },
+            {
+              "chunk_id": "chunk_00050",
+              "text": "[We will pay for physical loss or damage to your vehicle caused by:] contact. (cid:127) Damage to lighting units including headlamp assemblies, tail lamp clusters, fog lamps, indicator units, and reflectors, caused by impact or accident. (cid:127) Windscreen, rear windscreen, and door window glass damage - glass is covered at nil depreciation. The full",
+              "heading": "We will pay for physical loss or damage to your vehicle caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0625
+            },
+            {
+              "chunk_id": "chunk_00051",
+              "text": "[We will pay for physical loss or damage to your vehicle caused by:] cost of windscreen replacement is payable without any deduction for the age of the vehicle. (cid:127) Landslide or rockslide. (cid:127) Transit damage during transportation by road, rail, or sea. PART A1. GLASS COVERAGE DETAILS",
+              "heading": "We will pay for physical loss or damage to your vehicle caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0625
+            },
+            {
+              "chunk_id": "chunk_00055",
+              "text": "[What is NOT covered under glass:] (cid:127) Superficial glass scratches or micro-abrasions that do not constitute a break or chip. (cid:127) Glass damage sustained while the vehicle is in commercial transit not covered under this policy. (cid:127) Tinted film or protective coatings applied to glass after vehicle manufacture.",
+              "heading": "What is NOT covered under glass:",
+              "clause_type": "coverage",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0625
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00071",
+              "text": "[The following are excluded from this policy:] 7. Glass haze, delamination, or yellowing of polycarbonate headlamp covers from UV exposure over time, not caused by a specific impact event.",
+              "heading": "The following are excluded from this policy:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.06
+            },
+            {
+              "chunk_id": "chunk_00078",
+              "text": "PART E. DEDUCTIBLE You are responsible for the first Rs. 2,000 of each own damage claim under Part A of this policy. This compulsory excess applies per occurrence. An optional voluntary excess of Rs. 1,000, Rs. 2,000, or Rs. 5,000 may be selected at inception for a premium discount.",
+              "heading": "PART E. DEDUCTIBLE",
+              "clause_type": "sub_limit",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0545
+            },
+            {
+              "chunk_id": "chunk_00072",
+              "text": "[The following are excluded from this policy:] 8. Damage to tyres used beyond their rated load index or speed rating as specified by the vehicle manufacturer.",
+              "heading": "The following are excluded from this policy:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.051
+            },
+            {
+              "chunk_id": "chunk_00066",
+              "text": "[The following are excluded from this policy:] 2. Panel dents, scratches, or marks arising from gradual accumulation of minor incidents over time where no single identifiable accident can be attributed as the cause.",
+              "heading": "The following are excluded from this policy:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0441
+            },
+            {
+              "chunk_id": "chunk_00067",
+              "text": "[The following are excluded from this policy:] 3. Scratch damage resulting from routine washing and cleaning activities of the vehicle, classified under fair wear and tear.",
+              "heading": "The following are excluded from this policy:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_2_safedrive_assurance",
+              "score": 0.0429
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": false
+    }
+  },
+  {
+    "claim_id": "CLAIM_08_crack_lamp_rearend",
+    "incident_narrative": "A rear-end shunt in traffic cracked the tail-light housing and the bumper below it.",
+    "detections": [
+      {
+        "class_id": 2,
+        "class_name": "crack",
+        "confidence": 0.86,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.2236,
+          0.2236
+        ],
+        "area_ratio": 0.05,
+        "severity": "moderate"
+      },
+      {
+        "class_id": 3,
+        "class_name": "broken_lamp",
+        "confidence": 0.84,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.1732,
+          0.1732
+        ],
+        "area_ratio": 0.03,
+        "severity": "moderate"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_4_autoguard_premium",
+      "selection_method": "claimant_selected",
+      "insurer": "AutoGuard Premium Insurance Services Ltd",
+      "product": "Own Damage with Full-Cover Add-On Suite",
+      "description": "Premium-tier product presenting cover as a summary table, with a Full-Cover Add-On Suite (Nil Depreciation, Return-to-Invoice, Consumables). Glass nil depreciation standard. Compulsory deductible Rs. 2,500 per claim.",
+      "clauses": {
+        "broken_lamp": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00121",
+              "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface damage vandalism Exterior surfaces Panel fractures Cracks to bumpers, door panels, trims from impact Exterior components Headlamps, tail lamps, fog lamps, indicators broken All lamps and Lighting assembly damage by impact reflectors Windscreen, rear screen, side windows - nil",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0656
+            },
+            {
+              "chunk_id": "chunk_00120",
+              "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Theft Burglary, housebreaking, theft Whole vehicle Natural calamity Flood, cyclone, earthquake, hailstorm All components Dents to panels, bumpers, arches from collision or Bodily damage from impact object impact Exterior body panels Paint abrasion and exterior scratches from accident or",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0615
+            },
+            {
+              "chunk_id": "chunk_00122",
+              "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Glass damage depreciation All vehicle glazing At 50% of replacement cost if concurrent vehicle Tyre and tube damage damage present Tyres and tubes only",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.06
+            },
+            {
+              "chunk_id": "chunk_00119",
+              "text": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE The following events are covered under this policy, subject to the terms, exclusions, and sub-limits defined in Chapter 3: Event Coverage detail Applies to Fire and allied perils Fire, explosion, lightning, self-ignition All components",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0584
+            },
+            {
+              "chunk_id": "chunk_00143",
+              "text": "[CHAPTER 5. PREMIUM ADD-ON COVERS] Add-On C: Consumables Cover Consumable items including engine oil, coolant, AC gas, nuts, bolts, and sealants replaced during an admissible partial loss repair are covered, subject to a limit of 1% of IDV or 5% of the claim amount, whichever is lower.",
+              "heading": "CHAPTER 5. PREMIUM ADD-ON COVERS",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0541
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00132",
+              "text": "3.4 Lamp Exclusions (cid:127) Electrical failure of lamp control modules or LED drivers without physical damage to the lamp housing or lens. (cid:127) Damage to decorative or customisation lighting not forming part of the vehicle's regulatory lighting system.",
+              "heading": "3.4 Lamp Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0653
+            },
+            {
+              "chunk_id": "chunk_00134",
+              "text": "[3.4 Lamp Exclusions] section. (cid:127) Corrosion of lamp contacts or connectors from moisture ingress through an undamaged seal.",
+              "heading": "3.4 Lamp Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0648
+            },
+            {
+              "chunk_id": "chunk_00133",
+              "text": "[3.4 Lamp Exclusions] (cid:127) DRL (Daytime Running Light) malfunction not associated with an accident. (cid:127) Lamp damage on a second vehicle involved in the same incident, payable instead from the third-party liability section.",
+              "heading": "3.4 Lamp Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0635
+            },
+            {
+              "chunk_id": "chunk_00136",
+              "text": "[3.5 Glass Exclusions] (cid:127) Laminated windscreen separation or delamination from age or manufacturing defect, recoverable under warranty. (cid:127) Sunroof glass breakage unless the Sunroof Add-On is endorsed on the Schedule. (cid:127) Glass scratches from windscreen wiper blades operating on a dry screen.",
+              "heading": "3.5 Glass Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0578
+            },
+            {
+              "chunk_id": "chunk_00130",
+              "text": "3.3 Crack Exclusions (cid:127) Cracks in the engine block, cylinder head, or differential casing, unless caused by a primary accidental external event that is separately claimed. (cid:127) Cracks in interior plastic trim, dashboard, or door card material from thermal or UV degradation.",
+              "heading": "3.3 Crack Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.057
+            }
+          ],
+          "coverage_clause_found": true
+        },
+        "crack": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00121",
+              "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface damage vandalism Exterior surfaces Panel fractures Cracks to bumpers, door panels, trims from impact Exterior components Headlamps, tail lamps, fog lamps, indicators broken All lamps and Lighting assembly damage by impact reflectors Windscreen, rear screen, side windows - nil",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0653
+            },
+            {
+              "chunk_id": "chunk_00120",
+              "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Theft Burglary, housebreaking, theft Whole vehicle Natural calamity Flood, cyclone, earthquake, hailstorm All components Dents to panels, bumpers, arches from collision or Bodily damage from impact object impact Exterior body panels Paint abrasion and exterior scratches from accident or",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0612
+            },
+            {
+              "chunk_id": "chunk_00122",
+              "text": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Glass damage depreciation All vehicle glazing At 50% of replacement cost if concurrent vehicle Tyre and tube damage damage present Tyres and tubes only",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0565
+            },
+            {
+              "chunk_id": "chunk_00119",
+              "text": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE The following events are covered under this policy, subject to the terms, exclusions, and sub-limits defined in Chapter 3: Event Coverage detail Applies to Fire and allied perils Fire, explosion, lightning, self-ignition All components",
+              "heading": "CHAPTER 1. COVERED EVENTS - OWN DAMAGE",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0562
+            },
+            {
+              "chunk_id": "chunk_00143",
+              "text": "[CHAPTER 5. PREMIUM ADD-ON COVERS] Add-On C: Consumables Cover Consumable items including engine oil, coolant, AC gas, nuts, bolts, and sealants replaced during an admissible partial loss repair are covered, subject to a limit of 1% of IDV or 5% of the claim amount, whichever is lower.",
+              "heading": "CHAPTER 5. PREMIUM ADD-ON COVERS",
+              "clause_type": "coverage",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0539
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00130",
+              "text": "3.3 Crack Exclusions (cid:127) Cracks in the engine block, cylinder head, or differential casing, unless caused by a primary accidental external event that is separately claimed. (cid:127) Cracks in interior plastic trim, dashboard, or door card material from thermal or UV degradation.",
+              "heading": "3.3 Crack Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0653
+            },
+            {
+              "chunk_id": "chunk_00131",
+              "text": "[3.3 Crack Exclusions] (cid:127) Stress fractures in suspension components from prolonged use on poor roads. (cid:127) Cracks in aftermarket bodywork additions, spoilers, or ground effects kits not part of the manufacturer's original specification. (cid:127) Fractures in tow bars or roof-mounted cycle or ski racks.",
+              "heading": "3.3 Crack Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0643
+            },
+            {
+              "chunk_id": "chunk_00137",
+              "text": "3.6 Tyre Exclusions (cid:127) Tyre damage from deliberate spiked road obstacles (road spikes) in a disputed ownership or legal proceeding situation. (cid:127) Damage to speciality or competition tyres not approved for road use under Central Motor Vehicles Rules.",
+              "heading": "3.6 Tyre Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.06
+            },
+            {
+              "chunk_id": "chunk_00128",
+              "text": "3.2 Scratch Exclusions (cid:127) Scratches from improper car wash technique, including dry wiping or use of coarse sponges, constituting owner-induced damage. (cid:127) Paint keying or scratching by the insured or members of the insured's household.",
+              "heading": "3.2 Scratch Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.0593
+            },
+            {
+              "chunk_id": "chunk_00135",
+              "text": "3.5 Glass Exclusions (cid:127) Glass damage on a vehicle registered as a commercial goods carrier under a different class of insurance. (cid:127) Tinting films, privacy glass coatings, or heat-rejection treatments applied to the original vehicle glass.",
+              "heading": "3.5 Glass Exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_4_autoguard_premium",
+              "score": 0.057
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": false
+    }
+  },
+  {
+    "claim_id": "CLAIM_09_multi_instance_hail_dents",
+    "incident_narrative": "Hailstorm left multiple small dents across the bonnet and roof of the vehicle.",
+    "detections": [
+      {
+        "class_id": 0,
+        "class_name": "dent",
+        "confidence": 0.8,
+        "bbox_normalized": [
+          0.3,
+          0.4,
+          0.1095,
+          0.1095
+        ],
+        "area_ratio": 0.012,
+        "severity": "minor"
+      },
+      {
+        "class_id": 0,
+        "class_name": "dent",
+        "confidence": 0.78,
+        "bbox_normalized": [
+          0.5,
+          0.4,
+          0.0949,
+          0.0949
+        ],
+        "area_ratio": 0.009,
+        "severity": "minor"
+      },
+      {
+        "class_id": 0,
+        "class_name": "dent",
+        "confidence": 0.81,
+        "bbox_normalized": [
+          0.7,
+          0.5,
+          0.1049,
+          0.1049
+        ],
+        "area_ratio": 0.011,
+        "severity": "minor"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_1_bharat_suraksha",
+      "selection_method": "claimant_selected",
+      "insurer": "Bharat Suraksha Motor Insurance Co. Ltd",
+      "product": "Motor Private Car Comprehensive (Own Damage + Third Party Liability)",
+      "description": "Comprehensive cover with all damage types indemnified under one accidental-external-means clause. Standard age-based depreciation (Nil to 50%); glass at nil depreciation; fibre-glass parts at 30%. No add-on covers.",
+      "clauses": {
+        "dent": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00004",
+              "text": "[SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED] (cid:127) By accidental external means, including collision, impact with another vehicle or stationary object, and resulting dents, scratches, cracks, and breakage of lamps or other exterior fittings.",
+              "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED",
+              "clause_type": "definition",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0656
+            },
+            {
+              "chunk_id": "chunk_00032",
+              "text": "[SECTION V. ADD-ON COVERS] Add-On 3: Engine Protection Cover Consequential damage to engine parts and gearbox components arising from water ingression due to flood or inundation is covered under this add-on, subject to the claim under Section I being admissible and the vehicle being",
+              "heading": "SECTION V. ADD-ON COVERS",
+              "clause_type": "coverage",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0606
+            },
+            {
+              "chunk_id": "chunk_00002",
+              "text": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED The Company will indemnify the insured against loss or damage to the vehicle insured and its accessories whilst thereon, arising from the following perils: (cid:127) By fire, explosion, self-ignition, or lightning.",
+              "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED",
+              "clause_type": "coverage",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0593
+            },
+            {
+              "chunk_id": "chunk_00033",
+              "text": "[SECTION V. ADD-ON COVERS] retrieved from the waterlogged area within 72 hours. Exclusion under Engine Protection: Damage to engine or gearbox arising from delay in intimation, from driving the vehicle after it has ingested water, or from gradual corrosion of engine parts, is not covered.",
+              "heading": "SECTION V. ADD-ON COVERS",
+              "clause_type": "coverage",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0549
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00034",
+              "text": "A No Claim Bonus discount is applicable on Own Damage premium at renewal: Claim History NCB Discount on OD Premium 1 claim-free year 20% 2 consecutive claim-free years 25% 3 consecutive claim-free years 35% 4 consecutive claim-free years 45% 5 or more consecutive claim-free years 50%",
+              "heading": "A No Claim Bonus discount is applicable on Own Damage premium at renewal:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0596
+            },
+            {
+              "chunk_id": "chunk_00044",
+              "text": "[SECTION IX. GENERAL EXCEPTIONS] area, or in violation of the Driver's Clause, are also excluded. Insurance is the subject matter of solicitation. Please read all terms and conditions carefully. This is a synthetic specimen policy issued for educational and research purposes only and does not constitute a valid insurance contract.",
+              "heading": "SECTION IX. GENERAL EXCEPTIONS",
+              "clause_type": "exclusion",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0595
+            },
+            {
+              "chunk_id": "chunk_00011",
+              "text": "[The following depreciation rates apply to parts necessarily replaced:] insured has also sustained damage at the same time. Where the vehicle has not been damaged simultaneously, tyre and tube damage alone is not recoverable under this section. EXCLUSIONS UNDER SECTION I",
+              "heading": "The following depreciation rates apply to parts necessarily replaced:",
+              "clause_type": "exclusion",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0581
+            },
+            {
+              "chunk_id": "chunk_00040",
+              "text": "[SECTION VII. GENERAL CONDITIONS] 5. The due observance of all terms, conditions, and endorsements of this policy is a condition precedent to any liability of the Company.",
+              "heading": "SECTION VII. GENERAL CONDITIONS",
+              "clause_type": "condition",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0581
+            },
+            {
+              "chunk_id": "chunk_00027",
+              "text": "SECTION III. DEDUCTIBLE The Company shall not be liable for the first Rs. 1,000 of each and every claim under Section I of this policy. This deductible applies to each occurrence independently, including occurrences giving rise to a Total Loss or Constructive Total Loss claim.",
+              "heading": "SECTION III. DEDUCTIBLE",
+              "clause_type": "sub_limit",
+              "doc_id": "policy_1_bharat_suraksha",
+              "score": 0.0541
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": false
+    }
+  },
+  {
+    "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+    "incident_narrative": "Driving through debris on a flooded road caused a tyre puncture and road rash scratches on the lower sill.",
+    "detections": [
+      {
+        "class_id": 5,
+        "class_name": "flat_tyre",
+        "confidence": 0.87,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.2646,
+          0.2646
+        ],
+        "area_ratio": 0.07,
+        "severity": "moderate"
+      },
+      {
+        "class_id": 1,
+        "class_name": "scratch",
+        "confidence": 0.82,
+        "bbox_normalized": [
+          0.5,
+          0.5,
+          0.1225,
+          0.1225
+        ],
+        "area_ratio": 0.015,
+        "severity": "minor"
+      }
+    ],
+    "policy": {
+      "doc_id": "policy_5_valuemotor",
+      "selection_method": "claimant_selected",
+      "insurer": "ValueMotor Comprehensive Insurance Ltd",
+      "product": "Affordable Comprehensive (Own Damage + Third Party)",
+      "description": "Budget comprehensive cover with standard age-based depreciation and no nil-depreciation add-on (glass is still always nil depreciation; rubber/plastic/tyre always 50% deduction). Tyre cover explicitly conditional on concurrent body damage.",
+      "clauses": {
+        "flat_tyre": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00152",
+              "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Tyre and tube damage at 50% of replacement cost, only when the vehicle has also been damaged in the same incident. (cid:127) Damage in transit by road, rail, or water. (cid:127) Landslide or rockslide damage.",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0573
+            },
+            {
+              "chunk_id": "chunk_00155",
+              "text": "[Your vehicle is covered for loss or damage caused by:] Exceeding 10 years 50% Rubber, plastic, tyre, battery, and airbag parts: always 50% deduction. Glass parts: always nil deduction. You get the full replacement cost.",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0543
+            },
+            {
+              "chunk_id": "chunk_00151",
+              "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Breakage of headlight, taillight, or indicator units by accident or collision during the policy period. (cid:127) Glass damage without depreciation deduction - your windscreen, rear windscreen, and door windows are covered at full replacement cost as standard.",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0534
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00173",
+              "text": "[3.7 Tyre exclusions] (cid:127) Damage to non-standard tyres, including competition tyres or oversized tyres not conforming to the vehicle's type approval. (cid:127) Tyre valve cap or core damage alone, without tyre body damage.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0646
+            },
+            {
+              "chunk_id": "chunk_00174",
+              "text": "[3.7 Tyre exclusions] (cid:127) Tyre damage from use of the vehicle in rallying, track days, or any competitive motorsport event.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0632
+            },
+            {
+              "chunk_id": "chunk_00180",
+              "text": "[3.7 Tyre exclusions] 7. HOW TO CLAIM (cid:127) Call our helpline or use the app within 24 hours of the accident. (cid:127) Take photos of the damage before moving the vehicle if it is safe to do so. (cid:127) Get a repair estimate from a garage and share it with us before repairs start.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0629
+            },
+            {
+              "chunk_id": "chunk_00172",
+              "text": "3.7 Tyre exclusions (cid:127) Tyre deterioration, tread wear, or sidewall cracking from age and use. (cid:127) Tyre damage when the vehicle was driven knowingly on a flat or underinflated tyre for a distance exceeding 2 km.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0627
+            },
+            {
+              "chunk_id": "chunk_00183",
+              "text": "[3.7 Tyre exclusions] 9. GENERAL EXCEPTIONS This policy does not cover any claim arising from war, nuclear risk, use of the vehicle in violation of permit conditions, or operation outside the specified geographical area.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0623
+            }
+          ],
+          "coverage_clause_found": true
+        },
+        "scratch": {
+          "coverage": [
+            {
+              "chunk_id": "chunk_00149",
+              "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Accidental collision or impact - loss or damage caused by your vehicle colliding with another vehicle or object, resulting in dents to the vehicle body, bumpers, or wheel arches. (cid:127) Cosmetic damage from accident or vandalism - scratching, keying, or paint abrasion caused by an",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0604
+            },
+            {
+              "chunk_id": "chunk_00151",
+              "text": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Breakage of headlight, taillight, or indicator units by accident or collision during the policy period. (cid:127) Glass damage without depreciation deduction - your windscreen, rear windscreen, and door windows are covered at full replacement cost as standard.",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0599
+            },
+            {
+              "chunk_id": "chunk_00155",
+              "text": "[Your vehicle is covered for loss or damage caused by:] Exceeding 10 years 50% Rubber, plastic, tyre, battery, and airbag parts: always 50% deduction. Glass parts: always nil deduction. You get the full replacement cost.",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0574
+            },
+            {
+              "chunk_id": "chunk_00150",
+              "text": "[Your vehicle is covered for loss or damage caused by:] identifiable accidental or malicious event. (cid:127) Cracking or fracturing of exterior components by accidental means - this includes cracks in bumpers, door panels, trims, and sills caused by impact.",
+              "heading": "Your vehicle is covered for loss or damage caused by:",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0566
+            },
+            {
+              "chunk_id": "chunk_00146",
+              "text": "VALUEMOTOR COMPREHENSIVE INSURANCE LTD VALUEMOTOR COMPREHENSIVE MOTOR POLICY Affordable Comprehensive Own Damage and Third Party Cover Thank you for choosing ValueMotor Comprehensive Insurance. This document explains what is and is not covered",
+              "heading": "",
+              "clause_type": "coverage",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0552
+            }
+          ],
+          "exclusion_or_condition": [
+            {
+              "chunk_id": "chunk_00164",
+              "text": "[3.3 Scratch and paint exclusions] (cid:127) Scratch damage to the interior of the vehicle including seats, dashboard, and door cards. VALUEMOTOR COMPREHENSIVE INSURANCE LTD",
+              "heading": "3.3 Scratch and paint exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0656
+            },
+            {
+              "chunk_id": "chunk_00162",
+              "text": "3.3 Scratch and paint exclusions (cid:127) Paint scratches from automatic car wash equipment with worn or dirty brushes. (cid:127) Surface oxidation, paint fade, or chalking from prolonged UV exposure.",
+              "heading": "3.3 Scratch and paint exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0635
+            },
+            {
+              "chunk_id": "chunk_00163",
+              "text": "[3.3 Scratch and paint exclusions] (cid:127) Chemical paint damage from acid rain, industrial fallout, or bird droppings not linked to a sudden identifiable event. (cid:127) Boot lid or sill scratches from loading and unloading luggage and goods.",
+              "heading": "3.3 Scratch and paint exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0625
+            },
+            {
+              "chunk_id": "chunk_00179",
+              "text": "[3.7 Tyre exclusions] 6. NO CLAIM BONUS Your claim history Your NCB discount 1 claim-free year 20% 2 claim-free years 25% 3 claim-free years 35% 4 claim-free years 45% 5+ claim-free years 50% Your NCB resets to 0% if you make a claim in any year.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0623
+            },
+            {
+              "chunk_id": "chunk_00184",
+              "text": "[3.7 Tyre exclusions] This is a synthetic specimen policy document created for AI research and educational purposes only. This document does not constitute a valid, binding, or enforceable insurance contract.",
+              "heading": "3.7 Tyre exclusions",
+              "clause_type": "exclusion",
+              "doc_id": "policy_5_valuemotor",
+              "score": 0.0583
+            }
+          ],
+          "coverage_clause_found": true
+        }
+      }
+    },
+    "escalation": {
+      "low_confidence_detections": [],
+      "missing_coverage_clause_for": [],
+      "needs_human_review": false
+    }
+  }
+]

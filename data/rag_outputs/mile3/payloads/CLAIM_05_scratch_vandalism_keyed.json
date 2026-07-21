@@ -1,0 +1,120 @@
+{
+  "claim_id": "CLAIM_05_scratch_vandalism_keyed",
+  "incident_narrative": "A vandal keyed the vehicle overnight in the apartment parking, leaving deep scratches on both side doors.",
+  "detections": [
+    {
+      "class_id": 1,
+      "class_name": "scratch",
+      "confidence": 0.87,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.1225,
+        0.1225
+      ],
+      "area_ratio": 0.015,
+      "severity": "minor"
+    }
+  ],
+  "policy": {
+    "doc_id": "policy_2_safedrive_assurance",
+    "selection_method": "claimant_selected",
+    "insurer": "SafeDrive Assurance Corporation",
+    "product": "Standalone Own Damage cover with Nil-Depreciation add-on included",
+    "description": "Standalone own-damage cover with Nil Depreciation built in as standard for vehicles under 3 years (75% depreciation waiver for 3-5 years, none beyond 5 years). Separate detailed glass and tyre coverage sections.",
+    "clauses": {
+      "scratch": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00055",
+            "text": "[What is NOT covered under glass:] (cid:127) Superficial glass scratches or micro-abrasions that do not constitute a break or chip. (cid:127) Glass damage sustained while the vehicle is in commercial transit not covered under this policy. (cid:127) Tinted film or protective coatings applied to glass after vehicle manufacture.",
+            "heading": "What is NOT covered under glass:",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0621
+          },
+          {
+            "chunk_id": "chunk_00045",
+            "text": "SAFEDRIVE ASSURANCE CORPORATION PRIVATE MOTOR VEHICLE OWN DAMAGE POLICY Standalone Own Damage Cover with Nil Depreciation Add-On This policy document sets out the full terms and conditions of the insurance contract between the insured named in the",
+            "heading": "",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0611
+          },
+          {
+            "chunk_id": "chunk_00048",
+            "text": "[We will pay for physical loss or damage to your vehicle caused by:] (cid:127) Physical impact damage caused by collision with another vehicle, animal, or fixed object, resulting in dents to panels, bumpers, or wheel arches. (cid:127) Surface damage including paint and body abrasions arising from collision, intentional acts, or contact with",
+            "heading": "We will pay for physical loss or damage to your vehicle caused by:",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0596
+          },
+          {
+            "chunk_id": "chunk_00082",
+            "text": "PART H. GENERAL EXCEPTIONS This policy does not cover any loss arising from: war, nuclear risk, use of vehicle in violation of permit conditions, driving without a valid licence, or use of the vehicle outside the permitted geographical area.",
+            "heading": "PART H. GENERAL EXCEPTIONS",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0581
+          },
+          {
+            "chunk_id": "chunk_00056",
+            "text": "[What is NOT covered under glass:] PART A2. TYRE COVERAGE DETAILS Tyre damage is covered subject to a deduction of 50% of the cost of replacement of the damaged tyre and tube. This cover applies only if the vehicle itself has also sustained damage in the same incident. Stand-alone tyre claims",
+            "heading": "What is NOT covered under glass:",
+            "clause_type": "coverage",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0558
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00067",
+            "text": "[The following are excluded from this policy:] 3. Scratch damage resulting from routine washing and cleaning activities of the vehicle, classified under fair wear and tear.",
+            "heading": "The following are excluded from this policy:",
+            "clause_type": "exclusion",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0656
+          },
+          {
+            "chunk_id": "chunk_00079",
+            "text": "PART F. NO CLAIM BONUS Claim History NCB at Renewal NCB if Claim Made 0 claims in preceding year 20% 0% 0 claims in preceding 2 years 25% 0% 0 claims in preceding 3 years 35% 0% 0 claims in preceding 4 years 45% 0% 0 claims in preceding 5+ years 50% 0%",
+            "heading": "PART F. NO CLAIM BONUS",
+            "clause_type": "exclusion",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0611
+          },
+          {
+            "chunk_id": "chunk_00078",
+            "text": "PART E. DEDUCTIBLE You are responsible for the first Rs. 2,000 of each own damage claim under Part A of this policy. This compulsory excess applies per occurrence. An optional voluntary excess of Rs. 1,000, Rs. 2,000, or Rs. 5,000 may be selected at inception for a premium discount.",
+            "heading": "PART E. DEDUCTIBLE",
+            "clause_type": "sub_limit",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0573
+          },
+          {
+            "chunk_id": "chunk_00066",
+            "text": "[The following are excluded from this policy:] 2. Panel dents, scratches, or marks arising from gradual accumulation of minor incidents over time where no single identifiable accident can be attributed as the cause.",
+            "heading": "The following are excluded from this policy:",
+            "clause_type": "exclusion",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0484
+          },
+          {
+            "chunk_id": "chunk_00068",
+            "text": "[The following are excluded from this policy:] 4. Cracks in engine mountings, chassis members, or structural frame components arising from metal fatigue or prolonged vibration.",
+            "heading": "The following are excluded from this policy:",
+            "clause_type": "exclusion",
+            "doc_id": "policy_2_safedrive_assurance",
+            "score": 0.0476
+          }
+        ],
+        "coverage_clause_found": true
+      }
+    }
+  },
+  "escalation": {
+    "low_confidence_detections": [],
+    "missing_coverage_clause_for": [],
+    "needs_human_review": false
+  }
+}

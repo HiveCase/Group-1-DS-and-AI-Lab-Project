@@ -1,0 +1,114 @@
+{
+  "claim_id": "CLAIM_06_low_confidence_dent",
+  "incident_narrative": "Possible minor contact damage noticed on the rear bumper; unclear from the photo whether this is fresh damage.",
+  "detections": [
+    {
+      "class_id": 0,
+      "class_name": "dent",
+      "confidence": 0.35,
+      "bbox_normalized": [
+        0.5,
+        0.5,
+        0.0894,
+        0.0894
+      ],
+      "area_ratio": 0.008,
+      "severity": "minor"
+    }
+  ],
+  "policy": {
+    "doc_id": "policy_1_bharat_suraksha",
+    "selection_method": "claimant_selected",
+    "insurer": "Bharat Suraksha Motor Insurance Co. Ltd",
+    "product": "Motor Private Car Comprehensive (Own Damage + Third Party Liability)",
+    "description": "Comprehensive cover with all damage types indemnified under one accidental-external-means clause. Standard age-based depreciation (Nil to 50%); glass at nil depreciation; fibre-glass parts at 30%. No add-on covers.",
+    "clauses": {
+      "dent": {
+        "coverage": [
+          {
+            "chunk_id": "chunk_00004",
+            "text": "[SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED] (cid:127) By accidental external means, including collision, impact with another vehicle or stationary object, and resulting dents, scratches, cracks, and breakage of lamps or other exterior fittings.",
+            "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED",
+            "clause_type": "definition",
+            "doc_id": "policy_1_bharat_suraksha",
+            "score": 0.0656
+          },
+          {
+            "chunk_id": "chunk_00032",
+            "text": "[SECTION V. ADD-ON COVERS] Add-On 3: Engine Protection Cover Consequential damage to engine parts and gearbox components arising from water ingression due to flood or inundation is covered under this add-on, subject to the claim under Section I being admissible and the vehicle being",
+            "heading": "SECTION V. ADD-ON COVERS",
+            "clause_type": "coverage",
+            "doc_id": "policy_1_bharat_suraksha",
+            "score": 0.0606
+          },
+          {
+            "chunk_id": "chunk_00002",
+            "text": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED The Company will indemnify the insured against loss or damage to the vehicle insured and its accessories whilst thereon, arising from the following perils: (cid:127) By fire, explosion, self-ignition, or lightning.",
+            "heading": "SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED",
+            "clause_type": "coverage",
+            "doc_id": "policy_1_bharat_suraksha",
+            "score": 0.0593
+          },
+          {
+            "chunk_id": "chunk_00033",
+            "text": "[SECTION V. ADD-ON COVERS] retrieved from the waterlogged area within 72 hours. Exclusion under Engine Protection: Damage to engine or gearbox arising from delay in intimation, from driving the vehicle after it has ingested water, or from gradual corrosion of engine parts, is not covered.",
+            "heading": "SECTION V. ADD-ON COVERS",
+            "clause_type": "coverage",
+            "doc_id": "policy_1_bharat_suraksha",
+            "score": 0.0549
+          }
+        ],
+        "exclusion_or_condition": [
+          {
+            "chunk_id": "chunk_00034",
+            "text": "A No Claim Bonus discount is applicable on Own Damage premium at renewal: Claim History NCB Discount on OD Premium 1 claim-free year 20% 2 consecutive claim-free years 25% 3 consecutive claim-free years 35% 4 consecutive claim-free years 45% 5 or more consecutive claim-free years 50%",
+            "heading": "A No Claim Bonus discount is applicable on Own Damage premium at renewal:",
+            "clause_type": "exclusion",
+            "doc_id": "policy_1_bharat_suraksha",
+            "score": 0.0596
+          },
+          {
+            "chunk_id": "chunk_00044",
+            "text": "[SECTION IX. GENERAL EXCEPTIONS] area, or in violation of the Driver's Clause, are also excluded. Insurance is the subject matter of solicitation. Please read all terms and conditions carefully. This is a synthetic specimen policy issued for educational and research purposes only and does not constitute a valid insurance contract.",
+            "heading": "SECTION IX. GENERAL EXCEPTIONS",
+            "clause_type": "exclusion",
+            "doc_id": "policy_1_bharat_suraksha",
+            "score": 0.0595
+          },
+          {
+            "chunk_id": "chunk_00011",
+            "text": "[The following depreciation rates apply to parts necessarily replaced:] insured has also sustained damage at the same time. Where the vehicle has not been damaged simultaneously, tyre and tube damage alone is not recoverable under this section. EXCLUSIONS UNDER SECTION I",
+            "heading": "The following depreciation rates apply to parts necessarily replaced:",
+            "clause_type": "exclusion",
+            "doc_id": "policy_1_bharat_suraksha",
+            "score": 0.0581
+          },
+          {
+            "chunk_id": "chunk_00040",
+            "text": "[SECTION VII. GENERAL CONDITIONS] 5. The due observance of all terms, conditions, and endorsements of this policy is a condition precedent to any liability of the Company.",
+            "heading": "SECTION VII. GENERAL CONDITIONS",
+            "clause_type": "condition",
+            "doc_id": "policy_1_bharat_suraksha",
+            "score": 0.0581
+          },
+          {
+            "chunk_id": "chunk_00027",
+            "text": "SECTION III. DEDUCTIBLE The Company shall not be liable for the first Rs. 1,000 of each and every claim under Section I of this policy. This deductible applies to each occurrence independently, including occurrences giving rise to a Total Loss or Constructive Total Loss claim.",
+            "heading": "SECTION III. DEDUCTIBLE",
+            "clause_type": "sub_limit",
+            "doc_id": "policy_1_bharat_suraksha",
+            "score": 0.0541
+          }
+        ],
+        "coverage_clause_found": true
+      }
+    }
+  },
+  "escalation": {
+    "low_confidence_detections": [
+      "dent"
+    ],
+    "missing_coverage_clause_for": [],
+    "needs_human_review": true
+  }
+}
