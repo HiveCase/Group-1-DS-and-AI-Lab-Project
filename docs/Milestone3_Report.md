@@ -63,7 +63,7 @@ Milestone 1 defined the problem (automating the first-pass review of vehicle-dam
 
 ### 1.2 Objectives of Milestone 3
 
-1. **Select and justify a model for every pipeline stage:** the Damage Agent, the Severity Agent, the Policy Agent's retrieval components, and the Report Agent's generation component — against the alternatives considered in Milestone 1 and the empirical evidence gathered in Milestone 2.
+1. **Select and justify a model for every pipeline stage:** the Damage Agent, the Severity Agent, the Policy Agent's retrieval components, and the Report Agent's generation component against the alternatives considered in Milestone 1 and the empirical evidence gathered in Milestone 2.
 2. **Design the complete end-to-end pipeline:** from a user's uploaded image/PDF through to the final rendered report, including the LangGraph orchestration contract, error handling, and the human-escalation path.
 
 ### 1.3 Relationship Between Model Architecture and Project Goals
@@ -84,10 +84,10 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
                                 │        (shared claim state, routing)          │
                                 └──────────────────┬────────────────────────────┘
                                                    │
-        ┌──────────────┐   image    ┌──────────────▼───────────────┐   detections      ┌────────────────────┐
-        │  User Input   │──────────▶│         Damage Agent          │───────────────▶│   Severity Agent   │
-        │ (Gradio UI)   │           │   YOLO11m (fine-tuned)    │                 │  area-ratio proxy  │
-        └──────┬────────┘           └───────────────┬───────────────┘                  └─────────┬──────────┘
+        ┌───────────────┐   image   ┌───────────────▼───────────────┐   detections      ┌────────────────────┐
+        │  User Input   │─────────▶│         Damage Agent           │─────────────────▶│   Severity Agent   │
+        │ (Gradio UI)   │           │   YOLO11m (fine-tuned)        │                   │  area-ratio proxy  │
+        └──────┬────────┘           └───────────────┬───────────────┘                   └─────────┬──────────┘
                │ policy PDF (optional)              │ conf < threshold?                          │ severities
                │                                    └──────────────► Human Review Queue          │
                │                                                                                 ▼
@@ -97,20 +97,20 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
                │                                                                                 │ yes
                │                             ┌───────────────────────────────────────────────────┘
                │                             ▼
-               │              ┌────────────────────────────────┐   retrieved    ┌─────────────────────────┐
-               └─────────────▶│      Policy Agent (MCP)       │ ──clauses─────▶│      Report Agent       │
+               │               ┌───────────────────────────────┐   retrieved    ┌─────────────────────────┐
+               └─────────────▶│      Policy Agent (MCP)        │ ──clauses────▶│      Report Agent       │
                                │  MiniLM + ChromaDB + hybrid   │                │ GPT-4o (Gemini fallback) │
                                │  dense+sparse retrieval       │                └────────────┬─────────────┘
                                └───────────────────────────────┘                             │
                                                                                              ▼
                                                                                  ┌───────────────────────────┐
-                                                                                 │  Rendered report (Gradio)  │
-                                                                                 │ detections + severity +    │
-                                                                                 │ clauses + narrative table  │
+                                                                                 │  Rendered report (Gradio) │
+                                                                                 │ detections + severity +   │
+                                                                                 │ clauses + narrative table │
                                                                                  └───────────────────────────┘
 ```
 
-*(This is a text rendition of `diagrams/multiagent_architecture_staged.svg`, first introduced in Milestone 1 Section 7 and carried through Milestone 2; the SVG source is the authoritative diagram and is included as a deliverable, Section 15.)*
+*(This is a text rendition of `multiagent_architecture_staged.svg`, first introduced in Milestone 1 Section 7 and carried through Milestone 2; the SVG source is the authoritative diagram and is included as a deliverable, Section 15.)*
 
 ### 2.2 Major Modules and Interactions
 
@@ -208,7 +208,7 @@ User        Gradio      Orchestrator     DamageAgent   SeverityAgent   PolicyAge
 | --- | --- |
 | No damage detected / all confidences below threshold | Route to human review queue; no report generated |
 | No policy PDF supplied | Policy Agent node skipped; report states coverage cannot be determined without a policy document |
-| GPT-4o API timeout or error | One retry, then fall back to Gemini 1.5 Flash (Milestone 1, Section 7.5) |
+| GPT-4o API timeout or error | One retry, then fall back to Gemini 1.5 Flash |
 | Both LLM APIs unavailable | Report Agent returns the raw detections + severities + clauses table without narrative text, flagged "LLM generation unavailable — raw findings only" |
 | Malformed / corrupt uploaded image | Caught at the Gradio input validation layer; user prompted to re-upload |
 | Uploaded PDF unparsable by `pdfplumber` | Policy Agent step skipped with a logged warning; treated as "no PDF supplied" |
@@ -216,13 +216,13 @@ User        Gradio      Orchestrator     DamageAgent   SeverityAgent   PolicyAge
 
 ### 3.5 Storage and Retrieval Components
 
-- **ChromaDB persistent client** (`data/chroma_db/`) — the pre-built 185-chunk index from Milestone 2, used for claims where no user-specific policy is supplied or where the demo's reference policies apply.
-- **Ephemeral per-request collection** — when a user uploads their own policy PDF, it is parsed, chunked, and embedded through the same Milestone 2 pipeline and queried within that single request; it is not persisted, consistent with the no-retention design decision (Milestone 1, Section 11.2).
-- **Human Review Queue** — a lightweight append-only JSON log (`data/review_queue.jsonl`) recording escalated claims with the low-confidence detections and the reason for escalation, for later manual review.
+- **ChromaDB persistent client** (`data/chroma_db/`) the pre-built 185-chunk index from Milestone 2, used for claims where no user-specific policy is supplied or where the demo's reference policies apply.
+- **Ephemeral per-request collection** when a user uploads their own policy PDF, it is parsed, chunked, and embedded through the pipeline and queried within that single request; it is not persisted, consistent with the no-retention design decision.
+- **Human Review Queue** a lightweight append-only JSON log (`data/review_queue.jsonl`) recording escalated claims with the low-confidence detections and the reason for escalation, for later manual review.
 
 ### 3.6 User Interaction Flow
 
-Upload image (required) → optionally upload policy PDF → click "Assess" → progress indicator while the pipeline runs → four-tab result view (Annotated Image / Severity / Policy Clauses / Report) → user can download the report as Markdown/PDF. If escalated, the UI instead shows a single notice: "This claim requires human review" with the flagged region highlighted, and no report tab is rendered.
+Upload image (required) → optionally upload policy PDF → click "Assess" → progress indicator while the pipeline runs → four-tab result view (Annotated Image / Severity / Policy Clauses / Report) → User can download the report as Markdown/PDF. If escalated, the UI instead shows a single notice: "This claim requires human review" with the flagged region highlighted, and no report tab is rendered.
 
 ---
 
@@ -230,44 +230,49 @@ Upload image (required) → optionally upload policy PDF → click "Assess" → 
 
 | **Module** | **Model selected** | **Pre-trained or custom** | **Role** |
 | --- | --- | --- | --- |
-| Damage Agent | YOLO11m (Ultralytics) | Pre-trained (COCO/Objects365) backbone, **fine-tuned** on VehiDE | Bounding-box detection of 6 damage classes |
-| Severity Agent | Calibrated rule-based area-ratio proxy | Not a learned model — thresholds calibrated against the Car Damage Severity dataset (Milestone 1, Section 10.2) | Minor/Moderate/Severe classification |
-| Policy Agent — embedding | `sentence-transformers/all-MiniLM-L6-v2` | Pre-trained, **used as-is** (no fine-tuning) | Dense query/chunk embedding |
-| Policy Agent — sparse | BM25 | Classical, not learned | Lexical retrieval fused with dense scores |
-| Policy Agent — vector store | ChromaDB | N/A (infrastructure, not a model) | Persistent ANN index |
-| Report Agent | GPT-4o (primary), Gemini 1.5 Flash (fallback) | Pre-trained, **prompted only** (no fine-tuning) | Structured report generation |
-| Orchestrator | LangGraph | N/A (control-flow framework, not a model) | State routing between agents |
+| Damage Agent | YOLO11m (Ultralytics) | Pre-trained backbone, **fine-tuned** on VehiDE | Bounding-box detection of 6 damage classes |
+| Severity Agent | Calibrated rule-based area-ratio proxy | Not a learned model, thresholds calibrated against the Car Damage Severity dataset | Minor/Moderate/Severe classification |
+| Policy Agent - embedding | `sentence-transformers/all-MiniLM-L6-v2` | Pre-trained, **used as-is** (no fine-tuning) | Dense query/chunk embedding |
+| Policy Agent - sparse | TF-IDF (`sklearn.TfidfVectorizer`) | Fit once on the 185-chunk corpus (not learned in the ML sense - vocabulary/IDF weights only) | Lexical retrieval fused with dense scores via weighted RRF |
+| Policy Agent - vector store | ChromaDB | N/A (infrastructure, not a model) | Persistent ANN index |
+| Report Agent | `llama-3.3-70b-versatile` and `openai/gpt-oss-20b` (both run and compared), via Groq API | Pre-trained, **prompted only** (no fine-tuning) | Structured report generation |
+| Orchestrator | None implemented yet — plain sequential Python function calls. LangGraph is the target framework for wrapping the existing stage functions, not yet built | N/A | Currently: fixed call sequence, not state-graph routing |
 
 ### 4.1 Damage Agent Architecture
 
-YOLO11's architecture (used here in its plain detection variant, not `-seg`) is a single-stage detector composed of three parts:
+YOLO11's architecture is a single-stage detector composed of three parts:
 
-- **Backbone** — a CSP-style convolutional feature extractor (C3k2 blocks in YOLO11, replacing YOLOv8's C2f blocks) that produces multi-scale feature maps.
-- **Neck** — a PAN-FPN (Path Aggregation Network / Feature Pyramid Network) that fuses features across scales, plus YOLO11's C2PSA (partial self-attention) block added at the deepest stage to improve small-object context — relevant here since many damage instances (Milestone 2, Section 5.3) occupy a small fraction of the frame (median normalised bbox area 0.033).
-- **Head** — a decoupled detection head (separate classification and box-regression branches) producing per-instance bounding boxes and class confidence. The `-seg` variant's prototype-mask head is **not used**: Milestone 2's preprocessing converts VehiDE's VIA polygon annotations directly to YOLO bounding-box labels (Milestone 2, Section 6.1 Step 3), so no per-pixel mask ground truth exists to supervise a segmentation head. Loading a `-seg` checkpoint against bbox-only labels fails at dataloader construction (`ValueError: Segment dataset requires equal numbers of boxes and segments`) — confirmed directly during the Milestone 3 architecture probe. The original VIA polygons are preserved unmodified in the source annotation files, so mask-level training remains a future option (e.g. alongside CarDD integration, Milestone 2, Section 7.2) without needing to re-collect or re-annotate data.
+- **Backbone:** A CSP-style convolutional feature extractor (C3k2 blocks in YOLO11, replacing YOLOv8's C2f blocks) that produces multi-scale feature maps.
+- **Neck:** A PAN-FPN (Path Aggregation Network / Feature Pyramid Network) that fuses features across scales, plus YOLO11's C2PSA (partial self-attention) block added at the deepest stage to improve small-object context relevant here since many damage instances occupy a small fraction of the frame (median normalised bbox area 0.033).
+- **Head:** A decoupled detection head (separate classification and box-regression branches) producing per-instance bounding boxes and class confidence.
 
 `m` (medium) is the selected scale: ~20M parameters, a middle point between the `n`/`s` variants (faster, lower accuracy) and `l`/`x` (higher accuracy, too slow/large for the CPU-basic HF Spaces inference target).
 
 ### 4.2 Policy Agent Architecture
 
-`all-MiniLM-L6-v2` is a 6-layer distilled transformer encoder (from `microsoft/MiniLM`) with mean-pooling over token embeddings to produce a single 384-dimensional sentence vector. It is used purely as a frozen feature extractor — no fine-tuning is performed, consistent with the Milestone 2 finding that it already reaches a perfect 1.00 Precision@3 on the smoke test and 0.893–0.913 on the harder 50-incident evaluation without any domain adaptation.
+`all-MiniLM-L6-v2` is a 6-layer distilled transformer encoder (from `microsoft/MiniLM`) with mean-pooling over token embeddings to produce a single 384-dimensional sentence vector. It is used purely as a frozen feature extractor no fine-tuning is performed, consistent with the Milestone 2 finding that it already reaches a perfect 1.00 Precision@3 on the smoke test and 0.893–0.913 on the harder 50-incident evaluation without any domain adaptation.
 
 ### 4.3 Report Agent Architecture
 
-GPT-4o and Gemini 1.5 Flash are both used as black-box APIs — their internal transformer-decoder architectures are not modified or accessed; the "architecture" decision at this layer is entirely about prompt structure and output schema (Sections 10–11), not model internals.
+`llama-3.3-70b-versatile` and `openai/gpt-oss-20b`, both accessed via the Groq API, are used as black-box models and their internal transformer-decoder architectures are not modified or accessed. The "architecture" decision at this layer is entirely about prompt structure and output schema (Sections 10–11), not model internals. Both models are run and compared head-to-head (Section 5.4) rather than one being designated primary with the other as fallback.
 
 ### 4.4 Model Size and Complexity
 
 | **Model** | **Parameters** | **Disk size (approx.)** | **Notes** |
 | --- | --- | --- | --- |
-| YOLO11m | ~22M | ~45 MB (`.pt`) | Fine-tuned end-to-end |
+| YOLO11m | 20.1M | ~40.7 MB (`.pt`) | Fine-tuned end-to-end |
 | all-MiniLM-L6-v2 | 22.7M | ~90 MB | Frozen, inference-only |
 | ChromaDB index (185 chunks) | N/A | <5 MB | Grows linearly with corpus size |
-| GPT-4o / Gemini 1.5 Flash | Not disclosed by provider | N/A (API) | Accessed via API only |
+| `llama-3.3-70b-versatile` | 70B (remote) | N/A (API) | Accessed via Groq API only |
+| `openai/gpt-oss-20b` | 20B (remote, MoE) | N/A (API) | Accessed via Groq API only |
 
 ### 4.5 Integration Between Multiple Models
 
-Integration is achieved entirely through the shared claim-state object and typed schemas (Section 11), never through direct model-to-model calls: the Damage Agent never calls the Policy Agent, for instance — the orchestrator reads the Damage Agent's output from state and decides whether/when to invoke the next agent. This preserves the "independent debuggability" property argued for in Milestone 1, Section 3.4.
+Integration is achieved entirely through the shared claim-state object and typed schemas, never through direct model-to-model calls: the Damage Agent never calls the Policy Agent, for instance, the orchestrator reads the Damage Agent's output from state and decides whether/when to invoke the next agent. This preserves the "independent debuggability".
+
+### 4.5 Integration Between Multiple Models
+
+Integration is achieved entirely through a shared state object and typed schemas (Section 11), never through direct model-to-model calls: the Damage Agent never calls the Policy Agent. For instance, each stage is currently invoked as a **fixed sequence of plain Python function calls** (Section 2.5) rather than through an orchestrator making dynamic routing decisions a stage function's output (e.g. minimum detection confidence) is checked by simple conditional logic in the calling code to decide whether the next stage runs at all (e.g. the escalation gate skips the Policy/Report Agent calls entirely). This still preserves the "independent debuggability" property argued for in Milestone 1, Section 3.4: each stage function is testable in isolation against the shared schema, whether or not a routing framework sits in front of it. Wrapping these stage functions as LangGraph nodes (Section 11.3) is planned but not yet implemented.
 
 ---
 
