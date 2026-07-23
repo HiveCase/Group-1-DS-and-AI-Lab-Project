@@ -267,9 +267,6 @@ YOLO11's architecture is a single-stage detector composed of three parts:
 | `llama-3.3-70b-versatile` | 70B (remote) | N/A (API) | Accessed via Groq API only |
 | `openai/gpt-oss-20b` | 20B (remote, MoE) | N/A (API) | Accessed via Groq API only |
 
-### 4.5 Integration Between Multiple Models
-
-Integration is achieved entirely through the shared claim-state object and typed schemas, never through direct model-to-model calls: the Damage Agent never calls the Policy Agent, for instance, the orchestrator reads the Damage Agent's output from state and decides whether/when to invoke the next agent. This preserves the "independent debuggability".
 
 ### 4.5 Integration Between Multiple Models
 
