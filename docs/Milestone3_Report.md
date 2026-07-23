@@ -8,7 +8,7 @@
 
 <img src="https://github.com/HiveCase/Group-1-DS-and-AI-Lab-Project/blob/main/data/images/IITM_logo.png" width="520">
 
-<h1 style="font-size:26em;">Multimodal Damage Assessment for Insurance Claims</h1>
+<h1>Multimodal Damage Assessment for Insurance Claims</h1>
 
 <h2>Milestone 3: Model Architecture</h2>
 
@@ -236,7 +236,7 @@ seed=42):
 
 | | YOLO11m-seg | YOLOv8m-seg |
 | --- | --- | --- |
-| Parameters | ~27M | ~26M |
+| Parameters | 22.4M (measured, see supplementary note below) | ~26M |
 | Release | 2024 (current Ultralytics flagship) | 2023 (established baseline) |
 | mAP@50 @ epoch 10 | *`<fill from runs/probe/yolo11m_probe/results.csv>`* | *`<fill from runs/probe/yolov8m_probe/results.csv>`* |
 | Training time / epoch | *`<fill>`* | *`<fill>`* |
@@ -246,6 +246,26 @@ seed=42):
 > **Note:** the probe-run numbers above are pending the actual
 > `results.csv` outputs from `runs/probe/`. Populate this table before
 > submission — do not estimate these figures.
+
+#### Supplementary: measured architecture footprint (`notebooks/YOLO11_Capability_Analysis.ipynb`, 2026-07-23)
+
+A separate capability-exploration notebook loaded real YOLO11 checkpoints and read their
+architecture directly via `model.info()`, rather than estimating. This is a different
+comparison from the table above (YOLO11n-seg vs YOLO11m-seg, within the YOLO11 family) and does
+**not** replace the pending YOLO11m-seg vs YOLOv8m-seg probe numbers:
+
+| | YOLO11n-seg | YOLO11m-seg |
+| --- | --- | --- |
+| Layers | 203 | 253 |
+| Parameters | 2,876,848 | 22,420,896 |
+| GFLOPs | 9.9 | 113.9 |
+
+This corrects the "~27M parameters" estimate used elsewhere in this report for YOLO11m-seg to
+the measured **22.4M** — the mAP/training-time/GPU-memory columns in the table above are
+unaffected and still require the real 10-epoch GPU probe run. The same notebook also verified
+that a COCO-pretrained YOLO11n-seg forward pass runs correctly on this project's own sample
+claim photos (`data/vehide/images/test/`), returning boxes and instance masks in the expected
+shape (`[N, 640, 640]`).
 
 ### 4.3 Decision
 
@@ -257,9 +277,9 @@ relevant here because the M2 EDA found a minimum normalised bbox area of
 
 ### 4.4 Model size and complexity
 
-- YOLO11m-seg: ~27M parameters, single-stage detector with an instance
-  segmentation head; runs on a single T4/P100 for training and on the free
-  Hugging Face Spaces CPU tier for inference.
+- YOLO11m-seg: 22.4M parameters (measured, §4.2), single-stage detector
+  with an instance segmentation head; runs on a single T4/P100 for
+  training and on the free Hugging Face Spaces CPU tier for inference.
 - Report-generation LLMs are used as hosted APIs (no local weights,
   no fine-tuning); size/complexity is out of scope for this pipeline's
   compute budget.
@@ -298,8 +318,9 @@ model's I/O contract from the others (see §11).
   vehicle imagery; the 32,672-instance corpus is large enough to fine-tune
   the full network (no layer freezing needed) but far too small to train
   from scratch.
-- **Deployment weight:** ~27M parameters runs on the free HF Spaces CPU
-  tier at acceptable latency and trains on a single T4/P100.
+- **Deployment weight:** 22.4M parameters (measured, §4.2) runs on the
+  free HF Spaces CPU tier at acceptable latency and trains on a single
+  T4/P100.
 
 ### 5.2 Why YOLO11m-seg over YOLOv8m-seg specifically
 
@@ -411,7 +432,7 @@ without fine-tuning.)*
 | Approach | Fine-tuning (full network) | Corpus is large enough (32,672 instances) to fine-tune the full COCO-pretrained network; too small to train from scratch |
 | Frozen vs trainable layers | None frozen | Domain gap (COCO → vehicle damage) is large enough to warrant full-network fine-tuning |
 | imgsz | 1280 | Data-driven: instance-count-weighted mean resolution is 1,395×1,038 px (M2 §6.1 Step 4); 1280 is the nearest YOLO-compatible size — 640 would discard roughly half the available resolution |
-| batch | 4 | 1280px + 27M-param seg model saturates a 16 GB P100 at batch 4 |
+| batch | 4 | 1280px + 22.4M-param seg model (measured, §4.2) saturates a 16 GB P100 at batch 4 |
 | Optimizer | AdamW | Standard for fine-tuning; less LR-sensitive than SGD on small domain datasets |
 | Learning rate (lr0) | 0.001 | 10× below the from-scratch default — appropriate fine-tuning regime on COCO-pretrained weights |
 | Loss function | YOLO composite (box + segmentation + objectness + classification), `cls=2.0` | Class-loss gain partially corrects the 6.68:1 class imbalance (M2 §8.2) |
@@ -608,10 +629,27 @@ run with real trained weights: `python -m src.pipeline.orchestrator <image> --po
 | Training hardware | Single T4/P100 GPU (16 GB), batch=4 at 1280px |
 | Training contingency | 960px / batch 8 preset if 16 GB is insufficient (`--experiment small_imgsz`) |
 | Inference hardware | Free Hugging Face Spaces CPU tier (target: acceptable interactive latency) |
-| Memory | ~27M-parameter model; peak GPU memory *`<fill from probe runs>`* at batch 4/1280px |
+| Memory | 22.4M-parameter model (measured, §4.2); peak GPU memory *`<fill from probe runs>`* at batch 4/1280px |
 | Expected inference latency | *`<fill from probe runs — ms/image at 1280px>`* |
 | Storage | Policy vector index (ChromaDB, from M2), model checkpoints (`models/best.pt`), per-run annotated images and reports |
 | External API cost | Pay-per-call for GPT-4o / Gemini 1.5 Flash (Report Agent only); zero cost when offline template fallback is used |
+
+### 12.1 Supplementary: measured CPU inference latency (`notebooks/YOLO11_Capability_Analysis.ipynb`, 2026-07-23)
+
+Measured on the CPU (no GPU in this dev environment) — a supplementary baseline, not a
+substitute for the GPU probe-run numbers still marked `<fill from probe runs>` above:
+
+| Variant | imgsz | ms/image |
+| --- | --- | --- |
+| YOLO11n-seg | 640 | 704.3 |
+| YOLO11n-seg | 1280 | 2,309.6 |
+| YOLO11m-seg | 640 | 2,930.1 |
+| YOLO11m-seg | 1280 | 9,955.1 |
+
+YOLO11m-seg at the project's chosen 1280px training resolution takes **~10 seconds/image on
+CPU** — not interactive latency. This is a real data point to weigh against the §2.6 CPU-tier
+Hugging Face Spaces deployment assumption, alongside the eventual GPU/CPU inference numbers
+from the real probe run.
 
 ---
 
@@ -625,7 +663,7 @@ run with real trained weights: `python -m src.pipeline.orchestrator <image> --po
 | Rule-based severity | Learned severity classifier | No severity ground truth available; transparency/auditability valued over adaptivity for an insurance use case |
 | Hybrid dense+sparse retrieval | Dense-only or sparse-only | Covers both semantic and exact-terminology query types; already validated in M2 at Precision@3 = 0.913 |
 | Cloud LLM APIs (GPT-4o/Gemini) with offline fallback | Local/self-hosted LLM | No labelled report data for fine-tuning; cloud APIs give higher output quality at the cost of external dependency and per-call cost, mitigated by the offline fallback |
-| CPU-tier inference deployment | GPU-hosted inference | ~27M-parameter model was chosen specifically to fit the free HF Spaces CPU tier, trading some inference speed for zero hosting cost |
+| CPU-tier inference deployment | GPU-hosted inference | 22.4M-parameter model (measured, §4.2) was chosen specifically to fit the free HF Spaces CPU tier, trading some inference speed for zero hosting cost |
 
 ### 13.1 Scalability considerations
 
@@ -650,6 +688,8 @@ as a Milestone-4-and-beyond consideration.
 | No severity ground truth | Severity bins are calibrated manually, not learned/validated against labelled data | Documented as a known limitation; flagged for future validation against adjuster-labelled examples if available |
 | CPU inference latency at scale | Free HF Spaces CPU tier may not sustain concurrent users at low latency | Out of scope for this milestone; noted for future scalability work |
 | Bias | Dataset is sourced from VehiDE and may not represent all vehicle types, lighting conditions, or damage severities equally | Carried over from M2 EDA discussion; no additional bias analysis performed in M3 |
+| Segmentation labels not yet available | `data/vehide/labels/` holds plain detection boxes, not polygons; confirmed by a reproducible `ValueError` when fine-tuning YOLO11n-seg (`notebooks/YOLO11_Capability_Analysis.ipynb`): "Segment dataset requires equal numbers of boxes and segments, but got len(segments) = 0, len(boxes) = 37" | Open decision for Milestone 4: extend `scripts/preprocess_images.py` to emit polygon labels from the VIA JSON already at `data/raw/vehide_raw/`, or fall back to the plain detection variant (would require revising §2.5/§4.1/§4.4/§5.1-5.2/§6.1/§7/§11.3/§13 accordingly). The plain detection variant (YOLO11n, no `-seg`) trained successfully on the identical labels/taxonomy in the same notebook. |
+| Stale dataset config path | `data/damage.yaml`'s `path: ./vehide_processed` does not exist anywhere in the repo; the actual committed sample data is at `data/vehide/` | Needs a one-line fix to `data/damage.yaml` before any real training run (probe or Milestone 4 baseline) is attempted |
 
 ---
 
@@ -665,6 +705,9 @@ as a Milestone-4-and-beyond consideration.
 - MCP tool contract for the Policy Agent (§9.6)
 - Test suite: `tests/test_pipeline.py` (6 tests) plus a stub-graph
   invocation test
+- YOLO11 capability-exploration notebook: `notebooks/YOLO11_Capability_Analysis.ipynb` —
+  architecture/CPU-latency measurements and a small-scale end-to-end fine-tuning smoke test
+  on the sample dataset (see §4.2, §12, §14)
 - This report: `Milestone3_Report.md`
 
 ### 15.1 Repository structure (relevant subset)
@@ -745,7 +788,7 @@ damage_agent ─► severity_agent ─┬─(escalate)──────► huma
 | Parameter | Value |
 | --- | --- |
 | Model | YOLO11m-seg (pending final confirmation, §4.3) |
-| Parameters | ~27M |
+| Parameters | 22.4M (measured, §4.2) |
 | imgsz | 1280 |
 | batch | 4 |
 | optimizer | AdamW |
@@ -782,6 +825,7 @@ returns: list of {chunk_id, text, score, heading, clause_type, doc_id, damage_cl
 | Date | Change |
 | --- | --- |
 | May 2026 | Milestone 3 report drafted from Milestone 2 deliverables and pipeline implementation |
+| 2026-07-23 | Added YOLO11 capability-analysis notebook findings (measured param/GFLOPs/CPU-latency numbers, segmentation-label-format blocker, stale `damage.yaml` path) — §4.2, §12, §14, §15. Seg-vs-detection architecture choice remains open pending resolution before Milestone 4. |
 | *`<TBD>`* | Probe-run results populated (§4.2); final model decision confirmed (§4.3) |
 
 ---
