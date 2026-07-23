@@ -161,16 +161,17 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 
 ### 3.1 Complete Workflow: Input to Output
 
-1. User uploads a vehicle damage photograph (required) and a policy PDF (optional) via the Gradio UI.
-2. Orchestrator initialises the claim state: `{image, policy_pdf, detections: [], severities: [], retrieved_clauses: [], report: None, escalated: False}`.
+1. User uploads a vehicle damage photograph (required) and selects a policy from the catalog (required) and/or supplies an incident narrative (optional).
+2. The claim's shared state is initialised: `{image, detections: [], overall_severity: None, policy: {}, retrieved_clauses: {}, report: None, escalated: False}` (Section 6).
 3. **Damage Agent**: image → letterbox to 1280×1280 → YOLO11m inference → NMS → list of `{class_id, class_name, confidence, bbox_normalized, area_ratio}`.
-4. Orchestrator checks minimum detection confidence against the escalation threshold.
-   - If below threshold, or zero detections → claim written to the Human Review Queue; pipeline halts here.
+4. Minimum detection confidence is checked against the escalation threshold (0.50, Section 8.2) by the calling code (Section 4.5).
+   - If below threshold, or zero detections → claim written to the human review queue; pipeline halts here.
    - Otherwise → continue.
-5. **Severity Agent**: for each detection, compute normalised bbox area, apply the per-class calibrated threshold table (Section 6), append `severity` to each detection.
-6. **Policy Agent** (skipped entirely if no PDF was supplied): construct a natural-language query from the distinct detected classes → embed with MiniLM → hybrid dense+sparse retrieval against the ChromaDB index (or, if the user's own PDF was supplied, against a per-request ChromaDB collection built at request time from that PDF using the same preprocessing pipeline as Milestone 2, Section 6.2) → top-3 ranked clauses with metadata.
-7. **Report Agent**: assemble the structured prompt (detections + severities + retrieved clauses) → call GPT-4o → on failure/timeout, retry once, then fall back to Gemini 1.5 Flash → parse the structured response → append the mandatory disclaimer (Milestone 1, Section 11.3).
-8. Orchestrator writes the final state; Gradio renders four tabs: annotated detection image, severity breakdown table, retrieved policy clauses, and the generated report.
+5. **Severity Agent**: for each detection, apply the per-class calibrated threshold table (Section 6.2) to the normalised bbox area, append `severity` to each detection.
+6. **Stage 1 — Policy selection**: the claimant's selected policy (Section 5.3/6.3) resolves to a validated `doc_id`, scoping all retrieval that follows.
+7. **Stage 2 — Policy Agent**: for each distinct detected class, run a coverage query and a separate exclusion query, both scoped to `doc_id` → MiniLM embed + hybrid dense/sparse retrieval against the ChromaDB index → up to 5 ranked clauses per query, filtered by the minimum score floor (Section 6.3).
+8. **Report Agent**: assemble the context bundle (detections, severities, policy selection, retrieved clauses, incident narrative — Section 6.4) → call `llama-3.3-70b-versatile` and `openai/gpt-oss-20b` (Section 5.4) → parse the structured JSON response (verdict per damage class with citations, Section 6.4).
+9. The final state is rendered to the user. A tabbed interface (annotated detection image, severity breakdown, retrieved policy clauses, generated report) is planned via Gradio; this UI is not yet built (Section 15).
 
 ### 3.2 Inputs and Outputs of Each Module
 
@@ -463,7 +464,7 @@ Only the **Damage Agent (YOLO11m)** is trained in this project; the Severity Age
 Raw upload (arbitrary resolution JPEG/PNG)
         │
         ▼
-Letterbox resize → 1280×1280×3, pad=114        (Milestone 2 §6.1 Step 4)
+Letterbox resize → 1280×1280×3, pad=114     
         │
         ▼
 Normalise to [0,1], NCHW tensor
@@ -481,38 +482,54 @@ Per-instance: class_id, class_name, confidence, bbox_normalized
 Severity Agent: area_ratio = w*h → per-class threshold lookup → severity label
         │
         ▼
-Policy Agent: classes → query string → MiniLM embed + hybrid retrieval → doc-scoped clauses [TO CONFIRM WITH RAG OWNER]
+Stage 1 — Policy selection: claimant selects policy from catalog (explicit
+input, not inferred from damage) → validated doc_id
         │
         ▼
-Report Agent: JSON(detections, severities, clauses) → Report LLM [TO CONFIRM WITH RAG OWNER] → structured output
+Stage 2 — Policy Agent: per detected class, two doc-scoped queries
+(coverage + exclusion) → MiniLM embed + hybrid retrieval → up to 5 chunks
+each, filtered by MIN_CLAUSE_SCORE 
         │
         ▼
-Final rendered report (Gradio)
+Report Agent: context bundle JSON (detections, severities, policy, clauses,
+incident narrative) → llama-3.3-70b-versatile / openai/gpt-oss-20b (Groq)
+→ structured JSON output 
+        │
+        ▼
+Final rendered report
 ```
 
-### 8.2 Small-Scale Pipeline Verification (Subset Dry Run)
+### 8.2 Small-Scale Pipeline Verification (10-Payload Faithfulness Evaluation)
 
-To satisfy the Milestone 3 requirement to verify the full pipeline on a subset of data before the Milestone 4 training run, a 5-claim dry run (`scripts/pipeline_dry_run.py`) was executed, exercising every stage's **state contract** end-to-end:
+The Policy and Report Agent stages were verified against 10 deliberately contrastive claim scenarios, each run through the actual retrieval and generation stack.
 
-- The **Damage Agent** stage is replayed from 5 representative detection records in the exact output schema YOLO11m will emit (class_id, class_name, confidence, bbox_normalized, area_ratio) — a substitute for live inference, since the baseline training run itself is a Milestone 3/4 activity and no GPU or the VehiDE image files are available in this reporting environment.
-- The **Severity Agent** stage runs for real, applying the calibrated per-class area thresholds (Section 6.2) to each replayed detection.
-- The **Policy Agent** stage runs for real against a small representative 8-chunk corpus using a TF-IDF sparse retriever (scikit-learn) as a like-for-like stand-in for the production MiniLM dense + BM25 hybrid retriever, since this sandbox has no network access to download the MiniLM checkpoint. The retrieval interface (`query in → ranked chunks + metadata out`) is identical to production.
-- The **Report Agent** stage constructs the real GPT-4o request payload (system prompt + serialized state) and renders the report from a deterministic template rather than a live API call, since no API key is provisioned in this environment; the prompt-assembly and schema logic are real, only the generation call is stubbed.
-- The **orchestrator's escalation gate** is exercised for real: one of the five claims (`claim_004`) was deliberately given a low-confidence detection (0.42, below the 0.60 threshold) to confirm it is correctly routed to the human review queue and skips the Policy/Report stages entirely.
-
-**Result summary** (full console output in Appendix A):
-
-| **Claim** | **Detections** | **Escalated?** | **Outcome** |
+| **Claim** | **Damage** | **Selected policy** | **Stress-tests** |
 | --- | --- | --- | --- |
-| claim_001 | dent (Minor), scratch (Minor) | No | Report generated; neither instance matched a coverage clause in the top-3 retrieved results |
-| claim_002 | shattered_glass (Moderate) | No | Report generated; correctly matched the glass nil-depreciation clause |
-| claim_003 | flat_tyre (Moderate) | No | Report generated; correctly matched the tyre sub-limit clause |
-| claim_004 | scratch (conf 0.42) | **Yes** | Routed to human review queue; no report generated |
-| claim_005 | crack (Minor), broken_lamp (Minor) | No | Report generated; broken_lamp matched its coverage clause, crack did not |
+| 01 | dent (minor) | policy_1 | Clean baseline |
+| 02 | glass (severe) | policy_4 | PDF table-row garbling (see below) |
+| 03 | flat_tyre alone | policy_5 | Tyre coverage conditional on concurrent damage |
+| 04 | dent + crack + lamp | policy_3 | Multi-class, dense-exclusion policy |
+| 05 | scratch (vandalism) | policy_2 | Vandalism wording vs. malicious-act clause |
+| 06 | dent (confidence 0.35) | policy_1 | Escalation path |
+| 07 | glass (window) | policy_2 | Hybrid-retrieval fix case, end-to-end |
+| 08 | crack + lamp | policy_4 | Scope-based exclusion reasoning |
+| 09 | dent ×3 (hail) | policy_1 | Multi-instance; the `chunk_00004` fix below |
+| 10 | flat_tyre + scratch | policy_5 | Mixed severity, multi-class |
 
-**What this confirms:** the state object is correctly mutated and read across all four agent boundaries, the escalation branch correctly halts the pipeline before the Policy/Report stages run, and the Report Agent's coverage-matching logic correctly renders "not covered under retrieved policy" rather than fabricating coverage when no supporting clause is retrieved (claim_001's dent, claim_005's crack) — direct evidence of the hallucination-mitigation instruction (Section 10.4) taking effect even in the templated stand-in.
+Each payload was run through both selected Report Agent models (`llama-3.3-70b-versatile` and `openai/gpt-oss-20b`, Section 5.4), producing 20 reports total, scored by a mechanical (not LLM-judged) faithfulness evaluator (`scripts/eval_report_agent.py`) so every result is reproducible from the JSON output alone. The evaluator checks: `schema_valid`, `class_coverage_complete` (every detected class received a verdict), `citation_validity` (every cited chunk was actually offered to the model), `verdict_evidence_consistent` — a hard check that a `covered` verdict must cite at least one coverage-type chunk — `escalation_consistent`, and `currency_violation` (a ₹/rupee figure appearing in the output not present in any offered clause). Two additional soft flags are surfaced for manual review but not scored.
 
-**What this also surfaces (a genuine, useful limitation, not a wiring bug):** claim_001's dent and claim_005's crack instances *do* have a matching coverage clause in the mini corpus (`chunk_00001` covers dent+scratch; `chunk_00008` covers crack) — but the TF-IDF retriever's top-3 for those queries did not surface them, ranking a topically-adjacent exclusion/coverage clause higher instead. This is expected of a purely lexical retriever operating on a tiny 8-chunk corpus, and is consistent with the Milestone 2 finding that the production dense encoder (MiniLM) outperforms sparse/lexical matching on this style of query (0.893 dense-only Precision@3 vs. what a BM25-only baseline would be expected to score lower). It is recorded here as a concrete, reproducible illustration of *why* the hybrid dense+sparse retriever (not sparse alone) was selected as the production configuration (Section 5.3), rather than as a defect to fix in this dry run.
+Both models scored a full **1.0 composite** across all 10 payloads on every hard check — fully grounded, zero fabricated citations, zero currency violations.
+
+**Two data-quality issues were found through this evaluation:**
+
+- **Found and fixed** — `chunk_00004` (policy_1's umbrella coverage grant) was mistagged by the Milestone 2 auto-tagger's bare `\bmeans\b` keyword firing on "external **means**," causing a coverage-only clause filter to drop it. Before the fix, the two models disagreed on claim 09 (hail dents): one verdict was `covered`, the other `excluded`, both citing a substitute chunk because the real coverage clause had been filtered out. After correcting the filter to also accept `definition`-tagged chunks, both models converged on the same correct verdict, citing `chunk_00004`.
+- **Found, not yet fixed** — in policy_4, `pdfplumber` linearised a coverage table such that a glass row's value and a tyre row's condition merged into one chunk (`chunk_00122`); both models then read the tyre condition as if it applied to glass (claim 02). This is citation-valid but semantically wrong, and is only partially detectable via a soft flag (36 of 185 corpus chunks carry more than one damage-class tag). The recommended fix is to re-extract the affected table pages with `pdfplumber.extract_tables()` rather than plain text extraction.
+
+**Headline finding:** the claim-09 episode is the clearest evidence that context quality, not model choice, gates report correctness — given the same flawed context, two different models produced opposite confident verdicts; given the same corrected context, both converged on the same correct answer, with no change to prompt, temperature, or model. This supports the Report Agent model selection in Section 5.4: retrieval and chunking quality matter more than model size or cost, since a stronger model cannot recover a clause that was never retrieved.
+
+**Scope of this verification:** the detections feeding these 10 payloads are hand-constructed per scenario (matching the confirmed detection schema, Section 6.1), not live Damage Agent inference output — no trained YOLO checkpoint exists yet to produce them (Milestone 4). The Severity Agent's per-class thresholds are applied within each payload's construction, not exercised as a standalone live stage. A full end-to-end run — real image in, real YOLO inference, through to a rendered report — has not yet been performed; this is planned work (Section 16.3), gated on the Milestone 4 baseline training run producing real detection output.
+
+**Escalation threshold discrepancy:** claim 06 tests the escalation path at confidence 0.35, below both this report's stated escalation threshold (0.60, Section 3.1/11.3) and the value used in the evaluation's underlying implementation (0.50, an explicitly-flagged placeholder there). These two thresholds have not yet been reconciled to a single confirmed value; both remain unvalidated against real detection-confidence calibration data, pending the Milestone 4 training run.
 
 ### 8.3 Post-processing and Final Prediction Generation
 
