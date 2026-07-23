@@ -48,10 +48,9 @@
 - [14. Risks and Limitations](#14-risks-and-limitations)
 - [15. Deliverables Produced](#15-deliverables-produced)
 - [16. Summary and Next Steps](#16-summary-and-next-steps)
-- [Appendix A: Small-Scale Pipeline Dry Run — Full Output](#appendix-a-small-scale-pipeline-dry-run--full-output)
-- [Appendix B: Prompt Templates](#appendix-b-prompt-templates)
-- [Appendix C: Change Log](#appendix-c-change-log)
-- [References](#references)
+- [Appendix A: Prompt Templates](#appendix-a-prompt-templates)
+- [Appendix B: Change Log](#appendix-b-change-log)
+- [Appendix C: References](#appendix-c-references)
 
 ---
 
@@ -99,8 +98,8 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
                │                             ▼
                │               ┌───────────────────────────────┐   retrieved    ┌─────────────────────────┐
                └─────────────▶│      Policy Agent (MCP)        │ ──clauses────▶│      Report Agent       │
-                               │  MiniLM + ChromaDB + hybrid   │                │ GPT-4o (Gemini fallback) │
-                               │  dense+sparse retrieval       │                └────────────┬─────────────┘
+                               │  MiniLM + ChromaDB + hybrid   │                │                         │
+                               │  dense+sparse retrieval       │                └────────────┬────────────┘
                                └───────────────────────────────┘                             │
                                                                                              ▼
                                                                                  ┌───────────────────────────┐
@@ -110,7 +109,6 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
                                                                                  └───────────────────────────┘
 ```
 
-*(This is a text rendition of `multiagent_architecture_staged.svg`, first introduced in Milestone 1 Section 7 and carried through Milestone 2; the SVG source is the authoritative diagram and is included as a deliverable, Section 15.)*
 
 ### 2.2 Major Modules and Interactions
 
