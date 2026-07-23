@@ -529,32 +529,32 @@ Both models scored a full **1.0 composite** across all 10 payloads on every hard
 
 **Scope of this verification:** the detections feeding these 10 payloads are hand-constructed per scenario (matching the confirmed detection schema, Section 6.1), not live Damage Agent inference output — no trained YOLO checkpoint exists yet to produce them (Milestone 4). The Severity Agent's per-class thresholds are applied within each payload's construction, not exercised as a standalone live stage. A full end-to-end run — real image in, real YOLO inference, through to a rendered report — has not yet been performed; this is planned work (Section 16.3), gated on the Milestone 4 baseline training run producing real detection output.
 
-**Escalation threshold discrepancy:** claim 06 tests the escalation path at confidence 0.35, below both this report's stated escalation threshold (0.60, Section 3.1/11.3) and the value used in the evaluation's underlying implementation (0.50, an explicitly-flagged placeholder there). These two thresholds have not yet been reconciled to a single confirmed value; both remain unvalidated against real detection-confidence calibration data, pending the Milestone 4 training run.
+**Escalation threshold used in this evaluation:** claim 06 tests the escalation path at a detection confidence of 0.35, below the escalation threshold of 0.50 used throughout this pipeline (Section 3.1), pending calibration against real detection-confidence data from the Milestone 4 training run.
 
 ### 8.3 Post-processing and Final Prediction Generation
 
-The final artefact returned to the user is not a single scalar prediction but a composite structured object: annotated image (bounding boxes drawn), a severity table, a ranked clause list, and Markdown report text — all four rendered together in the Gradio tabbed view (Section 3.6).
+The final artefact returned to the user is a composite structured object: annotated image (bounding boxes drawn), a severity table, a ranked clause list, and a structured report (Section 6.4). A tabbed rendering of this output via Gradio is planned (Section 3.6) but not yet built (Section 15).
 
 ### 8.4 Evaluation Metrics
 
-No model has been trained yet — that is Milestone 4 — so the table below consolidates the metrics and targets each component will be scored against (carried forward from Milestone 1, Section 4.1) with what is already empirically known from Milestone 2, rather than reporting new results.
+No model has been trained yet — that is Milestone 4 — so the table below consolidates the metrics and targets each component will be scored against (carried forward from Milestone 1, Section 4.1) with what is already empirically known from Milestone 2 and this milestone's evaluation, rather than reporting new results.
 
 | **Component** | **Metric** | **Target** | **Status at end of Milestone 3** |
 | --- | --- | --- | --- |
-| Damage Agent | mAP@50 | ≥ 0.70 | Not yet measured — requires the Milestone 4 training run |
-| Damage Agent | mAP@50-95 | ≥ 0.50 | Not yet measured |
-| Damage Agent | Per-class F1 (all 6 classes) | ≥ 0.65 | Not yet measured; `shattered_glass`/`flat_tyre` flagged as most at risk given the 6.59:1 class imbalance (Section 14) |
-| Policy Agent (retrieval) | Precision@3 | ≥ 0.80 | **Already exceeded**: 0.893 dense-only, 0.913 hybrid, measured empirically in Milestone 2, Section 6.2 Step 6 |
-| Policy Agent (retrieval) | Mean Reciprocal Rank | Not separately targeted in Milestone 1 | 0.980 dense-only (Milestone 2) |
-| Report Agent | BERTScore F1 vs. human-authored reference | ≥ 0.80 | Not yet measured — requires live GPT-4o calls against reference summaries (Milestone 4) |
+| Damage Agent | mAP@50 | ≥ 0.70 | Not yet measured at full scale — requires the Milestone 4 baseline training run; the Milestone 3 architecture probe (Section 5.1) measured 0.0305-0.0371 on a 15-epoch, 3,000-image subsample, well below target by design |
+| Damage Agent | mAP@50-95 | ≥ 0.50 | Not yet measured at full scale |
+| Damage Agent | Per-class F1 (all 6 classes) | ≥ 0.65 | Not yet measured; `shattered_glass`/`flat_tyre` flagged as most at risk given the 6.68:1 class imbalance (Section 14) |
+| Policy Agent (retrieval) | Precision@3 | ≥ 0.80 | **Already exceeded**: 0.893 dense-only, 0.913 hybrid, measured empirically in Milestone 2, Section 6.2 Step 6; reproduced exactly after the Milestone 3 doc-scoping extension (Section 5.3) |
+| Policy Agent (retrieval) | Mean Reciprocal Rank | Not separately targeted in Milestone 1 | 0.977 hybrid (Milestone 2/3) |
+| Report Agent | Faithfulness (mechanical evaluation, Section 8.2) | Full grounding, zero fabricated citations | **Already achieved**: 1.0 composite score, both models, all 10 payloads (Section 8.2) |
 | Report Agent | Human evaluation (Accuracy / Faithfulness / Clarity, 1-5 scale) | Mean ≥ 4.0 | Not yet measured; rubric and inter-rater protocol already defined (Milestone 1, Section 4.3) |
-| Full pipeline (this milestone) | Qualitative wiring correctness across all 4 agent boundaries | N/A — pass/fail | **Confirmed**: 5/5 claims correctly routed (4 completed, 1 escalated), Section 8.2 |
+| Full pipeline | Qualitative wiring correctness, all four agent boundaries, with live detection input | N/A — pass/fail | Not yet performed; the Policy/Report Agent side is verified on synthetic detections (Section 8.2), but a run using live Damage Agent output has not yet occurred (Milestone 4) |
 
-**Loss functions used to measure training performance** are specified in full in Section 7 (YOLO11's composite CIoU + class-weighted BCE + DFL); the retrieval and report-generation components are not trained in this project (Section 7 preamble) and so have no associated loss function — they are scored purely against the evaluation metrics above.
+**Loss functions used to measure training performance** are specified in full in Section 7 (YOLO11's composite CIoU + BCE + DFL); the retrieval and report-generation components are not trained in this project (Section 7 preamble) and so have no associated loss function — they are scored purely against the evaluation metrics above.
 
 ### 8.5 Example Model Outputs
 
-Because live inference is not yet available in this reporting environment (no trained checkpoint, no GPU, Section 8.2), the examples below show the **exact output schema** each stage will produce, illustrated with representative values consistent with the dry run in Appendix A, rather than a live inference result.
+No trained Damage Agent checkpoint exists yet (Milestone 4), so the Damage Agent and Severity Agent examples below show the confirmed output schema (Section 6.1/6.2) with representative values rather than a live inference result. The Policy and Report Agent examples are drawn from the real evaluation in Section 8.2.
 
 **Damage Agent — raw output for one image (illustrative):**
 
@@ -577,9 +577,9 @@ Because live inference is not yet available in this reporting environment (no tr
 ]
 ```
 
-**Policy Agent — top-3 retrieved clauses for the derived query** `"Coverage for dent, scratch damage"` (real retrieval output, reused from Appendix A, claim_001): ranked chunks `chunk_00002` (exclusion, score 0.255), `chunk_00006` (coverage, score 0.182), `chunk_00003` (coverage, score 0.126).
+**Policy Agent — real retrieval output, claim 09 (Section 8.2), before the `chunk_00004` fix:** the coverage-pass query for `dent` surfaced a substitute chunk rather than the correct umbrella coverage clause, causing the two models to disagree on the claim's verdict. After the fix, `chunk_00004` ranks first for the same query.
 
-**Report Agent — final rendered output:** the Markdown table + narrative + disclaimer shown for `claim_001` in Appendix A is the exact target output format; it is reproduced there in full rather than duplicated here.
+**Report Agent — final rendered output:** the two Report Agent models' outputs on claim 09, before and after the `chunk_00004` fix, are the concrete illustration of both the target output format and the headline finding of Section 8.2; they are not reproduced in full here.
 
 ---
 
@@ -588,13 +588,13 @@ Because live inference is not yet available in this reporting environment (no tr
 | **Component** | **Selection** | **Detail** |
 | --- | --- | --- |
 | Embedding model | `all-MiniLM-L6-v2` | 384-dim, frozen (Section 4.2) |
-| Vector database | ChromaDB (persistent client) | HNSW cosine-similarity index, 185 chunks (Milestone 2) |
-| Similarity search | Cosine similarity (dense) + BM25 (sparse), fused via Reciprocal Rank Fusion | 75% dense : 25% sparse weighting (Milestone 2, Section 6.2 Step 6) |
+| Vector database | ChromaDB (persistent client) | HNSW cosine-similarity index, 185 chunks, metadata-filterable by `doc_id` (Milestone 2; Section 5.3) |
+| Similarity search | Cosine similarity (dense) + TF-IDF (sparse), fused via weighted Reciprocal Rank Fusion | 75% dense : 25% sparse weighting (Milestone 2, Section 6.2 Step 6) |
 | Chunking strategy | Structure-aware: heading/list-item-boundary splitting, then `RecursiveCharacterTextSplitter` (300 char / 40 overlap), heading breadcrumb prepended to each chunk before embedding | Milestone 2, Section 6.2, Steps 1-2 |
-| RAG workflow | Query construction (from detected classes) → dense + sparse retrieval in parallel → RRF fusion → top-3 → passed to Report Agent as grounding context | — |
+| RAG workflow | Claimant selects a policy (Section 5.3/8.1), resolving a `doc_id` → for each detected damage class, a coverage query and a separate exclusion query, both scoped to `doc_id` → dense + sparse retrieval in parallel → RRF fusion → up to 5 chunks per query, filtered by a minimum score floor → passed to the Report Agent as grounding context | Section 6.3 |
 | Re-ranking | RRF fusion score itself acts as the re-ranking step; no separate cross-encoder re-ranker is used, judged unnecessary at 185-chunk corpus scale (added latency not justified by the Milestone 2 evaluation) | — |
 
-This milestone's integration work (closing the Milestone 2, Section 13.4 item) is wiring the hybrid retriever, previously only a standalone evaluated utility, into the Policy Agent's FastMCP tool as the default retrieval path (Section 11.2).
+`HybridRetriever` was extended with a `doc_filter` parameter in Milestone 3 to support the doc-scoped, two-pass retrieval described above (Section 5.3); this closes the integration item flagged in Milestone 2, Section 13.4.
 
 ---
 
@@ -602,35 +602,36 @@ This milestone's integration work (closing the Milestone 2, Section 13.4 item) i
 
 ### 10.1 Prompt Templates
 
-The Report Agent uses a fixed system prompt (Appendix B.1) and a per-request user message built by serializing the claim state's `detections` and `retrieved_clauses` fields directly to JSON (Appendix B.2) — no manual prose is authored per request.
+The Report Agent uses a fixed system prompt and a per-request user message built by serializing the context bundle (Section 6.4) to JSON — no manual prose is authored per request. The template shown in Appendix B is an earlier draft; see the note there for its confirmation status.
 
 ### 10.2 System Prompt
 
-See Appendix B.1. Its key constraints are: (a) ground every coverage statement in a specific retrieved clause id, (b) explicitly state non-coverage rather than infer it, (c) always append the fixed disclaimer sentence.
+See Appendix B.1. Its intended constraints are: (a) ground every coverage statement in a specific retrieved clause id, (b) explicitly state non-coverage rather than infer it, (c) always append the fixed disclaimer sentence.
 
 ### 10.3 Zero-shot vs. Few-shot Strategy
 
-Zero-shot with a structured-output schema is used rather than few-shot exemplars: the task (populate a fixed table schema from provided JSON) is sufficiently constrained by the schema itself that few-shot examples were judged unlikely to add reliability proportional to their token cost, though this will be validated empirically in Milestone 3's continuation into Milestone 4 (Milestone 2, Section 13.4 flags "validate prompt template... against 5 sample incident/image pairs" as planned work; the small-scale dry run in Section 8.2 is a first pass at this using the templated stand-in).
+Zero-shot with a structured-output schema is used rather than few-shot exemplars: the task (populate a fixed schema from provided JSON) is sufficiently constrained by the schema itself that few-shot examples were judged unlikely to add reliability proportional to their token cost. This is supported by the Section 8.2 evaluation: both models reached a full 1.0 faithfulness composite zero-shot on all 10 payloads.
 
 ### 10.4 Structured Output Format
 
-The Report Agent requests a JSON object (Pydantic-validated, Appendix B.3) with fields `per_damage_findings: [{class, severity, coverage_status, supporting_clause_id_or_null}]` and `narrative_summary: str`, which is then rendered into the final Markdown table shown to the user — separating the model's structured claim from its prose framing makes the coverage claims independently checkable against the retrieved clause ids.
+The Report Agent requests a JSON object with a controlled verdict vocabulary (`covered`/`excluded`/`conditional`/`needs_review`) and mandatory clause-id citations per damage class, which is then rendered into a report view for the user — separating the model's structured claim from its prose framing makes coverage claims independently checkable against the retrieved clause ids, and is what the Section 8.2 mechanical evaluator checks directly. The exact schema in Appendix B.3 is an earlier draft; see the note there for its confirmation status.
 
 ### 10.5 Hallucination Mitigation
 
-- Explicit instruction to write "not covered under retrieved policy" rather than infer from general knowledge (Milestone 1, Section 10.5).
-- Every coverage claim must cite a `supporting_clause_id`; a post-processing check (not the LLM itself) verifies that the cited id is actually present in the `retrieved_clauses` passed to that request, and strips/flags any coverage claim whose cited id does not exist in the input.
-- The dry run (Section 8.2) demonstrates this behaviour concretely: two damage instances with no matching retrieved clause were correctly rendered as "not covered" rather than fabricated.
+- Explicit instruction to write a `needs_review` or non-coverage verdict rather than infer coverage from general knowledge.
+- Every verdict must cite at least one retrieved clause id; the Section 8.2 evaluator's `citation_validity` and `verdict_evidence_consistent` checks verify this mechanically, not just via prompt instruction.
+- A currency-violation check (Section 8.2) independently catches any monetary figure not present in the retrieved clauses, since no policy-schedule or repair-cost data exists to ground such a figure.
+- The Section 8.2 evaluation demonstrates this behaviour concretely: both models scored zero currency violations and zero invalid citations across all 10 payloads and 20 reports.
 
 ### 10.6 Guardrails
 
-- Mandatory disclaimer appended to every report regardless of model output (enforced in code, not only via prompt instruction, so a prompt-following failure cannot remove it).
-- Escalation gate (Section 3) prevents the Report Agent from ever running on low-confidence detections.
-- Fallback path (Gemini 1.5 Flash) and a final "raw findings only" fallback (Section 3.4) ensure a claim is never silently dropped if generation fails outright.
+- Mandatory disclaimer appended to every report (enforced in code, not only via prompt instruction, so a prompt-following failure cannot remove it) — **[TO CONFIRM WITH RAG OWNER]** exact enforcement point.
+- Escalation gate (Section 3.1) prevents the Report Agent from running on low-confidence detections.
+- Two models are run and compared (Section 5.4) rather than one primary model with a fallback; this is a comparison design for evaluation purposes, not a runtime fallback mechanism, so a single-model production configuration is still to be decided.
 
 ### 10.7 Function Calling / Tool Use
 
-The Policy Agent is exposed as a FastMCP tool with a typed signature (Section 11.2) so that it can, in principle, be invoked as a callable tool by an LLM-driven agent loop rather than only by the fixed orchestrator sequence; in the current design the orchestrator invokes it directly (not via LLM tool-calling) to keep the pipeline's control flow deterministic and independently testable, consistent with the "separation of concerns" argument in Milestone 1, Section 3.4.
+The current implementation does not use LLM-driven function calling: the context bundle is fully assembled before the Report Agent is called, so each Report Agent invocation is a single constrained generation call, not an agent loop. This keeps the guardrails simple to verify (Section 10.5) and keeps the pipeline's control flow deterministic, consistent with the "separation of concerns" argument in Milestone 1, Section 3.4. Exposing the Policy Agent as a callable tool for an LLM-driven agent loop is a possible future direction, not part of the current design.
 
 ---
 
@@ -639,7 +640,7 @@ The Policy Agent is exposed as a FastMCP tool with a typed signature (Section 11
 ### 11.1 Shared State Schema
 
 ```python
-from typing import TypedDict, Optional
+from typing import TypedDict, Optional, List, Dict, Any
 
 class Detection(TypedDict):
     class_id: int
@@ -650,36 +651,42 @@ class Detection(TypedDict):
     severity: Optional[str]  # populated by Severity Agent
 
 class RetrievedClause(TypedDict):
-    id: str
+    chunk_id: str
     doc_id: str
     heading: str
     text: str
-    damage_classes: list[str]
     clause_type: str
     score: float
 
+class PolicySelection(TypedDict):
+    doc_id: str
+    selection_method: str  # "claimant_selected" — see Section 8.1
+    insurer: str
+    product: str
+    description: str
+
 class ClaimState(TypedDict):
+    claim_id: str
     image: bytes
-    policy_pdf: Optional[bytes]
-    detections: list[Detection]
-    retrieved_clauses: list[RetrievedClause]
-    report_markdown: Optional[str]
+    incident_narrative: Optional[str]
+    detections: List[Detection]
+    overall_severity: Optional[str]
+    policy: Optional[PolicySelection]
+    clauses: Dict[str, Dict[str, Any]]  # per damage class: coverage[] / exclusion_or_condition[]
+    report: Optional[dict]
     escalated: bool
     escalation_reason: Optional[str]
 ```
 
+**[TO CONFIRM WITH RAG OWNER]** — this schema is aligned to the confirmed detection format (Section 6.1) and the confirmed context bundle structure (Section 6.4), but has not been checked field-by-field against the actual `report_context.py` implementation.
+
 ### 11.2 How Different Models Communicate
 
-All communication is state-in/state-out through the schema above; no module calls another module's model directly. The Policy Agent's FastMCP tool signature:
+All communication is state-in/state-out through the schema above; no module calls another module's model directly. Each stage is currently invoked as a plain Python function call (Section 4.5, Section 2.5) rather than through a tool-calling interface — there is no MCP or similar tool wrapper around the Policy Agent in the current implementation.
 
-```python
-@mcp.tool()
-def retrieve_policy_clauses(query: str, k: int = 3) -> list[RetrievedClause]:
-    """Hybrid dense+sparse retrieval over the indexed policy corpus."""
-    ...
-```
+### 11.3 Orchestration Framework (Planned)
 
-### 11.3 Orchestration Framework (LangGraph)
+No orchestration framework is implemented yet. The current pipeline is a fixed sequence of plain Python function calls (Section 2.5, Section 4.5); a stage's output is checked by simple conditional logic in the calling code to decide whether the next stage runs (e.g. the escalation gate skips the Policy/Report Agent calls entirely). Wrapping the existing stage functions as LangGraph nodes is planned, since each stage already has a clean, schema-defined input/output boundary (Section 11.1):
 
 ```python
 from langgraph.graph import StateGraph, END
@@ -694,13 +701,10 @@ graph.add_node("escalate", escalate_fn)
 graph.set_entry_point("damage_agent")
 graph.add_conditional_edges(
     "damage_agent",
-    lambda s: "escalate" if min((d["confidence"] for d in s["detections"]), default=0) < 0.60 else "severity_agent",
+    lambda s: "escalate" if min((d["confidence"] for d in s["detections"]), default=0) < 0.50 else "severity_agent",
 )
 graph.add_edge("severity_agent", "policy_agent")
-graph.add_conditional_edges(
-    "policy_agent",
-    lambda s: "report_agent",  # policy_agent internally no-ops if no PDF/context
-)
+graph.add_edge("policy_agent", "report_agent")
 graph.add_edge("report_agent", END)
 graph.add_edge("escalate", END)
 
@@ -709,7 +713,7 @@ app = graph.compile()
 
 ### 11.4 Database Interactions
 
-ChromaDB is queried read-only at inference time (`collection.query(...)`); no write path exists in the production request cycle except the one-time index build during preprocessing (Milestone 2) or the ephemeral per-request collection when a user supplies their own policy PDF (Section 3.5).
+ChromaDB is queried read-only at inference time (`collection.query(...)`); no write path exists in the production request cycle except the one-time index build during preprocessing (Milestone 2).
 
 ---
 
@@ -717,22 +721,22 @@ ChromaDB is queried read-only at inference time (`collection.query(...)`); no wr
 
 | **Phase** | **Hardware** | **Memory** | **Notes** |
 | --- | --- | --- | --- |
-| YOLO11m fine-tuning | Single NVIDIA T4 (Colab Pro / Kaggle, 16GB VRAM) | ~14-15GB VRAM at batch=8, imgsz=1280 (4x the footprint of 640px, Milestone 2 §6.1) | ~2-4 hours per 50-epoch run (Milestone 1 estimate, unchanged) |
-| Embedding + retrieval | CPU only | <200MB (MiniLM + 185-chunk ChromaDB index) | Sub-second for the full corpus (Milestone 2, §6.2 Step 3) |
-| LLM inference | Remote API (no local compute) | N/A | Network round-trip dominates latency |
-| Deployed demo (HF Spaces) | CPU-basic (2 vCPU, 16GB RAM) | YOLO11m CPU inference + MiniLM CPU inference, both feasible at this scale | |
+| YOLO11m fine-tuning | Single NVIDIA T4 (Colab Pro / Kaggle, 16GB VRAM) | ~8.5-9.4GB VRAM at batch=4, imgsz=1280, as measured in the Milestone 3 probe (Section 5.1) | Milestone 3 probe: ~1,371s/epoch at 15 epochs on a 3,000-image subsample; the full 50-epoch Milestone 4 baseline run on the full training set has not yet been timed |
+| Embedding + retrieval | CPU only | <200MB (MiniLM + 185-chunk ChromaDB index + TF-IDF matrix) | Cold init (MiniLM load + TF-IDF fit) ~16.5s one-time per process; warm scoped query ~10ms median |
+| LLM inference | Remote API (Groq, no local compute) | N/A | ~0.7-0.9s per report round-trip (Section 8.2 evaluation) |
+| Deployed demo (HF Spaces) | CPU-basic (2 vCPU, 16GB RAM) | YOLO11m CPU inference + MiniLM CPU inference, both feasible at this scale | UI not yet built (Section 8.3, Section 15) |
 
-**Expected inference latency (per claim, deployed demo):**
+**Expected inference latency (per claim, once deployed):**
 
-| **Stage** | **Estimated latency** |
+| **Stage** | **Latency** |
 | --- | --- |
-| Image letterbox + YOLO11m CPU inference (1280px) | ~150-400ms |
+| Image letterbox + YOLO11m CPU inference (1280px) | ~150-400ms (estimated; not yet measured on CPU) |
 | Severity Agent (pure arithmetic) | <5ms |
-| Policy Agent (embed query + hybrid retrieval, 185 chunks) | ~15-30ms |
-| Report Agent (GPT-4o API round-trip) | ~2-5s (dominant cost) |
-| **Total (non-escalated claim)** | **~2.5-6s** |
+| Policy Agent (per damage class, coverage + exclusion queries) | ~10-20ms per class (measured, Section 8.2 context) |
+| Report Agent (Groq API round-trip) | ~0.7-0.9s (measured, Section 8.2) |
+| **Total (non-escalated, single-class claim)** | **~1-1.5s** |
 
-**Storage requirements:** VehiDE processed dataset (~13,655 images at 1280×1280 JPEG) — several GB, not stored in the Git repository itself (Milestone 2, Section 10.1 note); ChromaDB index and synthetic policy PDFs — a few MB; trained YOLO11m checkpoint — ~45MB.
+**Storage requirements:** VehiDE processed dataset (13,655 images at 1280×1280 JPEG) — several GB, not stored in the Git repository itself; ChromaDB index and synthetic policy PDFs — a few MB; trained YOLO11m checkpoint — ~40.7MB (measured, Section 5.1 probe; the full-training-run checkpoint size is expected to be comparable).
 
 ---
 
@@ -742,14 +746,14 @@ ChromaDB is queried read-only at inference time (`collection.query(...)`); no wr
 | --- | --- | --- | --- |
 | Detector family | YOLO11 (plain detection) | Faster R-CNN, DETR, SSD, single VLM | Speed/accuracy/deployability trade-off (Milestone 1, §3.1/3.4) |
 | Detector scale | `m` | `n`/`s` (faster, less accurate), `l`/`x` (too slow for CPU deployment) | Balances accuracy against the CPU-basic HF Spaces inference target |
-| Input resolution | 1280px | 640px (Ultralytics default) | Matches the dataset's actual weighted-mean resolution (Milestone 2, §5.5); costs ~4x VRAM, reducing batch size 16→8 |
-| Vector store | ChromaDB | FAISS | FAISS ~50-60x faster in raw query latency but not operationally meaningful at 185-chunk scale; ChromaDB's metadata filtering/persistence wins (Milestone 2, §6.2 Step 3) |
-| Retrieval strategy | Hybrid dense+sparse (75:25) | Dense-only | Fixed the one zero-hit failure on the 50-incident evaluation with no regressions |
+| Input resolution | 1280px | 640px (Ultralytics default) | Matches the dataset's actual weighted-mean resolution (Milestone 2, §5.5); costs ~4x VRAM, reducing batch size from an assumed 16 to a measured 4 (Section 7) |
+| Vector store | ChromaDB | FAISS | FAISS ~50-60x faster in raw query latency but not operationally meaningful at 185-chunk scale; ChromaDB's metadata filtering (needed for doc-scoping, Section 5.3) and persistence wins |
+| Retrieval strategy | Hybrid dense+sparse (75:25), doc-scoped two-pass | Dense-only; single mixed top-k query | Hybrid fixed the one zero-hit failure on the 50-incident evaluation with no regressions; two-pass avoids an exclusion clause being buried beneath the coverage clause it qualifies (Section 5.3) |
 | Report generation | Modular RAG + prompted LLM | Single end-to-end VLM | Preserves per-stage evaluability (Milestone 1, §3.4) at the cost of more integration surface area |
-| LLM provider | GPT-4o (primary) / Gemini 1.5 Flash (fallback) | Self-hosted open-source LLM | Avoids GPU hosting cost/complexity incompatible with the CPU-basic deployment target, at the cost of per-call API pricing and an external dependency |
-| Severity method | Calibrated area-ratio proxy | Dedicated learned classifier, VLM-based scoring | Avoids overfitting on a ~2,300-image calibration-only dataset and avoids VLM latency/cost (Milestone 1, §10.2) |
+| LLM provider | Open-weight models (`llama-3.3-70b-versatile`, `openai/gpt-oss-20b`) via Groq API, run and compared | Paid frontier API (GPT-4o); self-hosted open-source LLM | Free-tier, fast, OpenAI-compatible; avoids GPU hosting incompatible with the CPU-basic deployment target; empirical evidence (Section 8.2) that context quality gates correctness more than model choice weakens the case for a paid alternative |
+| Severity method | Calibrated area-ratio proxy, permanently rule-based | Dedicated learned classifier, VLM-based scoring | No severity-labelled ground truth exists in the VehiDE-only dataset scope (Section 5.2), so a learned classifier has nothing to train against; VLM scoring rejected on latency/cost grounds (Milestone 1, §10.2) |
 
-**Scalability considerations.** The current design assumes single-request, stateless processing suitable for a demo (CPU-basic HF Spaces instance). A production deployment handling concurrent claims would need: a GPU-backed inference service for the Damage Agent (CPU inference latency, while acceptable for a demo, would not scale to high claim volumes), a request queue in front of the LLM API calls to manage rate limits (Milestone 1, §10.7), and a persistent, access-controlled store for the Human Review Queue rather than a flat JSON log.
+**Scalability considerations.** The current design assumes single-request, stateless processing suitable for a demo (CPU-basic HF Spaces instance). A production deployment handling concurrent claims would need: a GPU-backed inference service for the Damage Agent (CPU inference latency, while acceptable for a demo, would not scale to high claim volumes), a request queue in front of the LLM API calls to manage rate limits, and a persistent, access-controlled store for the human review queue rather than a flat JSON log.
 
 ---
 
@@ -759,14 +763,16 @@ This section extends Milestone 1, Section 10 with what Milestone 2's empirical f
 
 | **Risk / Limitation** | **Status / detail** |
 | --- | --- |
-| Class imbalance (6.59:1 scratch:shattered_glass) | Confirmed in Milestone 2; addressed via `cls_pw` class-weighted loss (Section 7) and 2x targeted oversampling; per-class F1 for `shattered_glass`/`flat_tyre` remains the metric most at risk of missing the ≥0.65 target (Milestone 1, §4.1) |
-| Severity proxy known failure modes | A large shallow scratch vs. a small deep crack can be mis-ordered by area alone (Milestone 1, §10.2); unchanged by this milestone's model selection, since the proxy was re-affirmed rather than replaced |
+| Class imbalance (6.68:1 scratch:shattered_glass) | Confirmed in Milestone 2; a uniform class-loss gain (`cls=2.0`) was applied in the Milestone 3 probe runs, but Milestone 2's per-class inverse-frequency weight vector is not yet wired in (Section 7); per-class F1 for `shattered_glass`/`flat_tyre` remains the metric most at risk of missing the ≥0.65 target |
+| Severity is derived, not labelled, and permanently so | No severity ground truth exists anywhere in the VehiDE-only dataset scope (Section 5.2); the area-ratio proxy's known failure mode — a large shallow scratch vs. a small deep crack can be mis-ordered by area alone — cannot be corrected by acquiring more labelled data within this project's scope |
 | Domain shift (studio-quality training photos vs. real handheld claim photos) | Addressed partially via augmentation (motion blur raised to 0.3, JPEG quality set to 75, Milestone 2 §8.1); residual risk remains until stress-tested against real claim-style photographs |
-| RAG retrieval ceiling on realistic queries | 0.893-0.913 Precision@3 (Milestone 2), not 1.00; Section 8.2's dry run reproduces a concrete instance of this gap on a toy corpus, illustrating it is a retriever-quality limit, not a wiring defect |
-| LLM hallucination on edge cases | Mitigated via explicit non-inference instructions and clause-id citation checking (Section 10.5), not eliminated; residual risk when a damage type has genuinely ambiguous policy language |
-| API dependency and cost | GPT-4o rate limits/cost overruns (Milestone 1, §10.7) mitigated by response caching during development and the Gemini fallback; both remain external dependencies outside the team's control |
+| RAG retrieval ceiling on realistic queries | 0.893-0.913 Precision@3 (Milestone 2/3), not 1.00 — a retriever-quality limit, not a wiring defect; the PDF table-garbling finding (Section 8.2) is a separate, corpus-level source of the same class of error |
+| LLM hallucination on edge cases | Mitigated via explicit non-inference instructions and clause-id citation checking, verified mechanically to score zero failures on all 10 evaluated payloads (Section 8.2), but not exhaustively — residual risk remains on claim types not covered by those 10 scenarios |
+| API dependency | Groq API rate limits or outages remain an external dependency outside the team's control; no caching or fallback provider is currently implemented |
+| Policy selection cannot be automated from damage | Proven exhaustively across all 315 possible damage-class/policy combinations (Section 5.3/8.1) — the applicable policy is a contract fact, not a damage fact, so this is treated as a permanent input requirement, not a gap to close |
 | Bias in training data | VehiDE's Southeast-Asian-vehicle-image composition may under-represent vehicle types more common in the eventual Indian deployment context (Milestone 2, §11); mitigated by planned stratified error analysis (Milestone 1, §11.1), not yet executed (a Milestone 4/evaluation activity) |
 | Scalability of the CPU-basic demo | Acceptable for single-request demonstration; not representative of production concurrency (Section 13) |
+| No orchestration framework yet | The pipeline runs as a fixed sequence of function calls (Section 11.3); this limits the escalation/routing logic to what plain conditional code can express, and complicates adding new branching logic later without a state-graph framework |
 
 ---
 
@@ -774,18 +780,19 @@ This section extends Milestone 1, Section 10 with what Milestone 2's empirical f
 
 | **Deliverable** | **File / Location** | **Description** |
 | --- | --- | --- |
-| High-level architecture diagram | `diagrams/multiagent_architecture_staged.svg` | Four-agent + orchestrator architecture (carried forward from Milestone 1/2, referenced in Section 2.1) |
+| High-level architecture diagram | `diagrams/multiagent_architecture_staged.svg` | Four-agent architecture (carried forward from Milestone 1/2, referenced in Section 2.1) |
 | Sequence diagram | Section 3.3 (this report) | Textual sequence diagram of one claim's path through the pipeline |
-| Small-scale pipeline dry run | `scripts/pipeline_dry_run.py` | Runnable script exercising the Damage→Severity→Policy→Report state contract and the escalation gate on 5 representative claims |
-| Dry-run output log | Appendix A (this report) | Full console output of the dry run, including the retrieval-limitation finding (Section 8.2) |
-| LangGraph orchestrator skeleton | Section 11.3 (this report) | `StateGraph` definition with conditional escalation edge |
-| Shared state schema | Section 11.1 (this report) | `TypedDict` definitions for `Detection`, `RetrievedClause`, `ClaimState` |
-| FastMCP tool signature | Section 11.2 (this report) | `retrieve_policy_clauses` tool contract |
-| Prompt templates | Appendix B | System prompt, user-message template, structured output schema |
-| Model/config comparison tables | Sections 4, 5, 12, 13 (this report) | YOLO11 vs YOLOv8, MiniLM vs BGE, ChromaDB vs FAISS, dense vs hybrid retrieval |
+| Policy catalog (Stage 1) | `scripts/policy_catalog.py` | Claimant-facing policy selection menu; each option described (Section 8.1) |
+| Rejected auto-selection census | `scripts/policy_selector.py`, `data/rag_outputs/mile3/policy_selection_eval.json` | Exhaustive 315-case evaluation proving damage-based policy auto-selection is indistinguishable from chance (Section 5.3/8.1) |
+| Doc-scoped clause retriever | `scripts/hybrid_retrieval.py` (`doc_filter` extension), `scripts/report_context.py` | Two-pass coverage/exclusion retrieval per damage class, scoped to the selected policy (Section 9) |
+| Contrastive claim payloads | `scripts/generate_claim_payloads.py`, `data/rag_outputs/mile3/payloads_all.json` | 10 contrastive claim scenarios used for verification (Section 8.2) |
+| Report Agent | `scripts/report_agent.py` | Report generation via Groq, both models |
+| Faithfulness evaluator | `scripts/eval_report_agent.py`, `data/rag_outputs/mile3/faithfulness_eval.json` | Mechanical grounding/faithfulness checks and results (Section 8.2) |
+| Shared state schema | Section 11.1 (this report) | `TypedDict` definitions for `Detection`, `RetrievedClause`, `PolicySelection`, `ClaimState` |
+| Prompt templates | Appendix B | System prompt, user-message template, structured output schema (draft status noted) |
+| Model/config comparison tables | Sections 4, 5, 12, 13 (this report) | YOLO11 vs YOLOv8, MiniLM vs BGE, ChromaDB vs FAISS, dense vs hybrid retrieval, Groq models vs alternatives |
 | Dataset directory structure | Section 6.5 (this report) | Full `data/` tree — raw vs. processed separation, train/val/test split paths, leakage guarantee |
-| Consolidated evaluation metrics table | Section 8.4 (this report) | Per-component metrics and Milestone 1 targets, with Milestone 2 results already achieved flagged |
-| Example model outputs | Section 8.5 (this report) | Illustrative output schema at each of the four pipeline stages |
+| Consolidated evaluation metrics table | Section 8.4 (this report) | Per-component metrics and Milestone 1 targets, with results already achieved flagged |
 | This report | `Milestone3_Report.md` | Full documentation of architecture selection and pipeline design |
 
 ---
@@ -794,108 +801,31 @@ This section extends Milestone 1, Section 10 with what Milestone 2's empirical f
 
 ### 16.1 Summary of Architecture Decisions
 
-The system's four agents are now each assigned a specific, justified model: YOLO11m (fine-tuned) for damage detection, a calibrated rule-based proxy for severity, MiniLM + ChromaDB + hybrid dense/sparse retrieval for policy grounding, and GPT-4o (Gemini fallback) for report generation, all coordinated by a LangGraph state machine with an explicit human-escalation gate. The end-to-end workflow, state schema, error-handling paths, and prompt/guardrail design are specified in enough detail to begin implementation.
+The system's four agents are each assigned a specific, justified model: YOLO11m (fine-tuned, plain detection) for damage detection, a permanently rule-based proxy for severity, MiniLM + ChromaDB + doc-scoped hybrid dense/sparse retrieval for policy grounding, and two open-weight models via Groq (run and compared) for report generation. The pipeline currently runs as a fixed sequence of function calls, with an explicit human-escalation gate implemented in the calling code; wrapping this sequence as a LangGraph state machine is planned but not yet built (Section 11.3). The end-to-end workflow, state schema, error-handling paths, and prompt/guardrail design are specified in enough detail to begin implementation.
 
 ### 16.2 Readiness for Model Training (Milestone 4)
 
-- The YOLO11m vs. YOLOv8m baseline training runs (both under identical hyperparameters, Section 7) are ready to launch against the Milestone 2 training-ready dataset (`data/vehide/`, `damage.yaml`) with no further data preparation required.
-- The hybrid retriever integration into the Policy Agent's FastMCP tool (Section 9) is specified and ready to implement.
-- The small-scale dry run (Section 8.2) confirms the state contract between all four agents is correct, so Milestone 4 can focus on training and evaluation rather than pipeline debugging.
+- The YOLO11m vs. YOLOv8m baseline training runs (both under identical hyperparameters, Section 7) are ready to launch against the Milestone 2 training-ready dataset (`data/vehide_processed/`, `damage.yaml`) with no further data preparation required.
+- The doc-scoped hybrid retriever (Section 9) is implemented and already reproduces its Milestone 2 evaluation numbers exactly after the Milestone 3 extension.
+- The Report Agent's faithfulness has already been verified on synthetic claim scenarios (Section 8.2) with a full composite score, so Milestone 4 can focus on training the vision model and on the true end-to-end run with live detections, rather than on RAG-side pipeline debugging.
 
 ### 16.3 Planned Implementation Activities
 
 - Execute the full 50-epoch YOLO11m baseline training run (and the YOLOv8m comparison run) and report mAP@50, mAP@50-95, and per-class F1 against the Milestone 1 targets.
-- Wire the hybrid dense+sparse retriever into the live FastMCP `retrieve_policy_clauses` tool (currently a standalone-evaluated utility, Milestone 2 §6.2 Step 6).
+- Wire the Milestone 2 per-class inverse-frequency class weights into training (Section 7), replacing the uniform `cls` gain used in the Milestone 3 probe.
+- Perform a true end-to-end run — real image in, real YOLO inference, through Severity, Policy, and Report Agents, to a rendered output — once a trained checkpoint exists.
+- Reconcile the escalation confidence threshold (currently 0.50, a placeholder, Section 8.2) against real detection-confidence calibration data from the trained model.
+- Apply the `chunk_00004` root-cause tag fix in the policy corpus, and re-extract the garbled table pages identified in policy_4 (Section 8.2).
 - Build the explicit incident-to-clause ground truth (Milestone 2, §13.4) to replace the damage-class-overlap retrieval proxy with a rigorous Precision@3/MRR evaluation.
-- Validate the Report Agent's live prompt (Appendix B) against real GPT-4o calls on 5 sample incident/image pairs, replacing the templated stand-in used in Section 8.2.
 - Select and label the ~100-image escalation-path test subset (Milestone 2, §9.4) once the trained model's confidence distribution is available.
 - Conduct the stratified per-class and (where metadata allows) per-vehicle-type error analysis flagged in Milestone 1, Section 11.1.
+- If an orchestrator is wanted for Milestone 4, wrap the existing stage functions as LangGraph nodes (Section 11.3) — they already have clean, schema-defined input/output boundaries.
 
 ---
 
-## Appendix A: Small-Scale Pipeline Dry Run — Full Output
+## Appendix A: Prompt Templates
 
-```
-======================================================================
-Claim: claim_001  |  Escalated: False
-  detection: dent             area=0.0252 severity=Minor     conf=0.91
-  detection: scratch          area=0.0066 severity=Minor     conf=0.78
-  policy_query: Coverage for dent, scratch damage
-    retrieved [0.255] chunk_00002 (exclusion): [Exclusions] The Company shall not be liable for scratch damage result...
-    retrieved [0.182] chunk_00006 (coverage): [Coverage Summary Table] Broken lamp and headlamp assembly damage aris...
-    retrieved [0.126] chunk_00003 (coverage): [Glass Cover] Nil-depreciation cover applies to windscreen, window and...
-
-## Preliminary Claim Assessment
-
-| Damage | Severity | Confidence | Coverage |
-|---|---|---|---|
-| dent | Minor | 0.91 | not covered under retrieved policy |
-| scratch | Minor | 0.78 | not covered under retrieved policy |
-
-_This is a preliminary AI-assisted assessment and has not been verified by a licensed insurance assessor._
-
-======================================================================
-Claim: claim_002  |  Escalated: False
-  detection: shattered_glass  area=0.2200 severity=Moderate  conf=0.95
-  policy_query: Coverage for shattered glass damage
-    retrieved [0.486] chunk_00003 (coverage): [Glass Cover] Nil-depreciation cover applies to windscreen, window and...
-    retrieved [0.157] chunk_00006 (coverage): [Coverage Summary Table] Broken lamp and headlamp assembly damage aris...
-    retrieved [0.102] chunk_00002 (exclusion): [Exclusions] The Company shall not be liable for scratch damage result...
-
-## Preliminary Claim Assessment
-
-| Damage | Severity | Confidence | Coverage |
-|---|---|---|---|
-| shattered_glass | Moderate | 0.95 | Covered (chunk_00003) |
-
-_This is a preliminary AI-assisted assessment and has not been verified by a licensed insurance assessor._
-
-======================================================================
-Claim: claim_003  |  Escalated: False
-  detection: flat_tyre        area=0.0500 severity=Moderate  conf=0.88
-  policy_query: Coverage for flat tyre damage
-    retrieved [0.278] chunk_00004 (coverage): [Tyre Sub-Limit] Flat tyre and puncture damage is covered up to a sub-...
-    retrieved [0.164] chunk_00006 (coverage): [Coverage Summary Table] Broken lamp and headlamp assembly damage aris...
-    retrieved [0.125] chunk_00007 (conditional): [Conditional Cover] Tyre cover is conditional on concurrent vehicle bo...
-
-## Preliminary Claim Assessment
-
-| Damage | Severity | Confidence | Coverage |
-|---|---|---|---|
-| flat_tyre | Moderate | 0.88 | Covered (chunk_00004) |
-
-_This is a preliminary AI-assisted assessment and has not been verified by a licensed insurance assessor._
-
-======================================================================
-Claim: claim_004  |  Escalated: True
-  -> Detection confidence 0.42 below threshold 0.60  (routed to human review queue)
-======================================================================
-Claim: claim_005  |  Escalated: False
-  detection: crack            area=0.0120 severity=Minor     conf=0.83
-  detection: broken_lamp      area=0.0080 severity=Minor     conf=0.86
-  policy_query: Coverage for broken lamp, crack damage
-    retrieved [0.428] chunk_00006 (coverage): [Coverage Summary Table] Broken lamp and headlamp assembly damage aris...
-    retrieved [0.108] chunk_00003 (coverage): [Glass Cover] Nil-depreciation cover applies to windscreen, window and...
-    retrieved [0.102] chunk_00002 (exclusion): [Exclusions] The Company shall not be liable for scratch damage result...
-
-## Preliminary Claim Assessment
-
-| Damage | Severity | Confidence | Coverage |
-|---|---|---|---|
-| crack | Minor | 0.83 | not covered under retrieved policy |
-| broken_lamp | Minor | 0.86 | Covered (chunk_00006) |
-
-_This is a preliminary AI-assisted assessment and has not been verified by a licensed insurance assessor._
-
-======================================================================
-Pipeline dry run complete: 5 claims processed, 1 escalated to human review, 4 completed to a final report.
-```
-
----
-
-## Appendix B: Prompt Templates
-
-### B.1 System Prompt (Report Agent)
+### A.1 System Prompt (Report Agent)
 
 ```
 You are a claims-assistant that writes preliminary vehicle damage assessment
@@ -904,29 +834,52 @@ For every damage instance, state whether it is covered, citing the clause id.
 If no retrieved clause supports a coverage claim, write 'not covered under
 retrieved policy' rather than inferring from general knowledge. Do not invent
 clause text. Always end with the disclaimer: 'This is a preliminary AI-assisted
-assessment and has not been verified by a licensed insurance assessor.'
+assessment and has not been verified by a licensed insurance assessor'.
 ```
 
-### B.2 User Message Template
+### A.2 User Message Template
 
+The user message is the full context bundle, serialized directly as JSON there is no separate `DETECTIONS:`/`RETRIEVED_CLAUSES:` sectioning; the entire payload is passed as-is:
+
+```json
+{
+  "claim_id": "CLAIM_09_multi_instance_hail_dents",
+  "incident_narrative": "Hailstorm left multiple small dents ...",
+  "detections": [
+    {"class_id": 0, "class_name": "dent", "confidence": 0.80,
+     "bbox_normalized": [0.3, 0.4, 0.11, 0.11], "area_ratio": 0.012, "severity": "minor"}
+  ],
+  "policy": {
+    "doc_id": "policy_1_bharat_suraksha",
+    "selection_method": "claimant_selected",
+    "insurer": "Bharat Suraksha Motor Insurance Co. Ltd",
+    "product": "Motor Private Car Comprehensive (Own Damage + Third Party Liability)",
+    "description": "Comprehensive cover ... glass at nil depreciation ... no add-ons.",
+    "clauses": {
+      "dent": {
+        "coverage": [
+          {"chunk_id": "chunk_00004", "text": "...", "heading": "...",
+           "clause_type": "definition", "doc_id": "policy_1_bharat_suraksha", "score": 0.0656}
+        ],
+        "exclusion_or_condition": [ "..." ],
+        "coverage_clause_found": true
+      }
+    }
+  },
+  "escalation": {
+    "low_confidence_detections": [],
+    "missing_coverage_clause_for": [],
+    "needs_human_review": false
+  }
+}
 ```
-DETECTIONS:
-<JSON list of {class_id, class_name, confidence, bbox_normalized, area_ratio, severity}>
 
-RETRIEVED_CLAUSES:
-<JSON list of {id, doc_id, heading, text, damage_classes, clause_type, score}>
+No user-facing instruction text is added beyond the JSON itself — the system prompt (A.1) alone specifies the task and output schema.
+> Field names in A.2 are confirmed directly from `scripts/report_agent.py`.
+> The system prompt (A.1) and output schema (A.3) below are drafts and still
+> need the same confirmation pass against that script.
 
-Produce the structured output described in your instructions.
-```
-
-> **[TO CONFIRM WITH RAG OWNER]** — Appendix B.1-B.3 (system prompt, user message
-> template, output schema) describe an earlier draft. Only the `DETECTIONS`
-> field names above have been corrected to match the confirmed detection
-> schema; the system prompt, guardrail list, and Pydantic output schema
-> should be replaced with the actual implementation from `scripts/report_agent.py`
-> once received.
-
-### B.3 Structured Output Schema (Pydantic)
+### A.3 Structured Output Schema (Draft)
 
 ```python
 from pydantic import BaseModel
@@ -934,8 +887,8 @@ from typing import Optional, Literal
 
 class DamageFinding(BaseModel):
     damage_class: str
-    severity: Literal["Minor", "Moderate", "Severe"]
-    coverage_status: Literal["Covered", "Not covered under retrieved policy"]
+    severity: Literal["minor", "moderate", "severe"]
+    coverage_status: Literal["covered", "excluded", "conditional", "needs_review"]
     supporting_clause_id: Optional[str] = None
 
 class ClaimReport(BaseModel):
@@ -949,16 +902,15 @@ class ClaimReport(BaseModel):
 
 ---
 
-## Appendix C: Change Log
+## Appendix B: Change Log
 
-| **Date** | **Change** |
+| **Date** | **Change** | 
 | --- | --- |
-| 23 July 2026 | Milestone 3 report drafted: model selection, architecture, pipeline design, and small-scale dry-run verification added |
-
+| | |
 
 ---
 
-## References
+## Appendix C: References
 
 [1] G. Jocher et al., "YOLO by Ultralytics," Zenodo, 2023. doi:10.5281/zenodo.7347926.
 
@@ -968,11 +920,9 @@ class ClaimReport(BaseModel):
 
 [4] J. Johnson, M. Douze, and H. Jégou, "Billion-Scale Similarity Search with GPUs," IEEE Transactions on Big Data, vol. 7, no. 3, pp. 535-547, 2021.
 
-[5] OpenAI, "GPT-4 Technical Report," arXiv preprint, arXiv:2303.08774, 2023.
+[5] Milestone 1 Report — Multimodal Damage Assessment for Insurance Claims, Group 1, DS & AI Lab, 2026.
 
-[6] Milestone 1 Report — Multimodal Damage Assessment for Insurance Claims, Group 1, DS & AI Lab, 2026.
-
-[7] Milestone 2 Report — Multimodal Damage Assessment for Insurance Claims, Group 1, DS & AI Lab, 2026.
+[6] Milestone 2 Report — Multimodal Damage Assessment for Insurance Claims, Group 1, DS & AI Lab, 2026.
 
 ---
 
@@ -982,7 +932,7 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 
 | Name | Date of Review | Sign |
 |---|---|---|
-| Satyajeet Kumar | | |
+| Satyajeet Kumar | 23-07-2026 | S.K. |
 | Pranab Kumar Manna | 23-07-2026|Pk Manna |
 | Venkata Siva Kamal Guddanti | | |
 | Anuj Gautam | | |
