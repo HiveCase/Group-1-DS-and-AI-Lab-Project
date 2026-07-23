@@ -622,8 +622,8 @@ The Report Agent requests a JSON object with a controlled verdict vocabulary (`c
 
 ### 10.6 Guardrails
 
-- Mandatory disclaimer appended to every report (enforced in code, not only via prompt instruction, so a prompt-following failure cannot remove it) — **[TO CONFIRM WITH RAG OWNER]** exact enforcement point.
-- Escalation gate (Section 3.1) prevents the Report Agent from running on low-confidence detections.
+- No disclaimer mechanism is currently implemented in the Report Agent's prompt or output schema — this is a gap relative to the earlier draft design (Appendix A.1), which included one, and is worth adding back if a disclaimer is still required for deployment.
+- Low-confidence detections and missing-coverage cases do not prevent the Report Agent from running; they are surfaced as `escalate_to_human`/`escalation_reason` in its own structured output (Section 8.2), which the calling application is expected to act on.
 - Two models are run and compared (Section 5.4) rather than one primary model with a fallback; this is a comparison design for evaluation purposes, not a runtime fallback mechanism, so a single-model production configuration is still to be decided.
 
 ### 10.7 Function Calling / Tool Use
