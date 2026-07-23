@@ -634,49 +634,78 @@ The current implementation does not use LLM-driven function calling: the context
 
 ## 11. System Integration
 
-### 11.1 Shared State Schema
+### 11.1 Shared Schemas
+
+There is no single mutable state object threading through all four stages. The actual interface between stages is two concrete schemas: the **context bundle** `ContextBundleBuilder.build()` (`scripts/report_context.py`) assembles from the Damage/Severity Agent output, and the **report** the Report Agent returns from that bundle.
 
 ```python
-from typing import TypedDict, Optional, List, Dict, Any
+from typing import TypedDict, Optional, List, Dict
 
 class Detection(TypedDict):
     class_id: int
     class_name: str
     confidence: float
-    bbox_normalized: list[float]   # [x, y, w, h]
+    bbox_normalized: List[float]   # [x_center, y_center, w, h]
     area_ratio: float
-    severity: Optional[str]  # populated by Severity Agent
+    severity: str                  # "minor" / "moderate" / "severe" — global bins, Section 5.2
 
 class RetrievedClause(TypedDict):
     chunk_id: str
-    doc_id: str
-    heading: str
     text: str
+    heading: str
     clause_type: str
+    doc_id: str
     score: float
+
+class ClauseBucket(TypedDict):
+    coverage: List[RetrievedClause]
+    exclusion_or_condition: List[RetrievedClause]
+    coverage_clause_found: bool
 
 class PolicySelection(TypedDict):
     doc_id: str
-    selection_method: str  # "claimant_selected" — see Section 8.1
+    selection_method: str          # always "claimant_selected" — Section 8.1
     insurer: str
     product: str
     description: str
+    clauses: Dict[str, ClauseBucket]   # keyed by damage_class
 
-class ClaimState(TypedDict):
+class Escalation(TypedDict):
+    low_confidence_detections: List[str]     # class_names below the 0.50 threshold
+    missing_coverage_clause_for: List[str]   # class_names with no coverage clause found
+    needs_human_review: bool
+
+class ContextBundle(TypedDict):
+    """Input to the Report Agent. Produced by ContextBundleBuilder.build()."""
     claim_id: str
-    image: bytes
-    incident_narrative: Optional[str]
+    incident_narrative: str
     detections: List[Detection]
-    overall_severity: Optional[str]
-    policy: Optional[PolicySelection]
-    clauses: Dict[str, Dict[str, Any]]  # per damage class: coverage[] / exclusion_or_condition[]
-    report: Optional[dict]
-    escalated: bool
+    policy: PolicySelection
+    escalation: Escalation
+
+
+class ReportItem(TypedDict):
+    damage_class: str
+    verdict: str                   # "covered" / "excluded" / "conditional" / "needs_review"
+    rationale: str
+    cited_chunk_ids: List[str]
+
+class ClaimReport(TypedDict):
+    """Output of the Report Agent (scripts/report_agent.py). Requested via
+    response_format=json_object; validated against this shape by
+    scripts/eval_report_agent.py's schema_valid check."""
+    claim_id: str
+    policy_doc_id: str
+    items: List[ReportItem]
+    overall_recommendation: str
+    escalate_to_human: bool
     escalation_reason: Optional[str]
 ```
 
-**[TO CONFIRM WITH RAG OWNER]** — this schema is aligned to the confirmed detection format (Section 6.1) and the confirmed context bundle structure (Section 6.4), but has not been checked field-by-field against the actual `report_context.py` implementation.
+Both schemas are transcribed directly from `scripts/report_context.py` (`_hit_dict`, `ClauseRetriever.get_clauses`, `ContextBundleBuilder.build`), `scripts/yolo_schema.py` (`Detection.to_dict`), `scripts/report_agent.py`'s system prompt, and the `required` field set checked in `scripts/eval_report_agent.py`'s `check_report`.
 
+
+  
 ### 11.2 How Different Models Communicate
 
 All communication is state-in/state-out through the schema above; no module calls another module's model directly. Each stage is currently invoked as a plain Python function call (Section 4.5, Section 2.5) rather than through a tool-calling interface — there is no MCP or similar tool wrapper around the Policy Agent in the current implementation.
@@ -760,7 +789,7 @@ This section extends Milestone 1, Section 10 with what Milestone 2's empirical f
 
 | **Risk / Limitation** | **Status / detail** |
 | --- | --- |
-| Class imbalance (6.68:1 scratch:shattered_glass) | Confirmed in Milestone 2; a uniform class-loss gain (`cls=2.0`) was applied in the Milestone 3 probe runs, but Milestone 2's per-class inverse-frequency weight vector is not yet wired in (Section 7); per-class F1 for `shattered_glass`/`flat_tyre` remains the metric most at risk of missing the ≥0.65 target |
+| Class imbalance (6.59:1 scratch:shattered_glass) | Confirmed in Milestone 2; a uniform class-loss gain (`cls=2.0`) was applied in the Milestone 3 probe runs, but Milestone 2's per-class inverse-frequency weight vector is not yet wired in (Section 7); per-class F1 for `shattered_glass`/`flat_tyre` remains the metric most at risk of missing the ≥0.65 target |
 | Severity is derived, not labelled, and permanently so | No severity ground truth exists anywhere in the VehiDE-only dataset scope (Section 5.2); the area-ratio proxy's known failure mode — a large shallow scratch vs. a small deep crack can be mis-ordered by area alone — cannot be corrected by acquiring more labelled data within this project's scope |
 | Domain shift (studio-quality training photos vs. real handheld claim photos) | Addressed partially via augmentation (motion blur raised to 0.3, JPEG quality set to 75, Milestone 2 §8.1); residual risk remains until stress-tested against real claim-style photographs |
 | RAG retrieval ceiling on realistic queries | 0.893-0.913 Precision@3 (Milestone 2/3), not 1.00 — a retriever-quality limit, not a wiring defect; the PDF table-garbling finding (Section 8.2) is a separate, corpus-level source of the same class of error |
@@ -779,6 +808,7 @@ This section extends Milestone 1, Section 10 with what Milestone 2's empirical f
 | --- | --- | --- |
 | High-level architecture diagram | `diagrams/multiagent_architecture_staged.svg` | Four-agent architecture (carried forward from Milestone 1/2, referenced in Section 2.1) |
 | Sequence diagram | Section 3.3 (this report) | Textual sequence diagram of one claim's path through the pipeline |
+| Architecture probe notebook | `notebooks/architecture-probe-yolo11m-vs-yolov8m.ipynb` | YOLO11m vs. YOLOv8m head-to-head training run (3,000-image subsample, 15 epochs, identical hyperparameters) with measured mAP, parameter count, training time, and inference latency |
 | Policy catalog (Stage 1) | `scripts/policy_catalog.py` | Claimant-facing policy selection menu; each option described (Section 8.1) |
 | Rejected auto-selection census | `scripts/policy_selector.py`, `data/rag_outputs/mile3/policy_selection_eval.json` | Exhaustive 315-case evaluation proving damage-based policy auto-selection is indistinguishable from chance (Section 5.3/8.1) |
 | Doc-scoped clause retriever | `scripts/hybrid_retrieval.py` (`doc_filter` extension), `scripts/report_context.py` | Two-pass coverage/exclusion retrieval per damage class, scoped to the selected policy (Section 9) |
@@ -817,6 +847,7 @@ The system's four agents are each assigned a specific, justified model: YOLO11m 
 - Select and label the ~100-image escalation-path test subset (Milestone 2, §9.4) once the trained model's confidence distribution is available.
 - Conduct the stratified per-class and (where metadata allows) per-vehicle-type error analysis flagged in Milestone 1, Section 11.1.
 - If an orchestrator is wanted for Milestone 4, wrap the existing stage functions as LangGraph nodes (Section 11.3) — they already have clean, schema-defined input/output boundaries.
+- Implement a true escalation gate: currently, low-confidence detections and missing-coverage cases are surfaced only as an `escalate_to_human` flag inside the Report Agent's output (Section 8.2); a future version should prevent the Policy/Report Agent from running at all on flagged claims, routing them directly to human review instead.
 
 ---
 
