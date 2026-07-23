@@ -382,8 +382,8 @@ Expected performance against each stage's Milestone 1, Section 4 target is not y
 
 | | |
 | --- | --- |
-| **Input** | Full context bundle JSON: `claim_id`, `incident_narrative`, `detections[]`, policy selection (`doc_id`, `selection_method`, insurer/product metadata), per-class `clauses` (coverage/exclusion arrays from Section 6.3), and `escalation` flags — plus the fixed system prompt **[TO CONFIRM: Appendix B system prompt and schema still need updating from RAG owner]** |
-| **Output** | A structured **JSON** object (`response_format=json_object`): `{claim_id, policy_doc_id, items: [{damage_class, verdict, rationale, cited_chunk_ids}], overall_recommendation, escalate_to_human, escalation_reason}`, with `verdict` drawn from a controlled vocabulary (`covered`/`excluded`/`conditional`/`needs_review`) — rendered into Markdown/UI display downstream (Section 3.6), not generated as Markdown directly. **[TO CONFIRM: whether a disclaimer sentence is appended at render time]** |
+| **Input** | Full context bundle JSON: `claim_id`, `incident_narrative`, `detections[]`, policy selection (`doc_id`, `selection_method`, insurer/product metadata), per-class `clauses` (coverage/exclusion arrays from Section 6.3), and `escalation` flags — plus the fixed system prompt |
+| **Output** | A structured **JSON** object (`response_format=json_object`): `{claim_id, policy_doc_id, items: [{damage_class, verdict, rationale, cited_chunk_ids}], overall_recommendation, escalate_to_human, escalation_reason}`, with `verdict` drawn from a controlled vocabulary (`covered`/`excluded`/`conditional`/`needs_review`) — rendered into Markdown/UI display downstream (Section 3.6), not generated as Markdown directly |
 | **Token budget** | System prompt + serialized detections + up to 10 retrieved chunks per damage class (coverage + exclusion, Section 6.3), scaling with the number of distinct damage classes in a claim — comfortably within `llama-3.3-70b-versatile` / `openai/gpt-oss-20b`'s context windows via the Groq API, with wide margin even for a multi-class claim |
 
 ### 6.5 Dataset Organization and Directory Structure
@@ -436,22 +436,22 @@ data/
 
 ## 7. Training Strategy
 
-Only the **Damage Agent (YOLO11m)** is trained in this project; the Severity Agent is rule-based, the Policy Agent's embedding model is used frozen, and the Report Agent's LLMs are accessed via API with no fine-tuning (Milestone 1, Section 1.3 places custom LLM/embedding training out of scope). The strategy below therefore applies to YOLO11m only.
+Only the **Damage Agent (YOLO11m)** is trained in this project; the Severity Agent is rule-based, the Policy Agent's embedding model is used frozen, and the Report Agent's LLMs are accessed via API with no fine-tuning (Milestone 1, Section 1.3 places custom LLM/embedding training out of scope). The strategy below therefore applies to YOLO11m only, and reflects what was **actually run** in the Milestone 3 architecture-probe training (Section 5.1), not an unvalidated plan.
 
 | **Aspect** | **Decision** |
 | --- | --- |
 | Fine-tuning vs. feature extraction | Full fine-tuning (all layers trainable) from an Objects365/COCO-pretrained checkpoint — not frozen-backbone feature extraction, because the domain shift from COCO's everyday-object distribution to close-up vehicle-damage textures (scratches, cracks) is large enough that a frozen backbone would likely under-fit the domain-specific texture cues |
-| Transfer learning approach | Initialise from Ultralytics' official `yolo11m.pt` pretrained weights (plain detection, not `-seg` — Section 4.1); retrain all layers on VehiDE |
+| Transfer learning approach | Initialise from Ultralytics' official `yolo11m.pt` pretrained weights |
 | Frozen vs. trainable layers | All layers trainable; a frozen-first-10-layers ablation is planned as a secondary comparison run only if the full fine-tune shows signs of overfitting on the minority classes |
-| Loss functions | YOLO11's composite detection loss: CIoU loss (box regression) + BCE (classification, weighted by `cls` per Milestone 2, Section 8.2 class weights) + DFL (distribution focal loss for box refinement) — no mask loss, since the plain detection head (not `-seg`) is used (Section 4.1) |
+| Loss functions | YOLO11's composite detection loss: CIoU loss (box regression) + BCE (classification, gain `cls`) + DFL (distribution focal loss for box refinement) — no mask loss, since the plain detection head is used (Section 4.1) |
 | Optimizer | AdamW |
-| Learning rate strategy | `lr0 = 0.001`, cosine decay to `lrf = 0.01` of the initial rate |
-| Batch size | 8 (reduced from the Milestone 1 assumption of 16 once training moved to 1280px input, which roughly quadruples per-image VRAM cost, Milestone 2 Section 6.1) |
-| Epochs | 50 (Milestone 1 estimate, unchanged) |
-| Early stopping | Patience of 10 epochs on validation mAP@50 with no improvement |
-| Checkpointing | `best.pt` saved on best validation mAP@50; `last.pt` saved every epoch for resumability given free-tier GPU session limits |
+| Learning rate strategy | `lr0 = 0.001`, **linear** decay to `lrf = 0.01` of the initial rate (`cos_lr=False`, the Ultralytics default) — cosine decay is a separate, not-yet-run experiment variant planned for Milestone 4 (`scripts/train_yolo.py`, `cosine_lr` preset) |
+| Batch size | 4, as actually run in the Milestone 3 probe (Section 5.1) on a 14,912 MiB T4 at 1280px, `batch=8` has not yet been tested and may be attempted at full-scale Milestone 4 training if a larger-VRAM GPU is available |
+| Epochs | 50 for the full Milestone 4 baseline run (Milestone 1 estimate, unchanged), distinct from the 3/5/15-epoch architecture-comparison probes already run in Milestone 3 (Section 5.1), which were deliberately short and are not the baseline |
+| Early stopping | Patience of 15 epochs on validation fitness with no improvement (matches `scripts/train_yolo.py`'s baseline preset) |
+| Checkpointing | `best.pt` saved on best validation fitness (Ultralytics' default weighted combination of mAP@50 and mAP@50-95, not pure mAP@50); `last.pt` saved every epoch for resumability given free-tier GPU session limits |
 
-**Class-weighted loss.** The `cls_pw` weights computed in Milestone 2, Section 8.2 (linear inverse-frequency, `scratch`=1.0 up to `shattered_glass`=6.6) are applied directly to the classification loss term to address the 6.59:1 imbalance, rather than only relying on augmentation-based oversampling.
+**Class-weighted loss — current status.** Milestone 2, Section 8.2 designed per-class inverse-frequency weights (`scratch`=1.0 up to `shattered_glass`=6.6) to address the 6.68:1 imbalance. In the Milestone 3 probe runs actually executed, only a **uniform** class-loss gain (`cls=2.0`, applied equally across all 6 classes) was used; Ultralytics' per-class weighting mechanism (`cls_pw`) was left at its default (0.0, unused) in every run. The per-class weight vector is therefore not yet wired into training as originally planned doing so would require either a custom loss modification or a class-weighted sampler, neither implemented yet. This is tracked as an open item for Milestone 4, alongside the `cls_weight` experiment preset (`cls=3.0`, still a uniform gain, not per-class) already defined in `scripts/train_yolo.py` as an interim step.
 
 ---
 
