@@ -278,28 +278,39 @@ Integration is achieved entirely through a shared state object and typed schemas
 
 ## 5. Justification of Model Choices
 
+
 ### 5.1 Damage Agent: YOLO11m vs. Alternatives
 
-This project's comparison of YOLO against Faster R-CNN, DETR, SSD, and end-to-end VLMs (Florence-2, Qwen2.5-VL, LLaVA, GPT-4V) was carried out in Milestone 1, Section 3.1/3.4, and is not repeated in full here; the conclusion — that a fine-tuned YOLO variant offers the best combination of measurable, ground-truth-comparable output, CPU-deployable inference, and training feasibility on a single T4 GPU within the project's compute budget — still holds and is the basis for this milestone's selection.
+This project's comparison of YOLO against Faster R-CNN, DETR, SSD, and end-to-end VLMs (Florence-2, Qwen2.5-VL, LLaVA, GPT-4V) was carried out in Milestone 1, Section 3.1/3.4, and is not repeated in full here. The conclusion is that a fine-tuned YOLO variant offers the best combination of measurable, ground-truth-comparable output, CPU-deployable inference, and training feasibility on a GPU within the project's compute budget and still holds and is the basis for this milestone's selection.
 
-What Milestone 3 adds is the **YOLO11 vs. YOLOv8 comparison** (flagged as an open item in Milestone 2, Section 13.4):
+**YOLO11 vs. YOLOv8 comparison:**
+
+Rather than relying on published COCO benchmarks (which reflect a different dataset and task), both architectures were actually trained and measured on this project's data. A fixed 3,000-image training subsample (with a 500-image validation subsample), identical across both architectures, was trained progressively at **3, 5, and then 15 epochs** and each stage checked whether a clear winner had emerged before committing more GPU time to the next. At 15 epochs (the most informative run), both models remained far from converged (mAP@50 ≈ 0.03-0.04 on a 6-class task starting from a reinitialised detection head), but that is expected at this data/epoch scale and was not the point of the probe the point was the **relative** comparison between the two architectures under identical conditions.
 
 | **Criterion** | **YOLO11m** | **YOLOv8m** |
 | --- | --- | --- |
-| Parameter count | ~22M | ~27M |
-| Reported COCO mAP (official Ultralytics benchmarks) | Marginally higher than YOLOv8 at equivalent scale | Baseline |
-| Architectural novelty relevant to this task | C3k2 blocks + C2PSA attention aid small-object detection (relevant given median bbox area 0.033, Milestone 2 Section 5.3) | C2f blocks, no attention block |
-| Ultralytics ecosystem maturity | Newer, actively maintained, same API surface as YOLOv8 | More battle-tested, wider community troubleshooting history |
+| Parameters (measured) | 20.1M | 25.9M |
+| mAP@50 @ 15-epoch probe (3,000-image subsample) | 0.0305 | 0.0371 |
+| mAP@50-95 @ 15-epoch probe | 0.0046 | 0.0081 |
+| Training time / epoch (measured) | 1,370.8 s | 1,265.8 s |
+| Inference speed (measured, 1280px) | 99.9 ms/image | 92.3 ms/image |
+| Peak inference memory (measured) | 1.45 GB | 1.44 GB |
+| Architectural novelty relevant to this task | C3k2 blocks + C2PSA attention aid small-object detection | C2f blocks, no attention block |
 | Migration cost | None — drop-in replacement via the same `ultralytics` package and `damage.yaml` config | N/A (already the Milestone 1/2 assumption) |
 
-YOLO11m is selected as the primary architecture for Milestone 4 training, with YOLOv8m retained as the baseline comparison run (both will be trained under identical hyperparameters, Section 7, so that the Milestone 4 report can report an actual head-to-head mAP@50/per-class-F1 delta rather than relying on the published benchmarks cited above).
+**No clear winner emerged from the probe.** The mAP@50 delta (0.0066) and mAP@50-95 delta (0.0035) between the two architectures are very much comparable and at this data scale (3,000 images, 15 epochs), the two architectures are statistically indistinguishable on accuracy; YOLOv8m's edge is noise-level, not a demonstrated advantage. YOLOv8m is marginally faster per epoch and at inference, and has more parameters; YOLO11m is marginally slower on both counts but smaller.
+
+**Decision: YOLO11m is selected**, on the tie-break criterion established before the probe was run: since accuracy was inconclusive, the decision falls to architectural reasoning - YOLO11's C3k2/C2PSA blocks are reported by Ultralytics to improve small-object detection, which is directly relevant given the Milestone 2 EDA's minimum normalised bbox area of 0.00002. YOLOv8m is retained as the Milestone 4 baseline comparison run (both trained under identical hyperparameters, Section 7, on the **full** training set) so that the Milestone 4 report can report an actual head-to-head result at full scale, rather than relying on this inconclusive subsample probe as the final word.
 
 **Advantages:** attention-augmented small-object detection, lightweight box-only inference (no segmentation head to carry), fast CPU/GPU inference, mature deployment tooling (ONNX/TensorRT export if later needed).
-**Disadvantages:** bounding-box area over-estimates true damaged area for irregular or elongated damage (e.g. a diagonal crack or scratch) relative to a pixel-precise mask, since the box necessarily includes undamaged background — a known bias in the Severity Agent's area-ratio proxy (Section 6.2), most pronounced for `crack`/`scratch` and smallest for roughly-rectangular classes like `shattered_glass`; like all single-stage detectors, more prone to missing small/heavily-occluded instances than two-stage detectors (Milestone 1, Section 10.8).
+**Disadvantages:** bounding-box area over-estimates true damaged area for irregular or elongated damage (e.g. a diagonal crack or scratch) relative to a pixel-precise mask, since the box necessarily includes undamaged background — a known bias in the Severity Agent's area-ratio proxy (Section 6.2), most pronounced for `crack`/`scratch` and smallest for roughly-rectangular classes like `shattered_glass`; like all single-stage detectors, more prone to missing small/heavily-occluded instances than two-stage detectors (Milestone 1, Section 10.8); the probe above found no measured accuracy advantage over YOLOv8m at this data scale, so the architectural rationale is a prior, not (yet) an empirical result.
+
 
 ### 5.2 Severity Agent: Rule-Based Proxy vs. a Learned Classifier
 
 Re-affirming the Milestone 1, Section 10.2 decision: a dedicated severity classifier trained on the Car Damage Severity dataset (~2,300 images) was rejected due to overfitting risk on a dataset that small; a VLM-based severity judgment was rejected on cost/latency grounds incompatible with the CPU-basic deployment target. The calibrated bounding-box-area-ratio proxy remains the selected approach, with the Car Damage Severity dataset used only to calibrate the per-class thresholds (Section 6), not to train a standalone model. This is re-justified here because Milestone 2's EDA (Section 5.3) confirmed a strong dependency between damage class and mean bbox area (`shattered_glass` spans much larger areas than `flat_tyre`), directly validating the need for per-class rather than global thresholds.
+
+
 
 ### 5.3 Policy Agent: MiniLM + ChromaDB + Hybrid Retrieval vs. Alternatives
 
