@@ -308,8 +308,7 @@ Rather than relying on published COCO benchmarks (which reflect a different data
 
 ### 5.2 Severity Agent: Rule-Based Proxy vs. a Learned Classifier
 
-Re-affirming the Milestone 1, Section 10.2 decision: a dedicated severity classifier trained on the Car Damage Severity dataset (~2,300 images) was rejected due to overfitting risk on a dataset that small; a VLM-based severity judgment was rejected on cost/latency grounds incompatible with the CPU-basic deployment target. The calibrated bounding-box-area-ratio proxy remains the selected approach, with the Car Damage Severity dataset used only to calibrate the per-class thresholds (Section 6), not to train a standalone model. This is re-justified here because Milestone 2's EDA (Section 5.3) confirmed a strong dependency between damage class and mean bbox area (`shattered_glass` spans much larger areas than `flat_tyre`), directly validating the need for per-class rather than global thresholds.
-
+The calibrated bounding-box-area-ratio proxy is therefore the viable approach, not merely the preferred one. Severity is derived, not labelled: each detection's normalised bbox area is binned against fixed per-class thresholds into Minor/Moderate/Severe, following the same binning logic used in the Milestone 2 EDA (`scripts/eda_vehide.py`, `SEVERITY_BINS = [0.0, 0.02, 0.08, 1.0]`). The per-class threshold structure (rather than one global threshold) is justified by Milestone 2's EDA (Section 5.3), which found mean bbox area varies substantially by class — `shattered_glass` spans much larger areas than `flat_tyre` for comparable real-world severity, so a single global cutoff would systematically over-rate large-footprint classes and under-rate small-footprint ones. The specific threshold values are analyst-set from this bbox-area distribution, not empirically fitted against human severity judgments, since no such judgments exist in scope — this is recorded as a standing limitation in Section 14, not a temporary gap.
 
 
 ### 5.3 Policy Agent: MiniLM + ChromaDB + Hybrid Retrieval vs. Alternatives
@@ -322,32 +321,33 @@ The MiniLM-vs-BGE-small and ChromaDB-vs-FAISS comparisons were run empirically i
 | ChromaDB vs. FAISS `IndexFlatIP` | ChromaDB | Both exact-match on top-1 (6/6); FAISS ~50-60x faster in raw query latency | Not operationally meaningful at 185-chunk scale; ChromaDB's built-in metadata filtering and persistence won |
 | Dense-only vs. hybrid dense+sparse (RRF) | Hybrid (75% dense : 25% sparse) | 0.893 → 0.913 Precision@3 on 50 realistic incidents | Fixed the one dense-only zero-hit failure with no regressions elsewhere |
 
-**What Milestone 3 adds:** the hybrid retriever is now the *default* retrieval path wired into the Policy Agent's FastMCP tool (it was implemented and evaluated as a standalone utility in Milestone 2 but not yet integrated), closing the item flagged in Milestone 2, Section 13.4.
+**What Milestone 3 adds:** `HybridRetriever` was extended with a `doc_filter` parameter, enabling doc-scoped retrieval — dense-side via a ChromaDB `where` clause, sparse-side by masking non-matching rows before ranking. Retrieval now runs as **two scoped passes per damage class** (a coverage query and a separate exclusion query, each restricted to the claimant's selected policy) rather than a single mixed top-k call, so that an exclusion clause capping or voiding coverage is not buried beneath the coverage clause it qualifies. Re-running the original 50-incident evaluation after this change reproduced the same 0.913 Precision@3 / 0.977 MRR exactly, confirming the unscoped retrieval path is unaffected — this closes the integration item flagged in Milestone 2, Section 13.4.
 
-**Advantages of this stack:** near-zero marginal inference cost (no GPU required for retrieval), fully offline/on-CPU, transparent (each retrieved chunk carries its source document and heading for citation in the report).
-**Disadvantages:** MiniLM is a general-purpose encoder with no insurance-domain fine-tuning, so retrieval quality is capped by its ability to bridge damage-class vocabulary and policy-clause vocabulary — the 0.893→0.913 (not 1.00) Precision@3 on realistic incidents reflects this ceiling, and the small-scale dry run in Section 8.2 surfaces a concrete instance of this limitation.
+**Advantages of this stack:** near-zero marginal inference cost (no GPU required for retrieval), fully offline/on-CPU, transparent (each retrieved chunk carries its source document and heading for citation in the report), and doc-scoping prevents cross-policy clause leakage into a single claim's context.
+**Disadvantages:** MiniLM is a general-purpose encoder with no insurance-domain fine-tuning, so retrieval quality is capped by its ability to bridge damage-class vocabulary and policy-clause vocabulary — the 0.893→0.913 (not 1.00) Precision@3 on realistic incidents reflects this ceiling; two scoped passes per damage class also roughly doubles retrieval calls per claim relative to a single mixed query, though this remains sub-second in aggregate (Section 12) given the corpus size.
 
-### 5.4 Report Agent: GPT-4o vs. Alternatives
+### 5.4 Report Agent: Open-Weight Models via Groq vs. Alternatives
 
 | **Model** | **Advantages** | **Disadvantages** |
 | --- | --- | --- |
-| **GPT-4o (selected, primary)** | Strong instruction-following for structured-output tasks; good grounding behaviour when explicitly instructed not to infer beyond provided context; mature function/structured-output support | Paid API; per-token cost scales with number of evaluation samples (Milestone 1, Section 10.7); external dependency |
-| Gemini 1.5 Flash (selected, fallback) | Lower cost, faster, good enough for a fallback / high-volume evaluation role | Slightly less reliable structured-output adherence in the team's Milestone 1 informal testing |
-| Open-source LLM (e.g. Llama 3, Mistral, self-hosted) | No per-call API cost; full control over weights | Requires GPU hosting incompatible with the CPU-basic HF Spaces target; weaker out-of-the-box structured-output reliability without additional fine-tuning, which is out of scope (Milestone 1 Section 1.3 rules out training a custom report-generation model) |
+| **`llama-3.3-70b-versatile` (selected, compared)** | Free-tier via Groq (no per-token cost); fast (~0.7-0.9s per report); OpenAI-compatible API (low migration cost to another provider later); dense 70B general reasoning; reached a full 1.0 composite score on the mechanical faithfulness eval (Section 10) | Remote dependency (network, rate limits) — the same class of risk as any hosted API |
+| **`openai/gpt-oss-20b` (selected, compared)** | Free-tier via Groq; open-weight MoE, ~3.5x smaller than the model above yet matched it exactly (1.0 composite) on the same faithfulness eval; running two differently-sized models head-to-head is what surfaced that report correctness is gated by retrieval/context quality rather than model choice (Section 10.4) | Same remote-dependency risk as above; smaller model, so headroom on harder reasoning cases is untested at this milestone |
+| Paid frontier API (e.g. GPT-4o, named in Milestone 1) | Possibly stronger instruction-following/grounding on harder cases (not tested against the two selected models here) | Per-token cost scales with evaluation volume (Milestone 1, Section 10.7); external dependency no more reliable than Groq's; the empirical finding that context quality — not model choice — gates correctness (Section 10.4) weakens the case for a cost premium at this corpus/task scale |
+| Self-hosted open-source LLM (own GPU) | No per-call API cost; full control over weights | Requires GPU hosting incompatible with the CPU-basic HF Spaces deployment target; Groq's hosted API already provides open-weight models at no per-call cost, so self-hosting adds infrastructure burden without an offsetting benefit |
 | A single end-to-end VLM report generator | One inference call instead of a 4-stage pipeline | Reintroduces exactly the black-box evaluability problem the modular architecture was chosen to avoid (Milestone 1, Section 3.4); no separately-scoreable detection or retrieval step |
 
-GPT-4o is retained as the primary generator; the open-source-LLM option is explicitly rejected here (not only on cost grounds but on the deployment-target constraint), which the Milestone 1 report did not fully spell out — this milestone closes that gap.
+Two open-weight models — `llama-3.3-70b-versatile` and `openai/gpt-oss-20b` — are run and compared head-to-head via the Groq API, rather than one being designated primary with the other as fallback. Paid frontier APIs (GPT-4o, named in Milestone 1) are explicitly rejected for this milestone, both on cost grounds and on the empirical finding (Section 10.4) that model choice is a second-order factor here: a stronger, more expensive model cannot recover a policy clause that retrieval never surfaced, and the two Groq models converged on identical, correct verdicts once a context-quality bug was fixed (Section 10.3) regardless of which model was used. Self-hosting is separately rejected on the deployment-target constraint (GPU hosting incompatible with the CPU-basic HF Spaces target) — this milestone closes a gap the Milestone 1 report did not fully spell out, by choosing a hosted-API path that gets open-weight models' cost and transparency benefits without the self-hosting burden.
+
 
 ### 5.5 Computational Considerations and Expected Performance
 
-Expected performance against each stage's Milestone 1, Section 4 target is unchanged by this milestone (no training has occurred yet — that is Milestone 4); this milestone's contribution is confirming that the selected models are computationally compatible with the stated hardware (Section 12) and that the wiring between them is correct (Section 8.2).
+Expected performance against each stage's Milestone 1, Section 4 target is not yet demonstrated at full scale — the **full baseline training run** (50 epochs, full training set) is Milestone 4. This milestone does include real training: the architecture-comparison probe (Section 5.1) trained both YOLO11m and YOLOv8m on a 3,000-image subsample up to 15 epochs, but that probe was explicitly sized to compare architectures relatively, not to reach production-level accuracy, and its measured mAP values (≈0.03-0.04) are far below the Milestone 1 targets by design, not by concern. This milestone's contribution toward the full targets is: confirming the selected models are computationally compatible with the stated hardware (Section 12), confirming the RAG side already exceeds its retrieval target empirically (Precision@3, Section 5.3), and confirming the report-generation side already passes its faithfulness checks on synthetic claims (Section 10) — leaving the vision side's full-scale accuracy as the one target still awaiting Milestone 4.
 
 ### 5.6 Suitability for the Dataset and Problem
 
 - YOLO11m's bounding-box output directly produces the `area_ratio` (normalised box area) the Severity Agent's proxy depends on (Section 6.2) — the Severity Agent consumes box area, not a segmentation mask, so plain detection is a direct architectural fit, not a reduced substitute.
 - MiniLM + hybrid retrieval is well matched to a small (185-chunk), short-document corpus where a heavier/larger retriever would add latency without a proportional recall gain (Milestone 2, Section 6.2, Step 3).
-- GPT-4o's structured-output and instruction-following strengths are well matched to a task whose failure mode of concern is hallucinated coverage, not creative-writing quality.
-
+- `llama-3.3-70b-versatile` and `openai/gpt-oss-20b`'s structured-output adherence and grounding behaviour — both scored a full 1.0 composite on the mechanical faithfulness eval (Section 10.2), including zero citation-validity and zero currency-violation failures — are well matched to a task whose failure mode of concern is hallucinated coverage, not creative-writing quality; the eval also showed model choice is second-order to context quality (Section 10.4), so neither model's specific capability ceiling is the binding constraint on report correctness.
 ---
 
 ## 6. Model Inputs and Outputs
@@ -367,24 +367,24 @@ Expected performance against each stage's Milestone 1, Section 4 target is uncha
 | --- | --- |
 | **Input features** | `class_id`, normalised bbox area (`w * h`) |
 | **Output** | Categorical label: Minor / Moderate / Severe |
-| **Feature representation** | A single scalar (area ratio) per instance, thresholded per class (Section 4.4, Milestone 1 Section 10.2) |
+| **Feature representation** | A single scalar (area ratio) per instance, thresholded per class (Section 5.2) |
 
 ### 6.3 Policy Agent
 
 | | |
 | --- | --- |
-| **Input** | Natural-language query string constructed from the set of distinct detected damage classes, e.g. *"Coverage for dent, scratch damage"* |
+| **Input** | Per detected damage class: a **coverage query and a separate exclusion query**, both scoped to the claimant-selected policy's `doc_id` (Section 5.3, Section 8.1/8.3) — e.g. coverage query *"Coverage for dent damage"*, exclusion query *"Exclusions or conditions for dent damage"* — not a single combined query across all detected classes |
 | **Tokenization / embedding** | MiniLM's WordPiece tokenizer, max sequence length 256 tokens (well above the ~55-65 token mean chunk length, Milestone 2 Section 6.2 Step 2, so truncation is not a practical concern); mean-pooled to a single 384-dim dense vector |
-| **Sparse representation** | BM25 term-frequency vector over the same corpus vocabulary |
-| **Output** | Top-k (k=3) chunks: `{text (with heading breadcrumb), doc_id, heading, damage_classes, clause_type, score}` |
+| **Sparse representation** | TF-IDF (`sklearn.TfidfVectorizer`) term vector over the same corpus vocabulary, fit once at load time |
+| **Output** | Per damage class: up to 5 `coverage`/`definition`-tagged chunks and up to 5 `exclusion`/`sub_limit`/`condition`-tagged chunks (Section 5.3), each `{chunk_id, text (with heading breadcrumb), doc_id, heading, clause_type, score}`, plus a `coverage_clause_found` boolean; chunks scoring below a `MIN_CLAUSE_SCORE` floor (0.01) are dropped |
 
 ### 6.4 Report Agent
 
 | | |
 | --- | --- |
-| **Input** | Structured JSON: `{detections: [...], retrieved_clauses: [...]}`, plus the fixed system prompt (Appendix B) |
-| **Output** | A structured Markdown report: a per-damage coverage table plus a short narrative summary, always terminated with the disclaimer sentence |
-| **Token budget** | System prompt (~180 tokens) + serialized detections (~15-40 tokens per instance) + 3 retrieved chunks (~250 tokens combined, given the 247.6-character mean chunk length from Milestone 2) — comfortably within GPT-4o's context window with wide margin |
+| **Input** | Full context bundle JSON: `claim_id`, `incident_narrative`, `detections[]`, policy selection (`doc_id`, `selection_method`, insurer/product metadata), per-class `clauses` (coverage/exclusion arrays from Section 6.3), and `escalation` flags — plus the fixed system prompt **[TO CONFIRM: Appendix B system prompt and schema still need updating from RAG owner]** |
+| **Output** | A structured **JSON** object (`response_format=json_object`): `{claim_id, policy_doc_id, items: [{damage_class, verdict, rationale, cited_chunk_ids}], overall_recommendation, escalate_to_human, escalation_reason}`, with `verdict` drawn from a controlled vocabulary (`covered`/`excluded`/`conditional`/`needs_review`) — rendered into Markdown/UI display downstream (Section 3.6), not generated as Markdown directly. **[TO CONFIRM: whether a disclaimer sentence is appended at render time]** |
+| **Token budget** | System prompt + serialized detections + up to 10 retrieved chunks per damage class (coverage + exclusion, Section 6.3), scaling with the number of distinct damage classes in a claim — comfortably within `llama-3.3-70b-versatile` / `openai/gpt-oss-20b`'s context windows via the Groq API, with wide margin even for a multi-class claim |
 
 ### 6.5 Dataset Organization and Directory Structure
 
@@ -426,11 +426,11 @@ data/
 └── review_queue.jsonl                 # Append-only human-review escalation log (production, §3.5)
 ```
 
-**Raw vs. processed separation.** `vehide_raw/` is never mutated in place; `scripts/preprocess_images.py` (Milestone 2) reads from it and writes the deduplicated, letterboxed, split, and re-annotated result into `vehide/`, so the raw source can always be reproduced from or re-run against without destructive edits.
+**Raw vs. processed separation.** `vehide_raw/` is never mutated in place; `scripts/preprocess_images.py` (Milestone 2) reads from it and writes the deduplicated, letterboxed, split, and re-annotated result into `vehide_processed/`, so the raw source can always be reproduced from or re-run against without destructive edits.
 
 **Split leakage guarantee.** The 70/15/15 stratified split was verified to have zero cross-split filename-stem or MD5-hash duplicates (Milestone 2, Section 9.4), so the directory boundaries above are also the leakage boundary, not just a filing convention.
 
-**Alignment with model input format.** `vehide/images/{train,val,test}/` already stores images at the exact 1280×1280 resolution the Damage Agent consumes (Section 6.1) — the only transform left at inference time is the pixel normalisation to `[0,1]` and NCHW tensor packing, since letterboxing was performed once during preprocessing rather than repeated per training epoch.
+**Alignment with model input format.** `vehide_processed/images/{train,val,test}/` already stores images at the exact 1280×1280 resolution the Damage Agent consumes (Section 6.1) — the only transform left at inference time is the pixel normalisation to `[0,1]` and NCHW tensor packing, since letterboxing was performed once during preprocessing rather than repeated per training epoch.
 
 ---
 
