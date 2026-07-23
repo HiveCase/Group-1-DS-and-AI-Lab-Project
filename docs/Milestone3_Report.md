@@ -63,13 +63,12 @@ Milestone 1 defined the problem (automating the first-pass review of vehicle-dam
 
 ### 1.2 Objectives of Milestone 3
 
-1. **Select and justify a model for every pipeline stage** — the Damage Agent, the Severity Agent, the Policy Agent's retrieval components, and the Report Agent's generation component — against the alternatives considered in Milestone 1 and the empirical evidence gathered in Milestone 2.
-2. **Design the complete end-to-end pipeline**, from a user's uploaded image/PDF through to the final rendered report, including the LangGraph orchestration contract, error handling, and the human-escalation path.
-3. **Verify the pipeline wiring on a subset of data** — a small-scale dry run through all four agents — to confirm the state contract between agents is correct before the full baseline training run (Milestone 4).
+1. **Select and justify a model for every pipeline stage:** the Damage Agent, the Severity Agent, the Policy Agent's retrieval components, and the Report Agent's generation component — against the alternatives considered in Milestone 1 and the empirical evidence gathered in Milestone 2.
+2. **Design the complete end-to-end pipeline:** from a user's uploaded image/PDF through to the final rendered report, including the LangGraph orchestration contract, error handling, and the human-escalation path.
 
 ### 1.3 Relationship Between Model Architecture and Project Goals
 
-The project's stated contribution (Milestone 1, Section 6) is not a novel model architecture but a modular, independently-debuggable, cost-appropriate pipeline that closes the three gaps identified in the literature: detections without structured reporting, LLM reports ungrounded in policy text, and the absence of an accessible open demo. Every model selection decision in this milestone is made in service of that framing: each component is the smallest, most measurable, most deployable model capable of meeting its stage's target metric (Milestone 1, Section 4), not the most powerful model available in the abstract.
+The project's stated contribution is not a novel model architecture but a modular, independently-debuggable, cost-appropriate pipeline that closes the three gaps identified in the literature: detections without structured reporting, LLM reports ungrounded in policy text, and the absence of an accessible open demo. Every model selection decision in this milestone is made in service of that framing: each component is the smallest, most measurable, most deployable model capable of meeting its stage's target metric (Milestone 1, Section 4), not the most powerful model available in the abstract.
 
 ---
 
@@ -85,9 +84,9 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
                                 │        (shared claim state, routing)          │
                                 └──────────────────┬────────────────────────────┘
                                                    │
-        ┌──────────────┐   image   ┌───────────────▼───────────────┐   detections      ┌────────────────────┐
-        │  User Input   │──────────▶│         Damage Agent           │───────────────▶│   Severity Agent   │
-        │ (Gradio UI)   │           │   YOLO11m-seg (fine-tuned)     │                 │  area-ratio proxy  │
+        ┌──────────────┐   image    ┌──────────────▼───────────────┐   detections      ┌────────────────────┐
+        │  User Input   │──────────▶│         Damage Agent          │───────────────▶│   Severity Agent   │
+        │ (Gradio UI)   │           │   YOLO11m-seg (fine-tuned)    │                 │  area-ratio proxy  │
         └──────┬────────┘           └───────────────┬───────────────┘                  └─────────┬──────────┘
                │ policy PDF (optional)              │ conf < threshold?                          │ severities
                │                                    └──────────────► Human Review Queue          │
@@ -98,12 +97,12 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
                │                                                                                 │ yes
                │                             ┌───────────────────────────────────────────────────┘
                │                             ▼
-               │              ┌────────────────────────────────┐   retrieved     ┌─────────────────────────┐
-               └─────────────▶│      Policy Agent (MCP)        │  ──clauses─────▶│      Report Agent        │
-                               │  MiniLM + ChromaDB + hybrid   │                │  GPT-4o (Gemini fallback) │
+               │              ┌────────────────────────────────┐   retrieved    ┌─────────────────────────┐
+               └─────────────▶│      Policy Agent (MCP)       │ ──clauses─────▶│      Report Agent       │
+                               │  MiniLM + ChromaDB + hybrid   │                │ GPT-4o (Gemini fallback) │
                                │  dense+sparse retrieval       │                └────────────┬─────────────┘
                                └───────────────────────────────┘                             │
-                                                                                                 ▼
+                                                                                             ▼
                                                                                  ┌───────────────────────────┐
                                                                                  │  Rendered report (Gradio)  │
                                                                                  │ detections + severity +    │
