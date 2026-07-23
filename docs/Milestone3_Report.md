@@ -80,29 +80,29 @@ The project's stated contribution (Milestone 1, Section 6) is not a novel model 
 The system is a **four-agent pipeline coordinated by a LangGraph state machine**. The orchestrator holds one mutable state object per claim and routes it through the agents below, branching around an agent when its preconditions are not met (no PDF supplied → skip Policy Agent) and halting the sequence when confidence is insufficient (→ escalate to human review).
 
 ```
-                                ┌─────────────────────────────────────────────┐
-                                │            LangGraph Orchestrator            │
-                                │        (shared claim state, routing)         │
+                                ┌───────────────────────────────────────────────┐
+                                │            LangGraph Orchestrator             │
+                                │        (shared claim state, routing)          │
                                 └──────────────────┬────────────────────────────┘
                                                    │
-        ┌──────────────┐   image   ┌───────────────▼───────────────┐   detections   ┌───────────────────┐
+        ┌──────────────┐   image   ┌───────────────▼───────────────┐   detections      ┌────────────────────┐
         │  User Input   │──────────▶│         Damage Agent           │───────────────▶│   Severity Agent   │
-        │ (Gradio UI)   │           │   YOLO11m-seg (fine-tuned)     │                │  area-ratio proxy  │
-        └──────┬────────┘           └───────────────┬───────────────┘                └─────────┬──────────┘
-               │ policy PDF (optional)               │ conf < threshold?                        │ severities
-               │                                       └──────────────► Human Review Queue        │
-               │                                                                                   ▼
+        │ (Gradio UI)   │           │   YOLO11m-seg (fine-tuned)     │                 │  area-ratio proxy  │
+        └──────┬────────┘           └───────────────┬───────────────┘                  └─────────┬──────────┘
+               │ policy PDF (optional)              │ conf < threshold?                          │ severities
+               │                                    └──────────────► Human Review Queue          │
+               │                                                                                 ▼
                │                                                                  ┌────────────────────────────┐
-               │                                                                  │   confidence gate passed?   │
+               │                                                                  │   confidence gate passed?  │
                │                                                                  └──────────────┬─────────────┘
-               │                                                                                  │ yes
-               │                             ┌────────────────────────────────────────────────────┘
+               │                                                                                 │ yes
+               │                             ┌───────────────────────────────────────────────────┘
                │                             ▼
-               │              ┌───────────────────────────────┐   retrieved     ┌─────────────────────────┐
-               └─────────────▶│      Policy Agent (MCP)        │───clauses─────▶│      Report Agent        │
-                               │  MiniLM + ChromaDB + hybrid    │                │  GPT-4o (Gemini fallback) │
-                               │  dense+sparse retrieval        │                └────────────┬─────────────┘
-                               └─────────────────────────────────┘                             │
+               │              ┌────────────────────────────────┐   retrieved     ┌─────────────────────────┐
+               └─────────────▶│      Policy Agent (MCP)        │  ──clauses─────▶│      Report Agent        │
+                               │  MiniLM + ChromaDB + hybrid   │                │  GPT-4o (Gemini fallback) │
+                               │  dense+sparse retrieval       │                └────────────┬─────────────┘
+                               └───────────────────────────────┘                             │
                                                                                                  ▼
                                                                                  ┌───────────────────────────┐
                                                                                  │  Rendered report (Gradio)  │
@@ -127,7 +127,7 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
 
 ### 2.3 Data Flow Between Modules
 
-Data flows as a single, progressively-enriched **claim state object** (a Python `TypedDict`/ Pydantic model) rather than as separate messages between modules — every agent reads the fields it needs from the state and writes its output back into the same object, which is the mechanism that makes the escalation gate and the "skip if no PDF" branch possible without restructuring the pipeline (Section 11.1).
+Data flows as a single, progressively-enriched **claim state object** (a Python `TypedDict`/Pydantic model) rather than as separate messages between modules — every agent reads the fields it needs from the state and writes its output back into the same object, which is the mechanism that makes the escalation gate and the "skip if no PDF" branch possible without restructuring the pipeline (Section 11.1).
 
 ### 2.4 External Services / APIs
 
@@ -371,6 +371,52 @@ Expected performance against each stage's Milestone 1, Section 4 target is uncha
 | **Output** | A structured Markdown report: a per-damage coverage table plus a short narrative summary, always terminated with the disclaimer sentence |
 | **Token budget** | System prompt (~180 tokens) + serialized detections (~15-40 tokens per instance) + 3 retrieved chunks (~250 tokens combined, given the 247.6-character mean chunk length from Milestone 2) — comfortably within GPT-4o's context window with wide margin |
 
+### 6.5 Dataset Organization and Directory Structure
+
+This section closes the Milestone 3 additional-rubric requirement to show the directory layout the models above actually read from — the splits and paths below were established in Milestone 2 and are reproduced here so this report is self-contained for implementation.
+
+```
+data/
+├── vehide_raw/                        # Original VehiDE download, pre-deduplication (Milestone 2 §4)
+│   ├── images/                        # 13,655 deduplicated source images
+│   └── annotations/                   # Original per-image annotation files
+│
+├── vehide_processed/
+│   └── damage.yaml                    # YOLO 6-class detection config (nc: 6)
+│
+├── vehide/                            # Training-ready, letterboxed 1280×1280 JPEGs + YOLO-format labels
+│   ├── images/
+│   │   ├── train/                     # 9,558 images  (70%, stratified on dominant damage class)
+│   │   ├── val/                       # 2,048 images  (15%)
+│   │   └── test/                      # 2,049 images  (15%)
+│   ├── labels/
+│   │   ├── train/                     # 9,558 .txt   — normalised [cls, x, y, w, h] per instance
+│   │   ├── val/                       # 2,048 .txt
+│   │   └── test/                      # 2,049 .txt
+│   └── escalation_test/               # ~100 images set aside for the low-confidence escalation
+│                                       #   test subset (selected post-training, Section 16.3)
+│
+├── splits/                            # train.txt / val.txt / test.txt — plain-text image path lists
+│                                       #   used to reproduce the split deterministically
+│
+├── policies/                          # 5 synthetic policy source PDFs (Milestone 2 §6.1)
+├── chroma_db/                         # Persistent ChromaDB collection — 185 embedded chunks
+│
+├── eval/
+│   ├── incident_descriptions.json     # 50 synthetic realistic incident narratives
+│   └── retrieval_smoke_test.json      # 6-query, one-per-class smoke-test results
+├── rag_outputs/eval/
+│   └── incident_retrieval_eval.json   # 50-incident Precision@3 / MRR evaluation output
+│
+└── review_queue.jsonl                 # Append-only human-review escalation log (production, §3.5)
+```
+
+**Raw vs. processed separation.** `vehide_raw/` is never mutated in place; `scripts/preprocess_images.py` (Milestone 2) reads from it and writes the deduplicated, letterboxed, split, and re-annotated result into `vehide/`, so the raw source can always be reproduced from or re-run against without destructive edits.
+
+**Split leakage guarantee.** The 70/15/15 stratified split was verified to have zero cross-split filename-stem or MD5-hash duplicates (Milestone 2, Section 9.4), so the directory boundaries above are also the leakage boundary, not just a filing convention.
+
+**Alignment with model input format.** `vehide/images/{train,val,test}/` already stores images at the exact 1280×1280 resolution the Damage Agent consumes (Section 6.1) — the only transform left at inference time is the pixel normalisation to `[0,1]` and NCHW tensor packing, since letterboxing was performed once during preprocessing rather than repeated per training epoch.
+
 ---
 
 ## 7. Training Strategy
@@ -456,6 +502,52 @@ To satisfy the Milestone 3 requirement to verify the full pipeline on a subset o
 ### 8.3 Post-processing and Final Prediction Generation
 
 The final artefact returned to the user is not a single scalar prediction but a composite structured object: annotated image (boxes + masks drawn), a severity table, a ranked clause list, and Markdown report text — all four rendered together in the Gradio tabbed view (Section 3.6).
+
+### 8.4 Evaluation Metrics
+
+No model has been trained yet — that is Milestone 4 — so the table below consolidates the metrics and targets each component will be scored against (carried forward from Milestone 1, Section 4.1) with what is already empirically known from Milestone 2, rather than reporting new results.
+
+| **Component** | **Metric** | **Target** | **Status at end of Milestone 3** |
+| --- | --- | --- | --- |
+| Damage Agent | mAP@50 | ≥ 0.70 | Not yet measured — requires the Milestone 4 training run |
+| Damage Agent | mAP@50-95 | ≥ 0.50 | Not yet measured |
+| Damage Agent | Per-class F1 (all 6 classes) | ≥ 0.65 | Not yet measured; `shattered_glass`/`flat_tyre` flagged as most at risk given the 6.59:1 class imbalance (Section 14) |
+| Policy Agent (retrieval) | Precision@3 | ≥ 0.80 | **Already exceeded**: 0.893 dense-only, 0.913 hybrid, measured empirically in Milestone 2, Section 6.2 Step 6 |
+| Policy Agent (retrieval) | Mean Reciprocal Rank | Not separately targeted in Milestone 1 | 0.980 dense-only (Milestone 2) |
+| Report Agent | BERTScore F1 vs. human-authored reference | ≥ 0.80 | Not yet measured — requires live GPT-4o calls against reference summaries (Milestone 4) |
+| Report Agent | Human evaluation (Accuracy / Faithfulness / Clarity, 1-5 scale) | Mean ≥ 4.0 | Not yet measured; rubric and inter-rater protocol already defined (Milestone 1, Section 4.3) |
+| Full pipeline (this milestone) | Qualitative wiring correctness across all 4 agent boundaries | N/A — pass/fail | **Confirmed**: 5/5 claims correctly routed (4 completed, 1 escalated), Section 8.2 |
+
+**Loss functions used to measure training performance** are specified in full in Section 7 (YOLO11's composite CIoU + class-weighted BCE + DFL + mask loss); the retrieval and report-generation components are not trained in this project (Section 7 preamble) and so have no associated loss function — they are scored purely against the evaluation metrics above.
+
+### 8.5 Example Model Outputs
+
+Because live inference is not yet available in this reporting environment (no trained checkpoint, no GPU, Section 8.2), the examples below show the **exact output schema** each stage will produce, illustrated with representative values consistent with the dry run in Appendix A, rather than a live inference result.
+
+**Damage Agent — raw output for one image (illustrative):**
+
+```json
+{
+  "image_id": "claim_0001.jpg",
+  "detections": [
+    {"cls": "dent",    "bbox_norm": [0.42, 0.55, 0.11, 0.08], "mask": "<1280x1280 binary mask>", "conf": 0.91},
+    {"cls": "scratch", "bbox_norm": [0.61, 0.30, 0.06, 0.03], "mask": "<1280x1280 binary mask>", "conf": 0.78}
+  ]
+}
+```
+
+**Severity Agent — same instances after severity assignment:**
+
+```json
+[
+  {"cls": "dent",    "bbox_norm": [0.42, 0.55, 0.11, 0.08], "conf": 0.91, "severity": "Minor"},
+  {"cls": "scratch", "bbox_norm": [0.61, 0.30, 0.06, 0.03], "conf": 0.78, "severity": "Minor"}
+]
+```
+
+**Policy Agent — top-3 retrieved clauses for the derived query** `"Coverage for dent, scratch damage"` (real retrieval output, reused from Appendix A, claim_001): ranked chunks `chunk_00002` (exclusion, score 0.255), `chunk_00006` (coverage, score 0.182), `chunk_00003` (coverage, score 0.126).
+
+**Report Agent — final rendered output:** the Markdown table + narrative + disclaimer shown for `claim_001` in Appendix A is the exact target output format; it is reproduced there in full rather than duplicated here.
 
 ---
 
@@ -658,6 +750,9 @@ This section extends Milestone 1, Section 10 with what Milestone 2's empirical f
 | FastMCP tool signature | Section 11.2 (this report) | `retrieve_policy_clauses` tool contract |
 | Prompt templates | Appendix B | System prompt, user-message template, structured output schema |
 | Model/config comparison tables | Sections 4, 5, 12, 13 (this report) | YOLO11 vs YOLOv8, MiniLM vs BGE, ChromaDB vs FAISS, dense vs hybrid retrieval |
+| Dataset directory structure | Section 6.5 (this report) | Full `data/` tree — raw vs. processed separation, train/val/test split paths, leakage guarantee |
+| Consolidated evaluation metrics table | Section 8.4 (this report) | Per-component metrics and Milestone 1 targets, with Milestone 2 results already achieved flagged |
+| Example model outputs | Section 8.5 (this report) | Illustrative output schema at each of the four pipeline stages |
 | This report | `Milestone3_Report.md` | Full documentation of architecture selection and pipeline design |
 
 ---
@@ -819,6 +914,7 @@ class ClaimReport(BaseModel):
 | **Date** | **Change** |
 | --- | --- |
 | 23 July 2026 | Milestone 3 report drafted: model selection, architecture, pipeline design, and small-scale dry-run verification added |
+
 
 ---
 
