@@ -960,7 +960,7 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 |---|---|---|
 | Satyajeet Kumar | 23-07-2026 | S.K. |
 | Pranab Kumar Manna | 23-07-2026|Pk Manna |
-| Venkata Siva Kamal Guddanti | | |
+| Venkata Siva Kamal Guddanti | 24-07-2026 | Kamal G |
 | Anuj Gautam | 23-07-2026 | Anuj |
 | Harsh Pal | | |
 
