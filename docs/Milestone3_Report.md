@@ -182,12 +182,24 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 | Report Agent | full context bundle JSON (detections, severities, policy selection, retrieved clauses, incident narrative) | structured JSON: `{claim_id, policy_doc_id, items, overall_recommendation, escalate_to_human, escalation_reason}` |
 
 ### 3.3 Sequence Diagram
-​​
+​​​
+```User        Gradio      Orchestrator     DamageAgent   SeverityAgent   PolicyAgent   ReportAgent
+ │  upload    │               │               │              │             │             │
+ ├───────────▶│               │               │              │             │             │
+ │            ├──init state──▶│               │               │             │             │
+ │            │               ├──image───────▶│               │             │             │
+ │            │               │◀──detections──┤               │             │             │
+ │            │               ├──confidence check──┐          │             │             │
+ │            │               │◀───low? escalate───┘          │             │             │
+ │            │               ├──detections───────────────────▶│             │             │
+ │            │               │◀──────severities───────────────┤             │             │
+ │            │               ├──classes───────────────────────────────────▶│             │
+ │            │               │◀───────clauses──────────────────────────────┤             │
+ │            │               ├──state (detections+severities+clauses)──────────────────▶│
+ │            │               │◀────────────────────report─────────────────────────────────┤
+ │            │◀──final state─┤               │              │             │             │
+ │◀──4-tab UI─┤               │               │              │             │             │
 ```
-
-```​
-
-
 ### 3.4 Error Handling and Fallback Mechanisms
 
 | **Failure mode** | **Handling** |
