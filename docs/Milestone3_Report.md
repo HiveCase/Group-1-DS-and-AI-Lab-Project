@@ -116,16 +116,15 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
 
 ### 2.2 Major Modules and Interactions
 
-| **Module** | **Type** | **Responsibility** | **Talks to** | **Status** |
-| --- | --- | --- | --- | --- |
-| Gradio UI | Interface | Accepts image + policy selection, renders result | Calling script | Planned |
-| Damage Agent | Vision model | Detects and localises damage | Calling script; output read by Severity Agent | Planned |
-| Severity Agent | Rule-based post-processor | Assigns Minor/Moderate/Severe per instance | Calling script | Planned |
-| Policy Agent | RAG stage (plain function call) | Retrieves relevant policy clauses, doc-scoped, two-pass per class | ChromaDB, TF-IDF index | Implemented |
-| Report Agent | LLM wrapper | Generates structured report JSON, incl. self-reported escalation flag | Groq API | Implemented |
-| Human Review Queue | Storage | Receives claims flagged `escalate_to_human=true` in Report Agent output | Report Agent output | Planned |
-| Orchestrator | Control flow | Would hold shared state, route claims dynamically | All agents | Planned |
-
+| **Module** | **Type** | **Responsibility** | **Talks to** |
+| --- | --- | --- | --- |
+| Gradio UI | Interface | Accepts image + policy selection, renders result | Calling script |
+| Damage Agent | Vision model | Detects and localises damage | Calling script; output read by Severity Agent |
+| Severity Agent | Rule-based post-processor | Assigns Minor/Moderate/Severe per instance | Calling script |
+| Policy Agent | RAG stage (plain function call) | Retrieves relevant policy clauses, doc-scoped, two-pass per class | ChromaDB, TF-IDF index |
+| Report Agent | LLM wrapper | Generates structured report JSON, incl. self-reported escalation flag | Groq API |
+| Human Review Queue | Storage | Receives claims flagged `escalate_to_human=true` in Report Agent output | Report Agent output |
+| Orchestrator | Control flow | Would hold shared state, route claims dynamically | All agents |
 
 ### 2.3 Data Flow Between Modules
 
@@ -144,13 +143,11 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 | **Layer** | **Technology** | **Version / Notes** |
 | --- | --- | --- |
 | Vision model | Ultralytics YOLO11m | Ultralytics >=8.3, PyTorch backend |
-| Orchestration | LangGraph | State machine graph over Python callables |
-| Tool exposure | FastMCP | Exposes Policy Agent as a callable MCP tool |
+| Orchestration | LangGraph wrapping planned | not implemented yet |
 | Embedding model | sentence-transformers `all-MiniLM-L6-v2` | 384-dim, 22.7M params |
 | Vector store | ChromaDB (persistent client) | HNSW cosine index |
-| Sparse retrieval | BM25 (rank-bm25) | Hybrid RRF fusion with dense scores |
-| LLM (primary) | OpenAI GPT-4o (API) | Structured JSON + Markdown output |
-| LLM (fallback) | Google Gemini 1.5 Flash (API) | Lower cost, used on GPT-4o failure/timeout |
+| Sparse retrieval | TF-IDF (`sklearn.TfidfVectorizer`) | Fit once on the 185-chunk corpus; hybrid RRF fusion with dense scores |
+| LLM (report generation) | Groq API — `llama-3.3-70b-versatile` and `openai/gpt-oss-20b` | Both run and compared per claim (Section 5.4), not primary/fallback |
 | PDF parsing | `pdfplumber` | Full-page extraction (Milestone 2, Section 6.2) |
 | Chunking | LangChain `RecursiveCharacterTextSplitter` | 300 char / 40 overlap + heading breadcrumb |
 | Web interface | Gradio | Deployed on Hugging Face Spaces |
@@ -181,29 +178,25 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 | --- | --- | --- |
 | Damage Agent | 1280×1280×3 RGB tensor | list of `{class_id, class_name, confidence, bbox_normalized, area_ratio}` |
 | Severity Agent | detection list | detection list + `severity` field per instance |
-| Policy Agent | query string (derived from detected classes) | top-k `{chunk_text, doc_id, heading, damage_classes, clause_type, score}` |
-| Report Agent | JSON: detections + severities + retrieved clauses | Markdown report string |
+| Policy Agent | per detected class: a coverage query and an exclusion query, both scoped to the selected `doc_id` | per class: `{coverage: [...], exclusion_or_condition: [...], coverage_clause_found: bool}` |
+| Report Agent | full context bundle JSON (detections, severities, policy selection, retrieved clauses, incident narrative) | structured JSON: `{claim_id, policy_doc_id, items, overall_recommendation, escalate_to_human, escalation_reason}` |
 
 ### 3.3 Sequence Diagram
 
-```
-User        Gradio      Orchestrator     DamageAgent   SeverityAgent   PolicyAgent   ReportAgent
- │  upload    │               │               │              │             │             │
- ├───────────▶│               │               │              │             │             │
- │            ├──init state──▶│               │               │             │             │
- │            │               ├──image───────▶│               │             │             │
- │            │               │◀──detections──┤               │             │             │
- │            │               ├──confidence check──┐          │             │             │
- │            │               │◀───low? escalate───┘          │             │             │
- │            │               ├──detections───────────────────▶│             │             │
- │            │               │◀──────severities───────────────┤             │             │
- │            │               ├──classes───────────────────────────────────▶│             │
- │            │               │◀───────clauses──────────────────────────────┤             │
- │            │               ├──state (detections+severities+clauses)──────────────────▶│
- │            │               │◀────────────────────report─────────────────────────────────┤
- │            │◀──final state─┤               │              │             │             │
- │◀──4-tab UI─┤               │               │              │             │             │
-```
+​```
+User        Gradio (planned)   DamageAgent   SeverityAgent   PolicyAgent   ReportAgent
+ │  upload      │                    │              │             │             │
+ ├─────────────▶│                    │              │             │             │
+ │              ├──image────────────▶│              │             │             │
+ │              │◀──detections───────┤              │             │             │
+ │              ├──detections────────────────────────▶│             │             │
+ │              │◀──────severities───────────────────┤             │             │
+ │              ├──policy selection + per-class coverage/exclusion queries──────▶│             │
+ │              │◀───────clauses (per class)─────────────────────────────────────┤             │
+ │              ├──context bundle (detections+severities+policy+clauses)────────────────────▶│
+ │              │◀──report JSON (incl. escalate_to_human flag)────────────────────────────────┤
+ │◀──result─────┤                    │              │             │             │
+​```
 
 ### 3.4 Error Handling and Fallback Mechanisms
 
@@ -220,14 +213,14 @@ User        Gradio      Orchestrator     DamageAgent   SeverityAgent   PolicyAge
 
 ### 3.5 Storage and Retrieval Components
 
-- **ChromaDB persistent client** (`data/chroma_db/`) the pre-built 185-chunk index from Milestone 2, used for claims where no user-specific policy is supplied or where the demo's reference policies apply.
-- **Ephemeral per-request collection** when a user uploads their own policy PDF, it is parsed, chunked, and embedded through the pipeline and queried within that single request; it is not persisted, consistent with the no-retention design decision.
-- **Human Review Queue** a lightweight append-only JSON log (`data/review_queue.jsonl`) recording escalated claims with the low-confidence detections and the reason for escalation, for later manual review.
+- **ChromaDB persistent client** (`data/chroma_db/`), the pre-built 185-chunk index covering all 5 catalog policies. Policy selection is catalog-based, there is no per-request user-uploaded-PDF ingestion path in the current implementation.
+- **Human Review Queue** a lightweight append-only JSON log format (`data/review_queue.jsonl`) defined for claims the Report Agent flags `escalate_to_human=true`. Automatic population of this log by a real escalation gate is planned.
+- **Data retention:** the uploaded image and any incident narrative text are used only for the duration of a single request and are not persisted to disk beyond the claim's processing; no user-uploaded content is stored in ChromaDB or any other durable store.
 
 ### 3.6 User Interaction Flow
 
 Upload image (required) → optionally upload policy PDF → click "Assess" → progress indicator while the pipeline runs → four-tab result view (Annotated Image / Severity / Policy Clauses / Report) → User can download the report as Markdown/PDF. If escalated, the UI instead shows a single notice: "This claim requires human review" with the flagged region highlighted, and no report tab is rendered.
-
+[Planned]
 ---
 
 ## 4. Model Architecture Selection
@@ -976,18 +969,15 @@ app = graph.compile()
 
 ## Appendix G: Project Status 
 
-| **Component** | **Status** | **Evidence** |
-| --- | --- | --- |
-| Damage Agent (YOLO11m) architecture selection | Completed | Section 5.1 |
-| Damage Agent training | Not started (Milestone 4) | Section 7, 16.3 |
-| Severity Agent | Completed | Section 5.2 |
-| Policy Agent — retrieval stack selection | Completed | Section 5.3 |
-| Policy Agent — doc-scoped two-pass retrieval | Completed and evaluated | Section 9 |
-| Report Agent — model selection | Completed | Section 5.4 |
-| Report Agent — faithfulness evaluation | Completed (synthetic payloads) | Section 8.2 |
-| Orchestration (LangGraph) | Planned, not implemented | Section 11.3 |
-| Gradio UI | Planned, not implemented | Section 15 |
-| True escalation gate | Planned, not implemented | Section 16.3 |
+| **Module** | **Status** |
+| --- | --- |
+| Gradio UI | Planned, not implemented |
+| Damage Agent | Architecture selected; training not started |
+| Severity Agent | Completed - rule-based, no training required |
+| Policy Agent | Implemented and evaluated |
+| Report Agent | Implemented and evaluated |
+| Human Review Queue | Partially implemented - log format defined; automatic population planned | 
+| Orchestrator | Planned, not yet implemented | 
 
 
 ---
