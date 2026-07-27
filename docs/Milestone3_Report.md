@@ -221,9 +221,8 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 
 ### 3.6 User Interaction Flow
 
-Upload image (required) → optionally upload policy PDF → click "Assess" → progress indicator while the pipeline runs → four-tab result view (Annotated Image / Severity / Policy Clauses / Report) → User can download the report as Markdown/PDF. If escalated, the UI instead shows a single notice: "This claim requires human review" with the flagged region highlighted, and no report tab is rendered.
+Upload image (required) → optionally upload policy PDF → click "Assess" → progress indicator while the pipeline runs → four-tab result view (Annotated Image / Severity / Policy Clauses / Report) → User can download the report as Markdown/PDF. If escalated, the UI instead shows a single notice: "This claim requires human review" with the flagged region highlighted, and no report tab is rendered. [Planned]
 
-[Planned]
 ---
 
 ## 4. Model Architecture Selection
@@ -236,7 +235,7 @@ Upload image (required) → optionally upload policy PDF → click "Assess" → 
 | Policy Agent - sparse | TF-IDF (`sklearn.TfidfVectorizer`) | Fit once on the 185-chunk corpus (not learned in the ML sense - vocabulary/IDF weights only) | Lexical retrieval fused with dense scores via weighted RRF |
 | Policy Agent - vector store | ChromaDB | N/A (infrastructure, not a model) | Persistent ANN index |
 | Report Agent | `llama-3.3-70b-versatile` and `openai/gpt-oss-20b` (both run and compared), via Groq API | Pre-trained, **prompted only** (no fine-tuning) | Structured report generation |
-| Orchestrator | None implemented yet — plain sequential Python function calls. LangGraph is the target framework for wrapping the existing stage functions, not yet built | N/A | Currently: fixed call sequence, not state-graph routing |
+| Orchestrator | Not implemented yet, LangGraph is the target framework for wrapping the existing stage functions | N/A |  State-graph routing between the four agents |
 
 ### 4.1 Damage Agent Architecture
 
