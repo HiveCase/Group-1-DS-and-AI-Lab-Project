@@ -51,7 +51,7 @@
 - [Appendix A: Prompt Templates](#appendix-a-prompt-templates)
 - [Appendix B: Change Log](#appendix-b-change-log)
 - [Appendix C: References](#appendix-c-references)
-- [Appendix D: Dataset Organization and Directory Structure](#appendix-d-datset-organization-and-directory-structure)
+- [Appendix D: Dataset Organization and Directory Structure](#appendix-d-dataset-organization-and-directory-structure)
 - [Appendix E: Shared Schemas](#appendix-e-shared-schemas)
 - [Appendix F: Planned Orchestration Framework](#appendix-f-planned-orchestration-framework)
 - [Appendix G: Project Status](#appendix-g-project-status)
@@ -182,21 +182,11 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 | Report Agent | full context bundle JSON (detections, severities, policy selection, retrieved clauses, incident narrative) | structured JSON: `{claim_id, policy_doc_id, items, overall_recommendation, escalate_to_human, escalation_reason}` |
 
 ### 3.3 Sequence Diagram
+​​
+```
 
-​```
-User        Gradio (planned)   DamageAgent   SeverityAgent   PolicyAgent   ReportAgent
- │  upload      │                    │              │             │             │
- ├─────────────▶│                    │              │             │             │
- │              ├──image────────────▶│              │             │             │
- │              │◀──detections───────┤              │             │             │
- │              ├──detections────────────────────────▶│             │             │
- │              │◀──────severities───────────────────┤             │             │
- │              ├──policy selection + per-class coverage/exclusion queries──────▶│             │
- │              │◀───────clauses (per class)─────────────────────────────────────┤             │
- │              ├──context bundle (detections+severities+policy+clauses)────────────────────▶│
- │              │◀──report JSON (incl. escalate_to_human flag)────────────────────────────────┤
- │◀──result─────┤                    │              │             │             │
-​```
+```​
+
 
 ### 3.4 Error Handling and Fallback Mechanisms
 
