@@ -222,6 +222,7 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 ### 3.6 User Interaction Flow
 
 Upload image (required) → optionally upload policy PDF → click "Assess" → progress indicator while the pipeline runs → four-tab result view (Annotated Image / Severity / Policy Clauses / Report) → User can download the report as Markdown/PDF. If escalated, the UI instead shows a single notice: "This claim requires human review" with the flagged region highlighted, and no report tab is rendered.
+
 [Planned]
 ---
 
