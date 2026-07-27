@@ -51,6 +51,10 @@
 - [Appendix A: Prompt Templates](#appendix-a-prompt-templates)
 - [Appendix B: Change Log](#appendix-b-change-log)
 - [Appendix C: References](#appendix-c-references)
+- [Appendix D: Dataset Organization and Directory Structure](#appendix-d-datset-organization-and-directory-structure)
+- [Appendix E: Shared Schemas](#appendix-e-shared-schemas)
+- [Appendix F: Planned Orchestration Framework](#appendix-f-planned-orchestration-framework)
+- [Appendix G: Project Status](#appendix-g-project-status)
 
 ---
 
@@ -112,15 +116,16 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
 
 ### 2.2 Major Modules and Interactions
 
-| **Module** | **Type** | **Responsibility** | **Talks to** |
-| --- | --- | --- | --- |
-| Gradio UI | Interface | Accepts image + optional PDF, renders tabbed output | Orchestrator |
-| LangGraph Orchestrator | Control flow | Holds shared state, routes claims, applies escalation gate | All agents |
-| Damage Agent | Vision model | Detects and localises damage | Orchestrator, Severity Agent (via state) |
-| Severity Agent | Rule-based post-processor | Assigns Minor/Moderate/Severe per instance | Orchestrator |
-| Policy Agent | RAG tool (FastMCP) | Retrieves relevant policy clauses | ChromaDB, Orchestrator |
-| Report Agent | LLM wrapper | Generates structured report text | OpenAI API / Gemini API, Orchestrator |
-| Human Review Queue | Storage | Holds escalated claims for manual review | Orchestrator |
+| **Module** | **Type** | **Responsibility** | **Talks to** | **Status** |
+| --- | --- | --- | --- | --- |
+| Gradio UI | Interface | Accepts image + policy selection, renders result | Calling script | Planned |
+| Damage Agent | Vision model | Detects and localises damage | Calling script; output read by Severity Agent | Planned |
+| Severity Agent | Rule-based post-processor | Assigns Minor/Moderate/Severe per instance | Calling script | Planned |
+| Policy Agent | RAG stage (plain function call) | Retrieves relevant policy clauses, doc-scoped, two-pass per class | ChromaDB, TF-IDF index | Implemented |
+| Report Agent | LLM wrapper | Generates structured report JSON, incl. self-reported escalation flag | Groq API | Implemented |
+| Human Review Queue | Storage | Receives claims flagged `escalate_to_human=true` in Report Agent output | Report Agent output | Planned |
+| Orchestrator | Control flow | Would hold shared state, route claims dynamically | All agents | Planned |
+
 
 ### 2.3 Data Flow Between Modules
 
@@ -128,11 +133,10 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 
 ### 2.4 External Services / APIs
 
-| **Service** | **Role** | **Fallback** |
+| **Service** | **Role** | **Notes** |
 | --- | --- | --- |
-| OpenAI API (GPT-4o) | Report generation | Gemini 1.5 Flash API |
-| Google Gemini API | Fallback report generation; also usable for cost-controlled bulk evaluation | — |
-| Hugging Face Spaces | Hosting the Gradio demo (CPU-basic instance) | Local Gradio run |
+| Groq API | Report generation | Two models run and compared per claim (`llama-3.3-70b-versatile`, `openai/gpt-oss-20b`), not a primary/fallback pair |
+| Hugging Face Spaces | Hosting the Gradio demo (CPU-basic instance) | Not yet deployed |
 | Kaggle / Google Colab Pro | GPU compute for YOLO fine-tuning (T4, 16GB) | — |
 
 ### 2.5 Technology Stack
@@ -207,11 +211,12 @@ User        Gradio      Orchestrator     DamageAgent   SeverityAgent   PolicyAge
 | --- | --- |
 | No damage detected / all confidences below threshold | Route to human review queue; no report generated |
 | No policy PDF supplied | Policy Agent node skipped; report states coverage cannot be determined without a policy document |
-| GPT-4o API timeout or error | One retry, then fall back to Gemini 1.5 Flash |
-| Both LLM APIs unavailable | Report Agent returns the raw detections + severities + clauses table without narrative text, flagged "LLM generation unavailable — raw findings only" |
+| Groq API timeout or error | Retried up to 3 times with exponential backoff (`scripts/report_agent.py`); on final failure the claim is logged as failed, not silently dropped |
+| Groq API unavailable after retries | Report Agent returns no report for that claim; the failure is recorded for manual reprocessing rather than a degraded partial response (no raw-findings-only fallback is currently implemented) |
 | Malformed / corrupt uploaded image | Caught at the Gradio input validation layer; user prompted to re-upload |
 | Uploaded PDF unparsable by `pdfplumber` | Policy Agent step skipped with a logged warning; treated as "no PDF supplied" |
 | LLM output fails structured-schema validation | One regeneration attempt with the validation error appended to the prompt; on second failure, same "raw findings only" fallback as above |
+| User data retention / privacy | No uploaded image, PDF, or incident narrative is persisted beyond the single request's processing, the human review queue stores only detection results and escalation reasons, not the original image |
 
 ### 3.5 Storage and Retrieval Components
 
@@ -381,52 +386,6 @@ Expected performance against each stage's Milestone 1, Section 4 target is not y
 | **Input** | Full context bundle JSON: `claim_id`, `incident_narrative`, `detections[]`, policy selection (`doc_id`, `selection_method`, insurer/product metadata), per-class `clauses` (coverage/exclusion arrays from Section 6.3), and `escalation` flags — plus the fixed system prompt |
 | **Output** | A structured **JSON** object (`response_format=json_object`): `{claim_id, policy_doc_id, items: [{damage_class, verdict, rationale, cited_chunk_ids}], overall_recommendation, escalate_to_human, escalation_reason}`, with `verdict` drawn from a controlled vocabulary (`covered`/`excluded`/`conditional`/`needs_review`) — rendered into Markdown/UI display downstream (Section 3.6), not generated as Markdown directly |
 | **Token budget** | System prompt + serialized detections + up to 10 retrieved chunks per damage class (coverage + exclusion, Section 6.3), scaling with the number of distinct damage classes in a claim — comfortably within `llama-3.3-70b-versatile` / `openai/gpt-oss-20b`'s context windows via the Groq API, with wide margin even for a multi-class claim |
-
-### 6.5 Dataset Organization and Directory Structure
-
-This section closes the Milestone 3 additional-rubric requirement to show the directory layout the models above actually read from — the splits and paths below were established in Milestone 2 and are reproduced here so this report is self-contained for implementation.
-
-```
-data/
-├── vehide_raw/                        # Original VehiDE download, pre-deduplication (Milestone 2 §4)
-│   ├── images/                        # 13,655 deduplicated source images
-│   └── annotations/                   # Original per-image annotation files
-│
-├── vehide_processed/
-│   └── damage.yaml                    # YOLO 6-class detection config (nc: 6)
-│
-├── vehide/                            # Training-ready, letterboxed 1280×1280 JPEGs + YOLO-format labels
-│   ├── images/
-│   │   ├── train/                     # 9,558 images  (70%, stratified on dominant damage class)
-│   │   ├── val/                       # 2,048 images  (15%)
-│   │   └── test/                      # 2,049 images  (15%)
-│   ├── labels/
-│   │   ├── train/                     # 9,558 .txt   — normalised [cls, x, y, w, h] per instance
-│   │   ├── val/                       # 2,048 .txt
-│   │   └── test/                      # 2,049 .txt
-│   └── escalation_test/               # ~100 images set aside for the low-confidence escalation
-│                                       #   test subset (selected post-training, Section 16.3)
-│
-├── splits/                            # train.txt / val.txt / test.txt — plain-text image path lists
-│                                       #   used to reproduce the split deterministically
-│
-├── policies/                          # 5 synthetic policy source PDFs (Milestone 2 §6.1)
-├── chroma_db/                         # Persistent ChromaDB collection — 185 embedded chunks
-│
-├── eval/
-│   ├── incident_descriptions.json     # 50 synthetic realistic incident narratives
-│   └── retrieval_smoke_test.json      # 6-query, one-per-class smoke-test results
-├── rag_outputs/eval/
-│   └── incident_retrieval_eval.json   # 50-incident Precision@3 / MRR evaluation output
-│
-└── review_queue.jsonl                 # Append-only human-review escalation log (production, §3.5)
-```
-
-**Raw vs. processed separation.** `vehide_raw/` is never mutated in place; `scripts/preprocess_images.py` (Milestone 2) reads from it and writes the deduplicated, letterboxed, split, and re-annotated result into `vehide_processed/`, so the raw source can always be reproduced from or re-run against without destructive edits.
-
-**Split leakage guarantee.** The 70/15/15 stratified split was verified to have zero cross-split filename-stem or MD5-hash duplicates (Milestone 2, Section 9.4), so the directory boundaries above are also the leakage boundary, not just a filing convention.
-
-**Alignment with model input format.** `vehide_processed/images/{train,val,test}/` already stores images at the exact 1280×1280 resolution the Damage Agent consumes (Section 6.1) — the only transform left at inference time is the pixel normalisation to `[0,1]` and NCHW tensor packing, since letterboxing was performed once during preprocessing rather than repeated per training epoch.
 
 ---
 
@@ -634,106 +593,15 @@ The current implementation does not use LLM-driven function calling: the context
 
 ### 11.1 Shared Schemas
 
-There is no single mutable state object threading through all four stages. The actual interface between stages is two concrete schemas: the **context bundle** `ContextBundleBuilder.build()` (`scripts/report_context.py`) assembles from the Damage/Severity Agent output, and the **report** the Report Agent returns from that bundle.
+There is no single mutable state object threading through all four stages. The interface between stages is two concrete schemas: the **context bundle** `ContextBundleBuilder.build()` (`scripts/report_context.py`) assembles from the Damage/Severity Agent output, and the **report** the Report Agent returns from it. The context bundle carries detections (with severity), the selected policy and its retrieved clauses (split into coverage and exclusion/condition per damage class), and an escalation block; the report carries a per-class verdict with citations plus an overall recommendation and escalation flag. Full field-level type definitions are in **Appendix E**.
 
-```python
-from typing import TypedDict, Optional, List, Dict
-
-class Detection(TypedDict):
-    class_id: int
-    class_name: str
-    confidence: float
-    bbox_normalized: List[float]   # [x_center, y_center, w, h]
-    area_ratio: float
-    severity: str                  # "minor" / "moderate" / "severe" — global bins, Section 5.2
-
-class RetrievedClause(TypedDict):
-    chunk_id: str
-    text: str
-    heading: str
-    clause_type: str
-    doc_id: str
-    score: float
-
-class ClauseBucket(TypedDict):
-    coverage: List[RetrievedClause]
-    exclusion_or_condition: List[RetrievedClause]
-    coverage_clause_found: bool
-
-class PolicySelection(TypedDict):
-    doc_id: str
-    selection_method: str          # always "claimant_selected" — Section 8.1
-    insurer: str
-    product: str
-    description: str
-    clauses: Dict[str, ClauseBucket]   # keyed by damage_class
-
-class Escalation(TypedDict):
-    low_confidence_detections: List[str]     # class_names below the 0.50 threshold
-    missing_coverage_clause_for: List[str]   # class_names with no coverage clause found
-    needs_human_review: bool
-
-class ContextBundle(TypedDict):
-    """Input to the Report Agent. Produced by ContextBundleBuilder.build()."""
-    claim_id: str
-    incident_narrative: str
-    detections: List[Detection]
-    policy: PolicySelection
-    escalation: Escalation
-
-
-class ReportItem(TypedDict):
-    damage_class: str
-    verdict: str                   # "covered" / "excluded" / "conditional" / "needs_review"
-    rationale: str
-    cited_chunk_ids: List[str]
-
-class ClaimReport(TypedDict):
-    """Output of the Report Agent (scripts/report_agent.py). Requested via
-    response_format=json_object; validated against this shape by
-    scripts/eval_report_agent.py's schema_valid check."""
-    claim_id: str
-    policy_doc_id: str
-    items: List[ReportItem]
-    overall_recommendation: str
-    escalate_to_human: bool
-    escalation_reason: Optional[str]
-```
-
-Both schemas are transcribed directly from `scripts/report_context.py` (`_hit_dict`, `ClauseRetriever.get_clauses`, `ContextBundleBuilder.build`), `scripts/yolo_schema.py` (`Detection.to_dict`), `scripts/report_agent.py`'s system prompt, and the `required` field set checked in `scripts/eval_report_agent.py`'s `check_report`.
-
-
-  
 ### 11.2 How Different Models Communicate
 
 All communication is state-in/state-out through the schema above; no module calls another module's model directly. Each stage is currently invoked as a plain Python function call (Section 4.5, Section 2.5) rather than through a tool-calling interface — there is no MCP or similar tool wrapper around the Policy Agent in the current implementation.
 
 ### 11.3 Orchestration Framework (Planned)
 
-No orchestration framework is implemented yet. The current pipeline is a fixed sequence of plain Python function calls (Section 2.5, Section 4.5); a stage's output is checked by simple conditional logic in the calling code to decide whether the next stage runs (e.g. the escalation gate skips the Policy/Report Agent calls entirely). Wrapping the existing stage functions as LangGraph nodes is planned, since each stage already has a clean, schema-defined input/output boundary (Section 11.1):
-
-```python
-from langgraph.graph import StateGraph, END
-
-graph = StateGraph(ClaimState)
-graph.add_node("damage_agent", damage_agent_fn)
-graph.add_node("severity_agent", severity_agent_fn)
-graph.add_node("policy_agent", policy_agent_fn)
-graph.add_node("report_agent", report_agent_fn)
-graph.add_node("escalate", escalate_fn)
-
-graph.set_entry_point("damage_agent")
-graph.add_conditional_edges(
-    "damage_agent",
-    lambda s: "escalate" if min((d["confidence"] for d in s["detections"]), default=0) < 0.50 else "severity_agent",
-)
-graph.add_edge("severity_agent", "policy_agent")
-graph.add_edge("policy_agent", "report_agent")
-graph.add_edge("report_agent", END)
-graph.add_edge("escalate", END)
-
-app = graph.compile()
-```
+No orchestration framework is implemented yet. The current pipeline is a fixed sequence of plain Python function calls, a stage's output is checked by simple conditional logic in the calling code to decide whether the next stage runs. Wrapping the existing stage functions as LangGraph nodes is planned for Milestone 4, since each stage already has a clean, schema-defined input/output boundary this would additionally enable a true escalation gate rather than the current flag-based approach. The planned node structure is sketched in **Appendix F**.
 
 ### 11.4 Database Interactions
 
@@ -760,6 +628,8 @@ ChromaDB is queried read-only at inference time (`collection.query(...)`); no wr
 | Report Agent (Groq API round-trip) | ~0.7-0.9s (measured, Section 8.2) |
 | **Total (non-escalated, single-class claim)** | **~1-1.5s** |
 
+Latency scales with the number of distinct damage classes detected in a claim, since retrieval runs a coverage and exclusion query per class, each additional class adds roughly 15-20ms of retrieval latency, a small increment relative to the ~0.7-0.9s Report Agent call that dominates total latency regardless of class count.
+
 **Storage requirements:** VehiDE processed dataset (13,655 images at 1280×1280 JPEG) — several GB, not stored in the Git repository itself; ChromaDB index and synthetic policy PDFs — a few MB; trained YOLO11m checkpoint — ~40.7MB (measured, Section 5.1 probe; the full-training-run checkpoint size is expected to be comparable).
 
 ---
@@ -772,12 +642,18 @@ ChromaDB is queried read-only at inference time (`collection.query(...)`); no wr
 | Detector scale | `m` | `n`/`s` (faster, less accurate), `l`/`x` (too slow for CPU deployment) | Balances accuracy against the CPU-basic HF Spaces inference target |
 | Input resolution | 1280px | 640px (Ultralytics default) | Matches the dataset's actual weighted-mean resolution (Milestone 2, §5.5); costs ~4x VRAM, reducing batch size from an assumed 16 to a measured 4 (Section 7) |
 | Vector store | ChromaDB | FAISS | FAISS ~50-60x faster in raw query latency but not operationally meaningful at 185-chunk scale; ChromaDB's metadata filtering (needed for doc-scoping, Section 5.3) and persistence wins |
-| Retrieval strategy | Hybrid dense+sparse (75:25), doc-scoped two-pass | Dense-only; single mixed top-k query | Hybrid fixed the one zero-hit failure on the 50-incident evaluation with no regressions; two-pass avoids an exclusion clause being buried beneath the coverage clause it qualifies (Section 5.3) |
+| Retrieval strategy | Hybrid dense+sparse, doc-scoped two-pass | Dense-only, single mixed top-k query | See Section 5.3/9 for full reasoning and evaluation numbers |
 | Report generation | Modular RAG + prompted LLM | Single end-to-end VLM | Preserves per-stage evaluability (Milestone 1, §3.4) at the cost of more integration surface area |
 | LLM provider | Open-weight models (`llama-3.3-70b-versatile`, `openai/gpt-oss-20b`) via Groq API, run and compared | Paid frontier API (GPT-4o); self-hosted open-source LLM | Free-tier, fast, OpenAI-compatible; avoids GPU hosting incompatible with the CPU-basic deployment target; empirical evidence (Section 8.2) that context quality gates correctness more than model choice weakens the case for a paid alternative |
 | Severity method | Calibrated area-ratio proxy, permanently rule-based | Dedicated learned classifier, VLM-based scoring | No severity-labelled ground truth exists in the VehiDE-only dataset scope (Section 5.2), so a learned classifier has nothing to train against; VLM scoring rejected on latency/cost grounds (Milestone 1, §10.2) |
 
-**Scalability considerations.** The current design assumes single-request, stateless processing suitable for a demo (CPU-basic HF Spaces instance). A production deployment handling concurrent claims would need: a GPU-backed inference service for the Damage Agent (CPU inference latency, while acceptable for a demo, would not scale to high claim volumes), a request queue in front of the LLM API calls to manage rate limits, and a persistent, access-controlled store for the human review queue rather than a flat JSON log.
+### 13.1 Scalability considerations
+
+- The current design assumes single-request, stateless processing suitable for a demo (CPU-basic HF Spaces instance).
+- **Concurrent users:** a production deployment would need a GPU-backed inference service for the Damage Agent (CPU inference latency, while acceptable for a demo, would not scale to high claim volumes) and a request queue in front of the Groq API calls, since rate limits are the most likely first bottleneck under concurrent load, not compute.
+- **Larger policy corpus:** The TF-IDF sparse index is refit on the full corpus at load time, this cost grows with corpus size and would need to move to an incremental-update scheme beyond a few thousand chunks. The `MIN_CLAUSE_SCORE` floor and 75:25 dense:sparse weighting were tuned at 185 chunks and would need re-validation at significantly larger corpus sizes.
+- **Future deployment:** A state-graph orchestrator becomes more valuable at scale than it is today, since it would enable retry/backoff and parallel-branch execution patterns that the current sequential function-call design does not support.
+- **Storage:** The human review queue would need to move to a persistent, access-controlled store before handling claim volumes beyond a small demo.
 
 ---
 
@@ -949,6 +825,170 @@ class ClaimReport(BaseModel):
 [5] Milestone 1 Report — Multimodal Damage Assessment for Insurance Claims, Group 1, DS & AI Lab, 2026.
 
 [6] Milestone 2 Report — Multimodal Damage Assessment for Insurance Claims, Group 1, DS & AI Lab, 2026.
+
+---
+
+## Appendix D: Dataset Organization and Directory Structure
+
+```
+data/
+├── vehide_raw/                        # Original VehiDE download, pre-deduplication (Milestone 2 §4)
+│   ├── images/                        # 13,655 deduplicated source images
+│   └── annotations/                   # Original per-image annotation files
+│
+├── vehide_processed/
+│   └── damage.yaml                    # YOLO 6-class detection config (nc: 6)
+│
+├── vehide/                            # Training-ready, letterboxed 1280×1280 JPEGs + YOLO-format labels
+│   ├── images/
+│   │   ├── train/                     # 9,558 images  (70%, stratified on dominant damage class)
+│   │   ├── val/                       # 2,048 images  (15%)
+│   │   └── test/                      # 2,049 images  (15%)
+│   ├── labels/
+│   │   ├── train/                     # 9,558 .txt   — normalised [cls, x, y, w, h] per instance
+│   │   ├── val/                       # 2,048 .txt
+│   │   └── test/                      # 2,049 .txt
+│   └── escalation_test/               # ~100 images set aside for the low-confidence escalation
+│                                       #   test subset (selected post-training, Section 16.3)
+│
+├── splits/                            # train.txt / val.txt / test.txt — plain-text image path lists
+│                                       #   used to reproduce the split deterministically
+│
+├── policies/                          # 5 synthetic policy source PDFs (Milestone 2 §6.1)
+├── chroma_db/                         # Persistent ChromaDB collection — 185 embedded chunks
+│
+├── eval/
+│   ├── incident_descriptions.json     # 50 synthetic realistic incident narratives
+│   └── retrieval_smoke_test.json      # 6-query, one-per-class smoke-test results
+├── rag_outputs/eval/
+│   └── incident_retrieval_eval.json   # 50-incident Precision@3 / MRR evaluation output
+│
+└── review_queue.jsonl                 # Append-only human-review escalation log (production, §3.5)
+```
+
+**Raw vs. processed separation.** `vehide_raw/` is never mutated in place; `scripts/preprocess_images.py` (Milestone 2) reads from it and writes the deduplicated, letterboxed, split, and re-annotated result into `vehide_processed/`, so the raw source can always be reproduced from or re-run against without destructive edits.
+
+**Split leakage guarantee.** The 70/15/15 stratified split was verified to have zero cross-split filename-stem or MD5-hash duplicates (Milestone 2, Section 9.4), so the directory boundaries above are also the leakage boundary, not just a filing convention.
+
+**Alignment with model input format.** `vehide_processed/images/{train,val,test}/` already stores images at the exact 1280×1280 resolution the Damage Agent consumes (Section 6.1) — the only transform left at inference time is the pixel normalisation to `[0,1]` and NCHW tensor packing, since letterboxing was performed once during preprocessing rather than repeated per training epoch.
+
+---
+
+## Appendix E: Shared Schemas
+
+There is no single mutable state object threading through all four stages. The actual interface between stages is two concrete schemas: the **context bundle** `ContextBundleBuilder.build()` (`scripts/report_context.py`) assembles from the Damage/Severity Agent output, and the **report** the Report Agent returns from that bundle.
+
+```python
+from typing import TypedDict, Optional, List, Dict
+
+class Detection(TypedDict):
+    class_id: int
+    class_name: str
+    confidence: float
+    bbox_normalized: List[float]   # [x_center, y_center, w, h]
+    area_ratio: float
+    severity: str                  # "minor" / "moderate" / "severe" — global bins, Section 5.2
+
+class RetrievedClause(TypedDict):
+    chunk_id: str
+    text: str
+    heading: str
+    clause_type: str
+    doc_id: str
+    score: float
+
+class ClauseBucket(TypedDict):
+    coverage: List[RetrievedClause]
+    exclusion_or_condition: List[RetrievedClause]
+    coverage_clause_found: bool
+
+class PolicySelection(TypedDict):
+    doc_id: str
+    selection_method: str          # always "claimant_selected" — Section 8.1
+    insurer: str
+    product: str
+    description: str
+    clauses: Dict[str, ClauseBucket]   # keyed by damage_class
+
+class Escalation(TypedDict):
+    low_confidence_detections: List[str]     # class_names below the 0.50 threshold
+    missing_coverage_clause_for: List[str]   # class_names with no coverage clause found
+    needs_human_review: bool
+
+class ContextBundle(TypedDict):
+    """Input to the Report Agent. Produced by ContextBundleBuilder.build()."""
+    claim_id: str
+    incident_narrative: str
+    detections: List[Detection]
+    policy: PolicySelection
+    escalation: Escalation
+
+
+class ReportItem(TypedDict):
+    damage_class: str
+    verdict: str                   # "covered" / "excluded" / "conditional" / "needs_review"
+    rationale: str
+    cited_chunk_ids: List[str]
+
+class ClaimReport(TypedDict):
+    """Output of the Report Agent (scripts/report_agent.py). Requested via
+    response_format=json_object; validated against this shape by
+    scripts/eval_report_agent.py's schema_valid check."""
+    claim_id: str
+    policy_doc_id: str
+    items: List[ReportItem]
+    overall_recommendation: str
+    escalate_to_human: bool
+    escalation_reason: Optional[str]
+```
+
+Both schemas are transcribed directly from `scripts/report_context.py` (`_hit_dict`, `ClauseRetriever.get_clauses`, `ContextBundleBuilder.build`), `scripts/yolo_schema.py` (`Detection.to_dict`), `scripts/report_agent.py`'s system prompt, and the `required` field set checked in `scripts/eval_report_agent.py`'s `check_report`.
+
+---
+
+## Appendix F: Planned Orchestration Framework
+
+
+```python
+from langgraph.graph import StateGraph, END
+
+graph = StateGraph(ClaimState)
+graph.add_node("damage_agent", damage_agent_fn)
+graph.add_node("severity_agent", severity_agent_fn)
+graph.add_node("policy_agent", policy_agent_fn)
+graph.add_node("report_agent", report_agent_fn)
+graph.add_node("escalate", escalate_fn)
+
+graph.set_entry_point("damage_agent")
+graph.add_conditional_edges(
+    "damage_agent",
+    lambda s: "escalate" if min((d["confidence"] for d in s["detections"]), default=0) < 0.50 else "severity_agent",
+)
+graph.add_edge("severity_agent", "policy_agent")
+graph.add_edge("policy_agent", "report_agent")
+graph.add_edge("report_agent", END)
+graph.add_edge("escalate", END)
+
+app = graph.compile()
+```
+
+---
+
+## Appendix G: Project Status 
+
+| **Component** | **Status** | **Evidence** |
+| --- | --- | --- |
+| Damage Agent (YOLO11m) architecture selection | Completed | Section 5.1 |
+| Damage Agent training | Not started (Milestone 4) | Section 7, 16.3 |
+| Severity Agent | Completed | Section 5.2 |
+| Policy Agent — retrieval stack selection | Completed | Section 5.3 |
+| Policy Agent — doc-scoped two-pass retrieval | Completed and evaluated | Section 9 |
+| Report Agent — model selection | Completed | Section 5.4 |
+| Report Agent — faithfulness evaluation | Completed (synthetic payloads) | Section 8.2 |
+| Orchestration (LangGraph) | Planned, not implemented | Section 11.3 |
+| Gradio UI | Planned, not implemented | Section 15 |
+| True escalation gate | Planned, not implemented | Section 16.3 |
+
 
 ---
 
