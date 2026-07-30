@@ -34,7 +34,20 @@
 
 ---
 
-# Table of Contents 
+# Table of Contents
+
+- [1. Introduction](#1-introduction)
+- [2. Training Dataset](#2-training-dataset)
+- [3. Model Configuration](#3-model-configuration)
+- [4. Training Environment](#4-training-environment)
+- [5. Training Methodology](#5-training-methodology)
+- [6. Hyperparameter Experiments](#6-hyperparameter-experiments)
+- [7. Optimization Methods](#7-optimization-methods)
+- [8. Regularization Techniques](#8-regularization-techniques)
+- [9. Training Progress](#9-training-progress)
+- [10. Model Selection](#10-model-selection)
+- [11. Challenges Encountered](#11-challenges-encountered)
+- [12. Summary and Next Steps](#12-summary-and-next-steps)
 
 ---
 
