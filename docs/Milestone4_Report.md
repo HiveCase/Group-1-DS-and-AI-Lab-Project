@@ -219,8 +219,8 @@ Two model-scale experiments were also run as probes, not full training:
 
 ## 7. Optimization Methods
 
-- **Optimizer:** AdamW throughout, for both tracks. No alternative optimiser (e.g. SGD) was tested during this milestone.
-- **Learning-rate scheduler:** Cosine annealing (`cos_lr=True`) adopted after the initial linear-decay detection attempt; not formally A/B tested against linear decay once adopted.
+- **Optimizer:** AdamW was used throughout the experiments. No alternative optimiser was tested.
+- **Learning-rate scheduler:** Cosine annealing (`cos_lr=True`) was adopted after the initial linear-decay detection attempt in an effort to reduce optimization stagnation and improve convergence.
 - **Early stopping:** Ultralytics' `patience` parameter used (15–20 depending on run), monitoring validation fitness. Not observed to trigger in any completed run within this milestone — all completed runs reached their configured epoch count rather than stopping early.
 - **Gradient clipping:** Not explicitly configured in any run (Ultralytics' default behaviour used, unmodified).
 - **Mixed precision training:** `amp=True` used throughout (Ultralytics default); AMP compatibility checks passed in every training log observed.
