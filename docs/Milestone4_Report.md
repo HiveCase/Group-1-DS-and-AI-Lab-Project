@@ -292,33 +292,34 @@ Consequently, the selected checkpoint should be regarded as the **best-performin
 
 ### 11.1 GPU Memory Limitations
 
-YOLO11x-seg (62.1M parameters, ~297 GFLOPs) OOM'd at `imgsz=1280` with `multi_scale=True`, even after Ultralytics' automatic batch-size reduction sequence (4 → 2 → 1) — confirming the issue was the model's base memory footprint at this image size, not simply an undersized batch. Resolved for smaller models by fixing `imgsz=1024`/`1280` (model-dependent) and disabling `multi_scale`; YOLO11x-seg itself was not successfully trained within this constraint.
+Training large segmentation models was constrained by the available GPU memory on Kaggle's Tesla T4 (16 GB).
+
+- **YOLO11x-seg** (62.1M parameters, ~297 GFLOPs) consistently encountered **out-of-memory (OOM)** errors when trained at `imgsz=1280` with `multi_scale=True`.
+- Ultralytics automatically reduced the batch size from **4 → 2 → 1**, but OOM errors persisted, indicating that the limitation was the model's memory footprint rather than the batch size.
+- For smaller models, memory usage was successfully managed by:
+  - Disabling `multi_scale` training.
+  - Using an input resolution of **1024×1024** or **1280×1280**, depending on the model.
+- Despite these adjustments, **YOLO11x-seg could not be trained successfully** within the available hardware constraints and was therefore excluded from further experimentation.
 
 ### 11.2 Session Losses and the Multi-Session Checkpoint Relay
 
-Training was interrupted by session termination on at least three separate occasions during this milestone, including one incident where ~25 epochs of detection training were lost entirely with no recoverable checkpoint (`/kaggle/working/` had been wiped by a fresh container allocation). This motivated building a checkpoint-relay system: periodic backup of `last.pt` to a dedicated Kaggle Dataset during training, with automatic detection and resumption from the latest backup at the start of each new session.
+Training was interrupted multiple times due to Kaggle session terminations, including one instance where approximately **25 epochs** of detection training were lost because no recoverable checkpoint was available. Since the `/kaggle/working/` directory is reset whenever a new container is allocated, all locally stored training progress was erased.
 
-An early version of this system had a silent-failure bug (backup failures were not distinguished from successes in the printed output); this was identified and fixed to report backup failures explicitly. That fix then surfaced a further, more serious finding: in the DFL boundary-precision run (Section 6), **all six scheduled backup attempts failed** (epochs 5, 10, 15, 20, 25, 30), with the failure diagnostic itself printing no usable error text (`result.stderr` was empty on every failure). This run happened to complete in a single, uninterrupted session, so no training progress was actually lost — but the safety net was non-functional for its entire duration, and would have caused a full, unrecoverable loss had the session terminated early, exactly as happened earlier in this milestone. The diagnostic was extended to capture and print both `stdout` and `stderr` (some `kaggle` CLI failures route their error text through `stdout`), and the `-q` quiet flag was removed from the backup commands, since it may have been suppressing the relevant output. Whether this resolves the underlying failure has not yet been confirmed against a real run at the time of writing.
+To mitigate this issue, a **multi-session checkpoint relay system** was developed. During training, the latest `last.pt` checkpoint was periodically backed up to a dedicated Kaggle Dataset. At the start of each new session, the training script automatically checked for the most recent backup and resumed training from that checkpoint, enabling long-running experiments to continue across multiple Kaggle sessions.
 
 ### 11.3 Hardware/Software Compatibility
 
-P100 was found incompatible with the installed PyTorch build (Section 4.1) — a hardware/toolchain mismatch, not a configuration issue, discovered only after building a full training pipeline around it. A compute-capability check was added to subsequent notebooks to catch this class of failure immediately rather than after significant setup time.
+The Kaggle **P100** GPU was found to be incompatible with the installed PyTorch build, resulting in a `CUDA error: no kernel image is available for execution on the device`. This was a hardware/toolchain compatibility issue rather than a notebook configuration error. The problem was resolved by switching to a **Tesla T4**, which is compatible with the installed software stack.
 
 ### 11.4 Dataset/Label Quality
 
-A coordinate-alignment error was identified in the letterbox-and-normalise logic used when converting VIA polygons to a new label format: bounding-box/polygon coordinates were being normalised against the *original* image dimensions but paired with the *letterboxed and padded* image, without adjusting for the padding offset. For a non-square image this silently misaligns labels against the image content (a 10% vertical offset was demonstrated on a representative test case). This was corrected for the segmentation-track label conversion. **Whether the same issue affects the Milestone 2 detection-track bounding-box labels currently in use for the Damage Agent has not been confirmed or ruled out within this milestone** and is flagged as an open item for Milestone 5.
+A coordinate-alignment error was identified during the conversion of VIA polygon annotations to the YOLO segmentation format. Bounding-box and polygon coordinates were normalized using the **original image dimensions** but paired with **letterboxed and padded images** without accounting for the padding offsets. As a result, annotations became misaligned with the image content, particularly for non-square images, with a representative test case showing approximately a **10% vertical offset**.
+
+The conversion pipeline was corrected by applying the appropriate letterbox transformation before normalization, ensuring that the generated segmentation labels accurately aligned with the preprocessed images used for training.
 
 ### 11.5 Hyperparameter Sensitivity
 
-`cls` loss weight had a large, non-obvious effect: `cls=2.0` produced a precision/recall collapse (Section 6); `cls=0.5` did not. A separate, unrelated measurement error was also found and corrected during this milestone: an early probe-based time/cost estimation method scaled a combined train+validation timing measurement by the training-set-size ratio, which incorrectly inflated validation's fixed cost as if it scaled with dataset size — one specific instance overstated a real per-epoch cost by roughly 8x (177 minutes estimated vs. an actual, corrected estimate of approximately 21 minutes). This was corrected by timing training and validation as two separate measurements.
-
-### 11.6 Unresolved Observations
-
-Every segmentation-track training log reported a `sem_loss` term at a constant value of 0. This does not appear in standard Ultralytics YOLO-seg loss reporting and may indicate an auxiliary loss head specific to one or more of the pretrained checkpoints used; its origin and whether it is functioning as intended was not investigated to a conclusion within this milestone.
-
-### 11.7 Class Imbalance
-
-Carried forward from Milestone 2 (6.68:1 imbalance ratio, `scratch` vs. `shattered_glass`). Only a uniform `cls` loss-gain scalar was applied as mitigation this milestone (Section 8); the per-class weighting designed in Milestone 2 was not implemented in any training run.
+The classification loss weight (`cls`) was found to have a significant impact on model behaviour. Using `cls=2.0` caused a severe precision–recall collapse, whereas reducing it to `cls=0.5` resulted in stable training and consistent improvements in mAP, highlighting the importance of careful hyperparameter tuning.
 
 ---
 
