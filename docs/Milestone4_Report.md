@@ -57,8 +57,6 @@
 
 Milestone 3 selected **YOLO11m** (plain bounding-box detection, not the `-seg` variant) as the primary architecture for the Damage Agent, on a tie-break against YOLOv8m after a 15-epoch probe found the two statistically indistinguishable (mAP@50 delta 0.0066, below the 0.02 tie-break threshold). The tie-break favoured YOLO11m's newer C3k2/C2PSA backbone blocks, reported to aid small-object detection — directly relevant given Milestone 2's EDA found a minimum normalised bounding-box area of 0.00002 in the training data.
 
-Milestone 2 (Section 7.2) separately pre-registered a contingency: if per-class F1 on `shattered_glass`, `flat_tyre`, or `crack` fell below 0.65 during training, integrating a CarDD-pretrained segmentation checkpoint would be evaluated as a supplementary path. Early Milestone 4 detection training runs showed persistently low recall on exactly these irregular-boundary classes, which triggered this contingency and opened a second, parallel experiment track alongside the primary detection model: fine-tuning publicly available CarDD-pretrained instance-segmentation checkpoints on the same VehiDE imagery (converted to segmentation format from the polygon annotations preserved, unmodified, since Milestone 2).
-
 ### 1.2 Objectives of the Training Phase
 
 - Fine-tune the Milestone 3-selected YOLO11m detector on the full VehiDE training set and reach a stable, converged checkpoint.
