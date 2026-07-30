@@ -32,14 +32,11 @@
 </div>
 
 
-
-
-
-
 ---
 
+# Table of Contents 
 
-
+---
 
 ## 1. Introduction
 
@@ -177,7 +174,7 @@ All models were fine-tuned from pretrained checkpoints; none were trained from r
 | Detection (YOLO11m), `cls=0.5` + `cos_lr` | Interrupted by unplanned session terminations on more than one occasion during this milestone (exact sequence not fully reconstructed here); furthest confirmed progress was **25 completed epochs**, measured mAP@50 = 0.0248 at that point; not resumed to completion within this milestone |
 | Segmentation (YOLOv8s-seg), baseline | 30 |
 | Segmentation (YOLOv8s-seg), continuation (augmentation) | 20 additional (50 total) |
-| Segmentation (YOLOv8s-seg), DFL boundary-precision experiment | In progress at time of writing (5 of 30 completed) |
+| Segmentation (YOLOv8s-seg), DFL boundary-precision experiment | 30 (completed) |
 
 ### 5.4 Loss Function
 
@@ -197,7 +194,7 @@ AdamW optimiser throughout. Learning rate strategy evolved across the milestone 
 | Detection, `cls=0.5` attempt | 0.5 | default | 0.001 | cosine (`lrf=0.001`) | mAP@50 climbing across all 25 completed epochs, reaching 0.0248 at epoch 25 (still well below the ≥0.70 Milestone 1 target, but trending upward, not stalled) | Promising but incomplete — interrupted before reaching a comparable stage to the segmentation track |
 | Segmentation baseline (YOLOv8s-seg) | 0.5 | default | 0.0005 | cosine | Converged; overall mask mAP50 = 0.36 (val, epoch 30) | Completed |
 | Segmentation continuation (augmentation) | 0.5 | default | 0.0002 | cosine | Overall mask mAP50 (test) 0.348 → 0.3534; `dent`/`scratch`/`crack` essentially flat (+0.001 to +0.011); `shattered_glass` slightly regressed (−0.014) | Completed; hypothesis (augmentation fixes hard classes) not confirmed |
-| Segmentation, DFL boundary-precision (in progress) | 0.3 | 1.7 | 0.0002 | cosine | Mask mAP50 climbing epoch 1→5 (0.32 → 0.336) | In progress, not yet complete |
+| Segmentation, DFL boundary-precision | 0.3 | 1.7 | 0.0002 | cosine | Overall test mask mAP50 0.3534 → 0.3549 (essentially flat); `dent`/`scratch` small gains (+0.005 to +0.014), `crack` flat (−0.001); `broken_lamp` gained (+0.041); `shattered_glass` regressed (−0.059) | Completed; same outcome pattern as the augmentation experiment — hard classes did not move |
 
 **Justification for the segmentation track's final selected configuration** (Section 10): the continuation run (`cls=0.5`, augmentation added) is the only segmentation checkpoint with a complete, held-out test-set evaluation at the time of writing. It is selected as the current best available checkpoint on that basis, not because it resolved the underlying weak-class problem — it did not.
 
@@ -253,17 +250,24 @@ No clear evidence of overfitting was observed in any completed run — validatio
 
 ### 10.1 Checkpoint Selected
 
-The **segmentation continuation checkpoint** (YOLOv8s-seg, CarDD-pretrained, 50 total fine-tuning epochs: 30 baseline + 20 with added augmentation) is the checkpoint selected as the current best available result from this milestone.
+Two segmentation checkpoints now have complete, held-out test-set evaluations and are essentially tied on overall performance:
+
+| Checkpoint | Total epochs | Overall test mask mAP50 |
+| --- | --- | --- |
+| Continuation (augmentation) | 50 (30 baseline + 20) | 0.3534 |
+| DFL boundary-precision | 80 (30 baseline + 20 augmentation + 30 DFL) | 0.3549 |
+
+The **DFL boundary-precision checkpoint** is selected as the current best available result, on the basis of the marginally higher overall score and its additional gains on `dent`, `scratch`, and `broken_lamp`. This selection is a close call, not a clear win: the continuation checkpoint remains preferable specifically on `shattered_glass` (0.6607 vs. 0.6021), so the choice between them should be revisited once Milestone 5's evaluation weights per-class performance more explicitly rather than relying on a single overall figure.
 
 ### 10.2 Why It Was Selected
 
-It is the only checkpoint from either experiment track with a **complete, held-out test-set evaluation** at the time of writing. The detection track's most promising run (`cls=0.5`, cosine schedule) was still improving when interrupted and has no comparably complete evaluation to select against.
+It is the most recent checkpoint in the segmentation track's fine-tuning chain, incorporates a genuinely different loss-weighting mechanism (`dfl`) than either of the two checkpoints before it, and has a complete test-set evaluation. The detection track's most promising run (`cls=0.5`, cosine schedule) was interrupted mid-training and has no comparably complete evaluation to select against.
 
 ### 10.3 Validation Metric Used
 
-Overall **mask mAP@50** on the held-out test split was the primary comparison metric between the baseline and continuation segmentation runs (0.348 → 0.3534). Per-class mask mAP@50 was used to assess whether the continuation's targeted augmentation achieved its specific goal (it did not, for the three targeted classes).
+Overall **mask mAP@50** on the held-out test split was the primary comparison metric across all three segmentation runs (0.348 → 0.3534 → 0.3549). Per-class mask mAP@50 was used to assess whether each intervention (augmentation, then DFL reweighting) achieved its specific goal of improving `dent`/`scratch`/`crack` — **neither did, meaningfully**, across two independent attempts using two different mechanisms.
 
-**This selection should be treated as provisional, not final.** It reflects the most complete result available within this milestone's time and compute budget, not a claim that the underlying weak-class problem has been solved.
+**This selection should be treated as provisional, not final.** It reflects the most complete result available within this milestone's time and compute budget, not a claim that the underlying weak-class problem has been solved — the evidence gathered this milestone points toward that problem being a genuine limit of this modelling approach on these classes, not a remaining configuration to find.
 
 ---
 
@@ -275,7 +279,9 @@ YOLO11x-seg (62.1M parameters, ~297 GFLOPs) OOM'd at `imgsz=1280` with `multi_sc
 
 ### 11.2 Session Losses and the Multi-Session Checkpoint Relay
 
-Training was interrupted by session termination on at least three separate occasions during this milestone, including one incident where ~25 epochs of detection training were lost entirely with no recoverable checkpoint (`/kaggle/working/` had been wiped by a fresh container allocation). This motivated building a checkpoint-relay system: periodic backup of `last.pt` to a dedicated Kaggle Dataset during training, with automatic detection and resumption from the latest backup at the start of each new session. An early version of this system also had a silent-failure bug (backup failures were not distinguished from successes in the printed output); this was identified and fixed to report backup failures explicitly.
+Training was interrupted by session termination on at least three separate occasions during this milestone, including one incident where ~25 epochs of detection training were lost entirely with no recoverable checkpoint (`/kaggle/working/` had been wiped by a fresh container allocation). This motivated building a checkpoint-relay system: periodic backup of `last.pt` to a dedicated Kaggle Dataset during training, with automatic detection and resumption from the latest backup at the start of each new session.
+
+An early version of this system had a silent-failure bug (backup failures were not distinguished from successes in the printed output); this was identified and fixed to report backup failures explicitly. That fix then surfaced a further, more serious finding: in the DFL boundary-precision run (Section 6), **all six scheduled backup attempts failed** (epochs 5, 10, 15, 20, 25, 30), with the failure diagnostic itself printing no usable error text (`result.stderr` was empty on every failure). This run happened to complete in a single, uninterrupted session, so no training progress was actually lost — but the safety net was non-functional for its entire duration, and would have caused a full, unrecoverable loss had the session terminated early, exactly as happened earlier in this milestone. The diagnostic was extended to capture and print both `stdout` and `stderr` (some `kaggle` CLI failures route their error text through `stdout`), and the `-q` quiet flag was removed from the backup commands, since it may have been suppressing the relevant output. Whether this resolves the underlying failure has not yet been confirmed against a real run at the time of writing.
 
 ### 11.3 Hardware/Software Compatibility
 
@@ -303,24 +309,22 @@ Carried forward from Milestone 2 (6.68:1 imbalance ratio, `scratch` vs. `shatter
 
 ### 12.1 Best-Performing Training Configuration
 
-Among completed, fully evaluated runs, the segmentation continuation configuration (YOLOv8s-seg, CarDD-pretrained, `cls=0.5`, `lr0=0.0002`, cosine schedule, augmentation added at epoch 31 of 50 total) produced the best result: overall test-set mask mAP@50 = 0.3534. This is provisional, not final (Section 10.3).
+Among completed, fully evaluated runs, the DFL boundary-precision configuration (YOLOv8s-seg, CarDD-pretrained, 80 total fine-tuning epochs, `cls=0.3`, `dfl=1.7` for its final 30 epochs) produced the highest overall result: test-set mask mAP@50 = 0.3549, marginally ahead of the continuation checkpoint's 0.3534. This is provisional, not final, and the margin between the two is small enough that either could reasonably be carried forward (Section 10.1).
 
 ### 12.2 Key Observations
 
 - Loss-weighting choices (`cls`) have a large, easily-missed effect on whether a model learns to detect anything useful at all, independent of architecture or dataset.
-- More epochs and targeted augmentation did not move the three hardest classes (`dent`, `scratch`, `crack`) in this milestone's experiments — the evidence gathered points toward intrinsic task difficulty rather than a solvable training-configuration problem, consistent with published literature on this same dataset.
-- Multi-session training infrastructure (checkpoint relay, explicit compatibility and timing checks) proved necessary, not optional, given Kaggle's session limits — and several of this milestone's most time-consuming problems were process/tooling failures (lost sessions, a flawed timing estimate, a hardware incompatibility) rather than modelling failures.
+- **Two independent interventions — targeted augmentation, then a boundary-precision loss reweighting (`dfl`) — both failed to meaningfully move the three hardest classes (`dent`, `scratch`, `crack`)** in this milestone's experiments. Across both, overall mAP moved by roughly +0.001 to +0.005 per intervention while individual non-target classes shifted considerably more (`broken_lamp` +0.04, `shattered_glass` −0.06 in the DFL run alone). Taken together, this is now fairly strong evidence that the limitation is intrinsic to these classes' visual characteristics (thin, low-contrast, boundary-ambiguous), not a solvable training-configuration problem, consistent with published literature on this same dataset (Section 9.2).
+- Multi-session training infrastructure (checkpoint relay, explicit compatibility and timing checks) proved necessary, not optional, given Kaggle's session limits — and several of this milestone's most time-consuming problems were process/tooling failures (lost sessions, a flawed timing estimate, a hardware incompatibility, and a backup mechanism that failed silently and then failed completely) rather than modelling failures.
 
 ### 12.3 Readiness for Milestone 5
 
 Readiness is **partial**, and this should be stated plainly rather than implied otherwise:
 
-- The segmentation track has one checkpoint with a complete test-set evaluation, ready for the more thorough error analysis Milestone 5 calls for.
-- The primary detection track (YOLO11m, the Milestone 3-selected Damage Agent) does **not** have a completed training run within this milestone — its most promising configuration was interrupted mid-training and has not yet been resumed to completion.
-- The letterbox-alignment question raised in Section 11.4 for the detection-track labels remains open and should be resolved before treating any detection-track evaluation as reliable.
-- The DFL boundary-precision segmentation experiment (Section 6) was still in progress at the time of writing and its result is not yet available for Milestone 5 planning.
-
-
+- The segmentation track has two checkpoints with complete, comparable test-set evaluations, ready for the more thorough error analysis Milestone 5 calls for — including the now well-evidenced open question of whether `dent`/`scratch`/`crack` should be addressed by a different approach entirely (e.g. the DCN+ architecture identified as this dataset's published state of the art) rather than further hyperparameter iteration on the current architecture family.
+- The primary detection track (YOLO11m, the Milestone 3-selected Damage Agent) does **not** have a completed training run within this milestone — its most promising configuration was interrupted mid-training and has not yet been resumed to completion. This is the most significant open item going into Milestone 5, since it is the model actually selected for the deployed pipeline.
+- The letterbox-alignment question raised in Section 11.4 for the detection-track labels remains open and should be resolved before treating any future detection-track evaluation as reliable.
+- The backup-mechanism fix described in Section 11.2 has not yet been verified against a real training run; this should be confirmed working before relying on it for the detection track's remaining training.
 
 
 
