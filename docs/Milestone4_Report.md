@@ -61,9 +61,9 @@ Milestone 3 selected **YOLO11m** (plain bounding-box detection, not the `-seg` v
 
 - Fine-tune the Milestone 3-selected YOLO11m detector on the full VehiDE training set and reach a stable, converged checkpoint.
 - Diagnose and correct the class-imbalance handling (`cls` loss weighting) that caused an early precision/recall collapse.
-- Evaluate whether a CarDD-pretrained segmentation checkpoint, fine-tuned on the same VehiDE data, offers a viable supplementary or alternative path for the classes the detection model struggled with.
-- Establish a robust, resumable multi-session training workflow given Kaggle's session time limits, after losing training progress to unplanned session terminations more than once during this milestone.
-- Select the best available checkpoint(s) and document, honestly, which experiments reached a complete, evaluated result within this milestone's timeframe and which remain open going into Milestone 5.
+- Evaluate whether a pretrained segmentation checkpoint, fine-tuned on the same VehiDE data, offers a viable supplementary or alternative path for the classes the detection model struggled with.
+- Establish a robust, resumable multi-session training workflow given GPU compute constraints.
+- Select the best available checkpoint(s) and document the experiments which reached the completion.
 
 ---
 
@@ -71,17 +71,17 @@ Milestone 3 selected **YOLO11m** (plain bounding-box detection, not the `-seg` v
 
 ### 2.1 Final Datasets Used
 
-Two label formats were used across the two experiment tracks, both derived from the same underlying VehiDE imagery and the same Milestone 2 stratified split, so results remain comparable across tracks:
+Two label formats were used across the two experiment tracks, both derived from the same underlying VehiDE image dataset with stratified split, so results remain comparable across tracks:
 
-| | Detection track (Damage Agent) | Segmentation track (CarDD contingency) |
+| | Detection track | Segmentation track |
 | --- | --- | --- |
 | Label format | YOLO bounding box (`class x_center y_center w h`) | YOLO instance segmentation polygon (`class x1 y1 x2 y2 ... xn yn`) |
-| Source of labels | Milestone 2's bbox conversion of VehiDE VIA polygons | The same VehiDE VIA polygons, converted directly to YOLO-seg format (not re-annotated) |
-| Image preprocessing | Letterboxed to 1280×1280 (Milestone 2) | Letterboxed to 1280×1280, using a corrected letterbox-aware coordinate transform (Section 11.4) |
+| Source of labels | bbox conversion of VehiDE VIA polygons | The same VehiDE VIA polygons, converted to YOLO-seg format |
+| Image preprocessing | Letterboxed to 1280×1280 | Letterboxed to 1280×1280 |
 
 ### 2.2 Train / Validation / Test Split
 
-Both tracks reuse the identical Milestone 2 stratified 70/15/15 split (by dominant class per image, seed 42), verified leakage-free by both filename-stem and MD5-hash checks:
+Both tracks reuse the identical stratified 70/15/15 split (seed 42):
 
 | Split | Images |
 | --- | --- |
@@ -106,7 +106,6 @@ Total retained instances (bounding-box track): 32,672. Segmentation-track instan
 - **Detection track:** Ultralytics' default augmentation stack (mosaic, HSV jitter, flip, scale/translate/erasing), `close_mosaic=10` (mosaic disabled for the final 10 of 50 epochs).
 - **Segmentation track, baseline runs:** default Ultralytics augmentation only.
 - **Segmentation track, continuation run:** default augmentation plus deliberately added `copy_paste=0.3`, raised `hsv_v`/`hsv_s`, `degrees=10`, `shear=5`, and increased `scale`, targeted specifically at the thin, low-contrast, boundary-ambiguous classes (`dent`, `scratch`, `crack`) that underperformed in the baseline run.
-- All preprocessing (letterboxing, PII blurring, deduplication) is inherited unchanged from Milestone 2; no new preprocessing was introduced in Milestone 4 beyond the segmentation-format polygon conversion described in Section 11.4.
 
 ---
 
@@ -116,14 +115,14 @@ Total retained instances (bounding-box track): 32,672. Segmentation-track instan
 
 | Model | Track | Base checkpoint | Pretrained source |
 | --- | --- | --- | --- |
-| YOLO11m | Detection (primary Damage Agent) | `yolo11m.pt` | COCO/Objects365 (Ultralytics) |
-| YOLOv8s-seg | Segmentation (CarDD contingency) | `abdullahg7/cardd-yolov8s` (v2.0) | CarDD dataset, via Hugging Face |
-| YOLO11x-seg | Segmentation (explored, not completed — see Section 11) | `harpreetsahota/car-dd-segmentation-yolov11` | CarDD dataset, via Hugging Face |
+| YOLO11m | Detection | `yolo11m.pt` | COCO/Objects365 (Ultralytics) |
+| YOLOv8s-seg | Segmentation | `abdullahg7/cardd-yolov8s` (v2.0) | CarDD dataset, via Hugging Face |
+| YOLO11x-seg | Segmentation | `harpreetsahota/car-dd-segmentation-yolov11` | CarDD dataset, via Hugging Face |
 | YOLO11s-seg | Segmentation (probed only, not trained to completion) | `yolo11s-seg.pt` | COCO (Ultralytics) |
 
 ### 3.2 Pretrained vs. Training from Scratch
 
-All models were fine-tuned from pretrained checkpoints; none were trained from random initialisation. For the detection track, `yolo11m.pt`'s detection head was reinitialised for this project's 6 classes (COCO's 80-class head does not transfer). For the segmentation track, head transfer depended on class-name string matching between the checkpoint's own labels and this project's taxonomy:
+All models were fine-tuned from pretrained checkpoints; none were trained from random initialisation. For the detection track, `yolo11m.pt`'s detection head was reinitialised for this project's 6 classes. For the segmentation track, head transfer depended on class-name string matching between the checkpoint's own labels and this project's taxonomy:
 
 - `cardd-yolov8s`: all 6 classes matched, full head transfer.
 - `car-dd-segmentation-yolov11` (YOLO11x-seg): only 3 of 6 classes matched (`dent`, `scratch`, `crack`); `broken_lamp`, `shattered_glass`, `flat_tyre` heads were randomly reinitialised, confirmed directly in the training log (`"Remapped 3/6 cls head rows from pretrained weights by class name"`).
