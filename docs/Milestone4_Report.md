@@ -155,9 +155,9 @@ All models were fine-tuned from pretrained checkpoints; none were trained from r
 
 ### 4.3 Resource Constraints
 
-- Kaggle's free-tier GPU quota (weekly hours) was a binding constraint throughout this milestone and directly shaped which experiments were pursued to completion versus abandoned (Section 11).
-- Kaggle interactive sessions do not reliably run long enough to complete a multi-hour training job in one sitting; this required building a custom multi-session checkpoint-relay mechanism (Section 11.2) partway through the milestone, after losing an entire ~25-epoch run to an unplanned session termination.
-- `/kaggle/working/` does not persist across sessions; all cross-session checkpoint recovery relies on periodically publishing checkpoints to a separate Kaggle Dataset.
+- Kaggle's free-tier GPU quota (weekly hours) was a binding constraint throughout this milestone and directly shaped which experiments were pursued to completion versus abandoned.
+- Kaggle interactive sessions do not reliably run long enough to complete a multi-hour training job in one sitting; this required building a custom multi-session checkpoint-relay mechanism partway through the milestone, after losing an entire ~25-epoch run to an unplanned session termination.
+- `/kaggle/working/` does not persist across sessions, all cross-session checkpoint recovery relies on periodically publishing checkpoints to a separate Kaggle Dataset.
 
 ---
 
@@ -165,23 +165,23 @@ All models were fine-tuned from pretrained checkpoints; none were trained from r
 
 ### 5.1 Training Workflow
 
-1. Mount the Milestone 2 (detection) or converted (segmentation) dataset as a Kaggle Dataset input.
+1. Mount the segmentation dataset as a Kaggle Dataset input.
 2. Load the pretrained checkpoint.
-3. Run a short probe (1 epoch on a fixed subsample, later extended to separately time training and validation — see Section 11.5) to confirm the configuration fits in VRAM and to estimate real wall-clock cost before committing to a full run.
+3. Run a short probe (1 epoch on a fixed subsample, later extended to separately time training and validation) to confirm the configuration fits in VRAM and to estimate real wall-clock cost before committing to a full run.
 4. Train with a per-epoch callback that periodically backs up `last.pt` and training state to a dedicated Kaggle Dataset, and optionally stops the session early at a configured epoch budget.
-5. On a new session, check for an existing backup; if found, resume from it (`resume=True`); otherwise start fresh from the pretrained checkpoint.
+5. On a new session, check for an existing backup; if found, resume from it (`resume=True`), otherwise start fresh from the pretrained checkpoint.
 6. Evaluate the final checkpoint against the held-out test split.
 
 ### 5.2 Batch Size
 
-**4**, used consistently across all completed runs (both tracks), at 1280px input. This was set based on observed VRAM usage (~8.5–9.4 GB of 14.9 GB available at batch=4 for the detection model); larger batch sizes were not tested for the primary runs. Batch=4 at imgsz=1280/1024 also OOM'd for the much larger YOLO11x-seg model even after Ultralytics' automatic batch-size reduction to 1 (Section 11.1).
+**4**, used consistently across all completed runs, at 1280px input. This was set based on observed VRAM usage, larger batch sizes were found to `OOM Error`. Batch=4 at imgsz=1280/1024 also OOM'd for the much larger YOLO11x-seg model even after Ultralytics' automatic batch-size reduction to.
 
 ### 5.3 Number of Epochs
 
 | Run | Epochs |
 | --- | --- |
-| Detection (YOLO11m), `cls=2.0` | Abandoned after confirming a precision/recall collapse pattern across the completed epochs (Section 6); not carried forward |
-| Detection (YOLO11m), `cls=0.5` + `cos_lr` | Interrupted by unplanned session terminations on more than one occasion during this milestone (exact sequence not fully reconstructed here); furthest confirmed progress was **25 completed epochs**, measured mAP@50 = 0.0248 at that point; not resumed to completion within this milestone |
+| Detection (YOLO11m), `cls=2.0` | Abandoned after confirming a precision/recall collapse pattern across the completed epochs, not carried forward |
+| Detection (YOLO11m), `cls=0.5` + `cos_lr` | Interrupted by unplanned session terminations on more than one occasion, furthest progress was **25 completed epochs**, measured mAP@50 = 0.0248 at that point, which was far below the target value and hence was not resumed to completion |
 | Segmentation (YOLOv8s-seg), baseline | 30 |
 | Segmentation (YOLOv8s-seg), continuation (augmentation) | 20 additional (50 total) |
 | Segmentation (YOLOv8s-seg), DFL boundary-precision experiment | 30 (completed) |
