@@ -233,8 +233,8 @@ Two model-scale experiments were also run as probes, not full training:
 - **Weight decay:** `0.0005`, consistent across all runs, both tracks.
 - **Data augmentation:** Ultralytics defaults throughout; additionally `copy_paste`, extended HSV jitter, and geometric jitter (`degrees`, `shear`, `scale`) in the segmentation continuation run (Section 2.3).
 - **Label smoothing:** Not used in any run.
-- **Class weighting:** A single global `cls` loss-gain scalar was used as a coarse imbalance-mitigation lever (varied across experiments, Section 6). Milestone 2's per-class inverse-frequency weight vector (designed in Section 8.2 of that milestone) was **not** implemented — Ultralytics' `cls_pw` parameter, which would carry true per-class weights, was left at its default (unused, confirmed `0.0` in every training log observed) in every run this milestone. This remains an open gap, not a completed piece of work.
-- **Cross-validation:** Not applicable — a single fixed stratified split (Milestone 2) was used throughout, consistent with the project's leakage-safety design.
+- **Class weighting:** A single global `cls` loss-gain scalar was used as a coarse imbalance-mitigation lever (varied across experiments). Ultralytics' `cls_pw` parameter, which would carry true per-class weights, was left at its default in every run this milestone.
+- **Cross-validation:** Not applicable - a single fixed stratified split was used throughout, consistent with the project's leakage-safety design.
 
 ---
 
