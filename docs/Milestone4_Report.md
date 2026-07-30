@@ -345,7 +345,7 @@ Substantial groundwork has been completed in preparation for **Milestone 5**. Th
 
 According to the original **CarDD** paper (Wang, Li, & Wu, *IEEE Transactions on Intelligent Transportation Systems*, 2023), per-class Average Precision (AP) values are reported only for the `dent`, `scratch`, and `crack` categories. A comparison with the best-performing checkpoints from this project is shown below.
 
-| Class | CarDD Baseline AP | CarDD DCN+ AP (SOTA) | This Project Baseline (30 ep) | This Project Continuation (50 ep) | This Project DFL Boundary (80 ep) |
+| Class | CarDD Baseline | CarDD DCN+ (SOTA) | This Project Baseline (30 epochs) | This Project Continuation (50 epochs) | This Project DFL Boundary (80 epochs) |
 | :--- | ---: | ---: | ---: | ---: | ---: |
 | `dent` | 32.0% | **40.5%** | 22.6% | 22.9% | **24.3%** |
 | `scratch` | 24.0% | **34.3%** | 20.2% | 20.3% | **20.9%** |
