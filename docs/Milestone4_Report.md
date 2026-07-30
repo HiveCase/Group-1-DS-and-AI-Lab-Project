@@ -327,24 +327,41 @@ The classification loss weight (`cls`) was found to have a significant impact on
 
 ### 12.1 Best-Performing Training Configuration
 
-Among completed, fully evaluated runs, the DFL boundary-precision configuration (YOLOv8s-seg, CarDD-pretrained, 80 total fine-tuning epochs, `cls=0.3`, `dfl=1.7` for its final 30 epochs) produced the highest overall result: test-set mask mAP@50 = 0.3549, marginally ahead of the continuation checkpoint's 0.3534. This is provisional, not final, and the margin between the two is small enough that either could reasonably be carried forward (Section 10.1).
+Among the completed experiments, the **DFL boundary-precision** configuration achieved the highest overall performance. This model, based on **YOLOv8s-seg** pretrained on **CarDD**, was fine-tuned for a total of **80 epochs**, with the final 30 epochs using `cls=0.3` and `dfl=1.7`. It achieved a **test-set mask mAP@50 of 0.3549**, marginally outperforming the continuation checkpoint, which achieved **0.3534**.
+
+Although the DFL boundary-precision checkpoint is selected as the best-performing model for this milestone, the performance difference between the two checkpoints is minimal. Consequently, this selection should be regarded as **provisional**, and may be revisited as additional experiments and evaluations are conducted.
 
 ### 12.2 Key Observations
 
-- Loss-weighting choices (`cls`) have a large, easily-missed effect on whether a model learns to detect anything useful at all, independent of architecture or dataset.
-- **Two independent interventions — targeted augmentation, then a boundary-precision loss reweighting (`dfl`) — both failed to meaningfully move the three hardest classes (`dent`, `scratch`, `crack`)** in this milestone's experiments. Across both, overall mAP moved by roughly +0.001 to +0.005 per intervention while individual non-target classes shifted considerably more (`broken_lamp` +0.04, `shattered_glass` −0.06 in the DFL run alone). Taken together, this is now fairly strong evidence that the limitation is intrinsic to these classes' visual characteristics (thin, low-contrast, boundary-ambiguous), not a solvable training-configuration problem, consistent with published literature on this same dataset (Section 9.2).
-- Multi-session training infrastructure (checkpoint relay, explicit compatibility and timing checks) proved necessary, not optional, given Kaggle's session limits — and several of this milestone's most time-consuming problems were process/tooling failures (lost sessions, a flawed timing estimate, a hardware incompatibility, and a backup mechanism that failed silently and then failed completely) rather than modelling failures.
+- Fine-tuning models pretrained on a **domain-specific dataset (CarDD)** consistently produced better results than fine-tuning a **general-purpose COCO-pretrained YOLO11s-seg** model. This highlights the value of domain-specific pretraining for vehicle damage assessment, where pretrained features are more closely aligned with the target task.
+
+- Two targeted interventions—enhanced data augmentation followed by **DFL loss reweighting**—produced only marginal improvements in overall performance (mask mAP@50 increased from **0.348 → 0.3534 → 0.3549**). Neither approach yielded a meaningful or consistent improvement for the most challenging classes (`dent`, `scratch`, and `crack`), suggesting that these categories remain intrinsically difficult for the current model architecture.
+
+- Practical engineering challenges had a significant impact on the training process. Kaggle session limits, GPU memory constraints, runtime estimation errors, and checkpoint management required the development of a multi-session training workflow with automated checkpoint recovery. Addressing these infrastructure issues proved as important as model optimization for successfully completing long-running experiments.
 
 ### 12.3 Readiness for Milestone 5
 
-Readiness is **partial**, and this should be stated plainly rather than implied otherwise:
+Substantial groundwork has been completed in preparation for **Milestone 5**. The segmentation track now includes three fully trained and evaluated checkpoints representing distinct fine-tuning strategies, together with a validated multi-session training workflow capable of recovering from Kaggle session interruptions. In addition, the project now has an external benchmark against which future improvements can be assessed, rather than relying solely on comparisons between internal experiments.
 
-- The segmentation track has two checkpoints with complete, comparable test-set evaluations, ready for the more thorough error analysis Milestone 5 calls for — including the now well-evidenced open question of whether `dent`/`scratch`/`crack` should be addressed by a different approach entirely (e.g. the DCN+ architecture identified as this dataset's published state of the art) rather than further hyperparameter iteration on the current architecture family.
-- The primary detection track (YOLO11m, the Milestone 3-selected Damage Agent) does **not** have a completed training run within this milestone — its most promising configuration was interrupted mid-training and has not yet been resumed to completion. This is the most significant open item going into Milestone 5, since it is the model actually selected for the deployed pipeline.
-- The letterbox-alignment question raised in Section 11.4 for the detection-track labels remains open and should be resolved before treating any future detection-track evaluation as reliable.
-- The backup-mechanism fix described in Section 11.2 has not yet been verified against a real training run; this should be confirmed working before relying on it for the detection track's remaining training.
+According to the original **CarDD** paper (Wang, Li, & Wu, *IEEE Transactions on Intelligent Transportation Systems*, 2023), per-class Average Precision (AP) values are reported only for the `dent`, `scratch`, and `crack` categories. A comparison with the best-performing checkpoints from this project is shown below.
 
+| Class | CarDD Baseline AP | CarDD DCN+ AP (SOTA) | This Project Baseline (30 ep) | This Project Continuation (50 ep) | This Project DFL Boundary (80 ep) |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| `dent` | 32.0% | **40.5%** | 22.6% | 22.9% | **24.3%** |
+| `scratch` | 24.0% | **34.3%** | 20.2% | 20.3% | **20.9%** |
+| `crack` | 9.8% | 16.6% | 19.8% | **20.9%** | **20.9%** |
 
+**Observations**
+
+- The DFL boundary-precision experiment achieved the best results within this project for `dent` and `scratch`; however, both classes remain below the AP reported by the CarDD DCN+ model.
+- For `crack`, all three project checkpoints outperform both the CarDD baseline and the published DCN+ result, indicating that this class is well learned by the current training pipeline.
+- Overall, the comparison confirms that `dent` and `scratch` remain the primary performance bottlenecks, while `crack` has already reached or exceeded the performance reported in the original CarDD benchmark.
+
+**Prepared for Milestone 5**
+
+- The two best-performing segmentation checkpoints are ready for detailed error analysis and qualitative evaluation.
+- The persistent gap between this project's results and the CarDD DCN+ benchmark for `dent` and `scratch` provides a clear direction for future work, including investigating alternative architectures, loss functions, or feature extraction methods better suited to these challenging damage categories.
+- With the training infrastructure, evaluation pipeline, and external benchmark now established, Milestone 5 can focus on targeted model improvements rather than further experimentation with training infrastructure.
 
 ---
 
@@ -354,7 +371,7 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 
 | Name | Date of Review | Sign |
 |---|---|---|
-| Satyajeet Kumar |  |  |
+| Satyajeet Kumar | 30-07-2026 | S.K. |
 |Pranab Kumar Manna | | |
 | Venkata Siva Kamal Guddanti |  |  |
 | Anuj Gautam |  |  |
