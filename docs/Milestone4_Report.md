@@ -267,17 +267,24 @@ Two segmentation checkpoints now have complete, held-out test-set evaluations an
 | Continuation (augmentation) | 50 (30 baseline + 20) | 0.3534 |
 | DFL boundary-precision | 80 (30 baseline + 20 augmentation + 30 DFL) | 0.3549 |
 
-The **DFL boundary-precision checkpoint** is selected as the current best available result, on the basis of the marginally higher overall score and its additional gains on `dent`, `scratch`, and `broken_lamp`. This selection is a close call, not a clear win: the continuation checkpoint remains preferable specifically on `shattered_glass` (0.6607 vs. 0.6021), so the choice between them should be revisited once Milestone 5's evaluation weights per-class performance more explicitly rather than relying on a single overall figure.
+The **DFL boundary-precision checkpoint** is selected as the current best available result, on the basis of the marginally higher overall score and its additional gains on `dent`, `scratch`, and `broken_lamp`. This selection is a close call, not a clear win: the continuation checkpoint remains preferable specifically on `shattered_glass` (0.6607 vs. 0.6021). Consequently, this selection should be regarded as provisional and may be revised following further experimentation and evaluation.
 
 ### 10.2 Why It Was Selected
 
-It is the most recent checkpoint in the segmentation track's fine-tuning chain, incorporates a genuinely different loss-weighting mechanism (`dfl`) than either of the two checkpoints before it, and has a complete test-set evaluation. The detection track's most promising run (`cls=0.5`, cosine schedule) was interrupted mid-training and has no comparably complete evaluation to select against.
+The **DFL boundary-precision checkpoint** was selected because it achieved the highest overall test-set mask mAP@50 among all completed experiments while maintaining competitive performance across most damage classes. It also incorporates an additional optimization stage through DFL loss reweighting, providing modest improvements on `dent`, `scratch`, and `broken_lamp` compared with the previous checkpoint.
+
+Although the performance gain over the continuation checkpoint is marginal—and the continuation checkpoint performs better on `shattered_glass` (0.6607 vs. 0.6021)—the DFL checkpoint represents the strongest overall result obtained in this milestone. Accordingly, it is selected as the current best checkpoint, with the understanding that this decision remains provisional and may be revised based on future experiments.
+
+The detection track's most promising configuration was not trained to completion due to poor results hence, it was not be considered for final checkpoint selection.
+
 
 ### 10.3 Validation Metric Used
 
-Overall **mask mAP@50** on the held-out test split was the primary comparison metric across all three segmentation runs (0.348 → 0.3534 → 0.3549). Per-class mask mAP@50 was used to assess whether each intervention (augmentation, then DFL reweighting) achieved its specific goal of improving `dent`/`scratch`/`crack` — **neither did, meaningfully**, across two independent attempts using two different mechanisms.
+Overall **mask mAP@50** on the held-out test split was used as the primary metric for comparing the completed segmentation experiments, improving incrementally from **0.348** to **0.3534** and finally **0.3549**. This metric served as the basis for selecting the best-performing checkpoint.
 
-**This selection should be treated as provisional, not final.** It reflects the most complete result available within this milestone's time and compute budget, not a claim that the underlying weak-class problem has been solved — the evidence gathered this milestone points toward that problem being a genuine limit of this modelling approach on these classes, not a remaining configuration to find.
+To evaluate the effectiveness of each training intervention, **per-class mask mAP@50** was also examined, with particular emphasis on the underperforming classes `dent`, `scratch`, and `crack`. Two targeted interventions - enhanced data augmentation followed by DFL loss reweighting were introduced to improve performance on these classes. While both interventions produced small gains in overall mAP@50, neither resulted in a meaningful or consistent improvement for the targeted classes.
+
+Consequently, the selected checkpoint should be regarded as the **best-performing model within the scope of the completed experiments**, rather than a definitive solution to the remaining performance limitations.
 
 ---
 
