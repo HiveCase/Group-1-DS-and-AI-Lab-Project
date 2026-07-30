@@ -242,17 +242,17 @@ Two model-scale experiments were also run as probes, not full training:
 
 ### 9.1 Evidence of Convergence
 
-- **Segmentation baseline (30 epochs):** `box_loss`, `seg_loss`, `cls_loss`, and `dfl_loss` declined monotonically across all 30 epochs with no reversals; mask mAP50 rose from 0.157 (epoch 1) to 0.36 (epoch 30, val split), the majority of the gain concentrated in the final third of training.
+- **Segmentation baseline (30 epochs):** `box_loss`, `seg_loss`, `cls_loss`, and `dfl_loss` declined monotonically across all 30 epochs with no reversals, mask mAP50 rose from 0.157 (epoch 1) to 0.36 (epoch 30, val split), the majority of the gain concentrated in the final third of training.
 - **Segmentation continuation (20 further epochs):** overall mask mAP50 held roughly flat in a narrow band (0.317–0.339) through most of the run, then rose sharply at the `close_mosaic` transition (epoch 16, mosaic disabled), reaching 0.36 by epoch 16 and continuing to a final value of 0.362 (val) by epoch 20.
-- **Detection (`cls=0.5` attempt):** losses declined across all 25 completed epochs with no reversals observed; mAP@50 rose from near-zero to 0.0248 by epoch 25 — real, sustained progress, but well short of the Milestone 1 target and the run was interrupted before reaching a stage comparable to the segmentation track.
+- **Detection (`cls=0.5` attempt):** losses declined across all 25 completed epochs with no reversals observed; mAP@50 rose from near-zero to 0.0248 by epoch 25, well short of the target, and with each epoch requiring ~30 minutes, the run was discontinued due to poor preliminary results.
 
 ### 9.2 Underfitting Observations
 
-The clearest and most consistent finding across this milestone: **`dent`, `scratch`, and `crack` underperform every other class, and this did not resolve with more epochs, augmentation, or a different `cls`/`dfl` weighting tried so far.** In the segmentation continuation run's final per-class test evaluation, `scratch` — the class with the *most* training instances of any class (2,174 in test alone) — still scored among the two worst-performing classes (mask mAP50 0.203), while `shattered_glass` — the class with the *fewest* instances — scored best (0.661). This rules out a simple data-volume explanation and points to intrinsic difficulty (thin, low-contrast, boundary-ambiguous shapes) as the dominant factor, consistent with the published CarDD paper's own finding that even its best benchmarked method underperforms on these same classes.
+The clearest and most consistent finding across this milestone: **`dent`, `scratch`, and `crack` underperform every other class, and this did not resolve with more epochs, augmentation, or a different `cls`/`dfl` weighting tried so far.** In the segmentation continuation run's final per-class test evaluation, `scratch` the class with the *most* training instances of any class (2,174 in test alone) still scored among the two worst-performing classes (mask mAP50 0.203), while `shattered_glass` the class with the *fewest* instances scored best (0.661). This rules out a simple data-volume explanation and points to intrinsic difficulty (thin, low-contrast, boundary-ambiguous shapes) as the dominant factor, consistent with the published CarDD paper's own finding that even its best benchmarked method underperforms on these same classes.
 
 ### 9.3 Overfitting Observations
 
-No clear evidence of overfitting was observed in any completed run — validation metrics tracked training-loss improvements in the same direction throughout, with no divergence between training and validation performance recorded in the logs reviewed for this milestone.
+No clear evidence of overfitting was observed in any completed run as the validation metrics tracked training-loss improvements in the same direction throughout, with no divergence between training and validation performance recorded in the logs reviewed for this milestone.
 
 ---
 
