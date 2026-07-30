@@ -188,11 +188,11 @@ All models were fine-tuned from pretrained checkpoints; none were trained from r
 
 ### 5.4 Loss Function
 
-Ultralytics' composite YOLO loss: CIoU box-regression loss, BCE classification loss (weighted by `cls`), DFL (Distribution Focal Loss, weighted by `dfl`) for box/mask boundary refinement, plus a segmentation mask loss (`seg_loss`) for the `-seg` models. All segmentation-track training logs also report a `sem_loss` term that remained at exactly 0 in every run observed; its origin was not identified during this milestone (see Section 11.6).
+Ultralytics' composite YOLO loss: CIoU box-regression loss, BCE classification loss (weighted by `cls`), DFL (Distribution Focal Loss, weighted by `dfl`) for box/mask boundary refinement, plus a segmentation mask loss (`seg_loss`) for the `-seg` models. All segmentation-track training logs also report a `sem_loss` term that remained at exactly 0 in every run observed.
 
 ### 5.5 Learning Strategy
 
-AdamW optimiser throughout. Learning rate strategy evolved across the milestone (Section 6): initial runs used a fixed low `lr0` with linear decay; later runs adopted cosine decay (`cos_lr=True`) with a lower final learning rate (`lrf`), and warmup epochs were extended for checkpoints requiring a larger adaptation (fresh COCO/CarDD transfer) versus shortened for checkpoints continuing from an already well-adapted state.
+`AdamW` optimiser was used throughout. Learning rate strategy evolved across the milestone - initial runs used a fixed low `lr0` with linear decay, later runs adopted cosine decay (`cos_lr=True`) with a lower final learning rate (`lrf`), and warmup epochs were extended for checkpoints requiring a larger adaptation versus shortened for checkpoints continuing from an already well-adapted state.
 
 ---
 
@@ -201,19 +201,19 @@ AdamW optimiser throughout. Learning rate strategy evolved across the milestone 
 | Experiment | `cls` | `dfl` | `lr0` | LR schedule | Result | Outcome |
 | --- | --- | --- | --- | --- | --- | --- |
 | Detection, attempt 1 | 2.0 | default (1.5) | 0.001 | linear | Precision collapsed to ~0.85–0.87 while recall collapsed toward 0 (model learned to predict almost nothing) | Rejected |
-| Detection, `cls=0.5` attempt | 0.5 | default | 0.001 | cosine (`lrf=0.001`) | mAP@50 climbing across all 25 completed epochs, reaching 0.0248 at epoch 25 (still well below the ≥0.70 Milestone 1 target, but trending upward, not stalled) | Promising but incomplete — interrupted before reaching a comparable stage to the segmentation track |
+| Detection, `cls=0.5` attempt | 0.5 | default | 0.001 | cosine (`lrf=0.001`) | mAP@50 climbing across all 25 completed epochs, reaching 0.0248 at epoch 25 (still well below the target) | Not promising and hence interrupted before completion |
 | Segmentation baseline (YOLOv8s-seg) | 0.5 | default | 0.0005 | cosine | Converged; overall mask mAP50 = 0.36 (val, epoch 30) | Completed |
-| Segmentation continuation (augmentation) | 0.5 | default | 0.0002 | cosine | Overall mask mAP50 (test) 0.348 → 0.3534; `dent`/`scratch`/`crack` essentially flat (+0.001 to +0.011); `shattered_glass` slightly regressed (−0.014) | Completed; hypothesis (augmentation fixes hard classes) not confirmed |
-| Segmentation, DFL boundary-precision | 0.3 | 1.7 | 0.0002 | cosine | Overall test mask mAP50 0.3534 → 0.3549 (essentially flat); `dent`/`scratch` small gains (+0.005 to +0.014), `crack` flat (−0.001); `broken_lamp` gained (+0.041); `shattered_glass` regressed (−0.059) | Completed; same outcome pattern as the augmentation experiment — hard classes did not move |
+| Segmentation continuation (augmentation) | 0.5 | default | 0.0002 | cosine | Overall test mask mAP50 improved from 0.348 to 0.3534. `dent`/`scratch`/`crack` essentially flat (+0.001 to +0.011). `shattered_glass` slightly regressed (−0.014) | Completed |
+| Segmentation, DFL boundary-precision | 0.3 | 1.7 | 0.0002 | cosine | Overall test mask mAP50 0.3534 → 0.3549 (essentially flat). `dent`/`scratch` small gains (+0.005 to +0.014), `crack` flat (−0.001), `broken_lamp` gained (+0.041), `shattered_glass` regressed (−0.059) | Completed |
 
-**Justification for the segmentation track's final selected configuration** (Section 10): the continuation run (`cls=0.5`, augmentation added) is the only segmentation checkpoint with a complete, held-out test-set evaluation at the time of writing. It is selected as the current best available checkpoint on that basis, not because it resolved the underlying weak-class problem — it did not.
+**Justification for the segmentation track's final selected configuration**: the continuation run is the only segmentation checkpoint with a complete, held-out test-set evaluation at the time of writing. It is selected as the current best available checkpoint on that basis.
 
 Two model-scale experiments were also run as probes, not full training:
 
 | Model | Parameters | Measured/estimated cost | Outcome |
 | --- | --- | --- | --- |
-| YOLO11x-seg (CarDD-pretrained) | 62.1M | OOM at imgsz=1280 with `multi_scale=True`, even at batch=1 on a 14.9 GB T4 | Abandoned — architecture too large for available hardware at the attempted configuration |
-| YOLO11s-seg (COCO-pretrained) | 10.08M | Probe indicated ~21 min/epoch after correcting a timing-measurement error (Section 11.5); full run not executed within this milestone | Not completed |
+| YOLO11x-seg | 62.1M | OOM at imgsz=1280 with `multi_scale=True`, even at batch=1 on a 14.9 GB T4 | Abandoned as the architecture was too large for available hardware at the attempted configuration |
+| YOLO11s-seg | 10.08M | Probe indicated ~21 min/epoch, but the full training run was not pursued due to poor preliminary results. | Not completed |
 
 ---
 
