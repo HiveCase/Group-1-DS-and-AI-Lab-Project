@@ -374,7 +374,7 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 | Satyajeet Kumar | 30-07-2026 | S.K. |
 |Pranab Kumar Manna | | |
 | Venkata Siva Kamal Guddanti |  |  |
-| Anuj Gautam |  |  |
+| Anuj Gautam | 30-07-2026 | Anuj |
 | Harsh Pal | 31-07-2026| harshpal |  | |
 
 ---
