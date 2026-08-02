@@ -1,36 +1,51 @@
 """
 Stage 2 of the Report Agent pipeline + the context bundle assembler.
 
-Stage 2 (ClauseRetriever): once policy_selector.PolicySelector has picked a
-single doc_id for a claim, retrieve the clauses that actually go in front of
-the LLM -- separately for coverage vs. exclusion/condition/sub_limit, per
-detected damage class, scoped to that one document. This is a deliberate
-two-query-per-class design (a coverage-phrased query and an exclusion-phrased
-query, each filtered to its intended clause_type after retrieval) rather than
-one mixed top-k query: a single "is X covered?" query tends to rank the
-coverage clause highest and miss the exclusion that actually caps or voids
-it (this is exactly the failure mode Milestone 2 documented for retrieval in
-general -- a report that only ever sees the coverage clause will confidently
-approve claims it shouldn't).
+Stage 2 (ClauseRetriever): once the claimant's uploaded policy has been
+ingested into its own scoped index (scripts/ingest_user_policy.py), retrieve
+the clauses that actually go in front of the LLM -- separately for coverage
+vs. exclusion/condition/sub_limit, per detected damage class. This is a
+deliberate two-query-per-class design (a coverage-phrased query and an
+exclusion-phrased query, each filtered to its intended clause_type after
+retrieval) rather than one mixed top-k query: a single "is X covered?" query
+tends to rank the coverage clause highest and miss the exclusion that
+actually caps or voids it (this is exactly the failure mode Milestone 2
+documented for retrieval in general -- a report that only ever sees the
+coverage clause will confidently approve claims it shouldn't).
 
 ContextBundleBuilder assembles the final JSON payload that goes to the LLM:
-incident narrative, YOLO detections + severity, the claimant-SELECTED policy
-(with its catalog description, so the report can state which cover it is
-reasoning over), and per-damage-class coverage/exclusion clauses. The policy
-is an explicit input, NOT inferred from the damage -- reading all 5 policies
-confirmed the damage profile cannot identify the policy (all 5 cover all 6
-damage classes; see docs/rag_support_mile3.md Section 5 and the rejected
-auto-selection alternative in policy_selector.py). See that doc for the full
-schema discussion and rationale.
+incident narrative, YOLO detections + severity, the user's own uploaded
+policy, and per-damage-class coverage/exclusion clauses. There is no
+policy-selection step and no cross-user catalog: each user has exactly one
+ingested policy (scripts/hybrid_retrieval.py's HybridRetriever.for_user), so
+"which policy applies" is answered by whose account this is, not by a
+retrieval or matching step. This replaces the earlier fixed 5-policy-catalog
+design, where the applicable policy had to be an explicit claimant-selected
+input precisely because damage profile alone couldn't identify it (all 5
+covered all 6 damage classes) -- with per-user upload that ambiguity doesn't
+arise, since there is only ever one candidate policy per user.
 """
 from pathlib import Path
 
 from hybrid_retrieval import HybridRetriever
-from policy_selector import CLASS_QUERIES
-from policy_catalog import PolicyCatalog
 from yolo_schema import Detection, ESCALATION_CONFIDENCE_THRESHOLD
 
 ROOT = Path(__file__).resolve().parent.parent
+
+# Reused verbatim from scripts/preprocess_policy_pdfs.py run_smoke_test --
+# already validated there to reach a topically-correct top-1 for all 6
+# classes. Previously lived in the now-removed policy_selector.py (it was
+# also reused there for the fixed-catalog auto-match heuristic); that use
+# is gone, but the queries themselves are just "how do you ask about
+# coverage for this damage class" and still belong here.
+CLASS_QUERIES = {
+    "dent": "Is dent damage covered under accidental external means?",
+    "scratch": "Does the policy cover scratches and surface paint damage?",
+    "crack": "Is cracking of bumper or body panels covered?",
+    "broken_lamp": "Are broken headlamps and tail lights covered?",
+    "shattered_glass": "Is windscreen and window glass damage covered?",
+    "flat_tyre": "Is a flat tyre or tyre blowout covered under the policy?",
+}
 
 EXCLUSION_QUERIES = {
     "dent": "What exclusions, conditions, or limits apply to a dent claim?",
@@ -60,15 +75,19 @@ def _hit_dict(chunk_id: str, score: float, meta: dict) -> dict:
 
 
 class ClauseRetriever:
-    def __init__(self, retriever: HybridRetriever = None):
-        self.retriever = retriever or HybridRetriever()
+    """retriever must already be scoped to a single user's policy (see
+    HybridRetriever.for_user) -- there is no doc_filter here because the
+    collection it queries contains that one document and nothing else."""
 
-    def get_clauses(self, damage_class: str, doc_id: str) -> dict:
+    def __init__(self, retriever: HybridRetriever):
+        self.retriever = retriever
+
+    def get_clauses(self, damage_class: str) -> dict:
         coverage_pool = self.retriever.retrieve_scored(
-            CLASS_QUERIES[damage_class], top_k=RETRIEVAL_POOL, doc_filter=doc_id
+            CLASS_QUERIES[damage_class], top_k=RETRIEVAL_POOL
         )
         exclusion_pool = self.retriever.retrieve_scored(
-            EXCLUSION_QUERIES[damage_class], top_k=RETRIEVAL_POOL, doc_filter=doc_id
+            EXCLUSION_QUERIES[damage_class], top_k=RETRIEVAL_POOL
         )
 
         coverage_hits, exclusion_hits = [], []
@@ -107,24 +126,28 @@ class ClauseRetriever:
 
 
 class ContextBundleBuilder:
-    def __init__(self, retriever: HybridRetriever = None):
-        self.retriever = retriever or HybridRetriever()
+    """Bound to one user's own ingested policy. user_id must already have
+    been ingested via scripts/ingest_user_policy.py -- this raises if no
+    such collection exists, since there is nothing else to fall back to
+    (no shared catalog to guess from)."""
+
+    def __init__(self, user_id: str, retriever: HybridRetriever = None):
+        self.user_id = user_id
+        self.doc_id = f"user_{user_id}"
+        self.retriever = retriever or HybridRetriever.for_user(user_id)
         self.clause_retriever = ClauseRetriever(self.retriever)
 
-    def build(self, claim_id: str, incident_narrative: str, detections: list,
-              selected_doc_id: str) -> dict:
-        """Assemble the LLM payload for one claim. selected_doc_id is the
-        policy the CLAIMANT chose (Stage 1 = explicit selection via
-        PolicyCatalog, not inference) -- retrieval below is scoped to it."""
-        if not PolicyCatalog.is_valid(selected_doc_id):
-            raise ValueError(f"selected_doc_id '{selected_doc_id}' is not a known policy")
-
+    def build(self, claim_id: str, incident_narrative: str, detections: list) -> dict:
+        """Assemble the LLM payload for one claim, scoped entirely to this
+        user's own policy -- there is no doc_id argument to pass, because
+        the only candidate document is the one this builder was constructed
+        for."""
         damage_classes = sorted({d.class_name for d in detections})
 
         clauses_by_class = {}
         missing_coverage = []
         for cls in damage_classes:
-            clauses_by_class[cls] = self.clause_retriever.get_clauses(cls, selected_doc_id)
+            clauses_by_class[cls] = self.clause_retriever.get_clauses(cls)
             if not clauses_by_class[cls]["coverage_clause_found"]:
                 missing_coverage.append(cls)
 
@@ -132,17 +155,14 @@ class ContextBundleBuilder:
             d.class_name for d in detections if d.confidence < ESCALATION_CONFIDENCE_THRESHOLD
         ]
 
-        catalog = PolicyCatalog.describe(selected_doc_id)
         return {
             "claim_id": claim_id,
             "incident_narrative": incident_narrative,
             "detections": [d.to_dict() for d in detections],
             "policy": {
-                "doc_id": selected_doc_id,
-                "selection_method": "claimant_selected",
-                "insurer": catalog["insurer"],
-                "product": catalog["product"],
-                "description": catalog["summary"],
+                "doc_id": self.doc_id,
+                "user_id": self.user_id,
+                "selection_method": "user_uploaded",
                 "clauses": clauses_by_class,
             },
             "escalation": {

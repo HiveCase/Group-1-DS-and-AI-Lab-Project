@@ -20,6 +20,14 @@ data/raw/*
 data/processed/*
 models/checkpoints/*
 outputs/*
+
+# Per-user runtime state. Never commit these: policies/ holds the documents
+# people upload (their own contracts) plus the vector index built from them,
+# and claims/ holds claim records and the LangGraph checkpoint DB. In a real
+# deployment both are customer PII; here they are regenerable test state, and
+# the binary DBs would produce unreadable diffs either way.
+data/claim_pipeline/
+data/user_policies/
 .gitkeep
 # Keep folder placeholders
 

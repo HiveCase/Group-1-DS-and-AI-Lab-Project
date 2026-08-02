@@ -11,7 +11,7 @@ langchain==1.2.7
 langchain-text-splitters==1.0.0
 tqdm==4.67.1
 
-# RAG retrieval (scripts/hybrid_retrieval.py, scripts/policy_selector.py, scripts/report_context.py)
+# RAG retrieval (scripts/hybrid_retrieval.py, scripts/ingest_user_policy.py, scripts/report_context.py)
 sentence-transformers==5.0.0
 chromadb==1.0.12
 scikit-learn==1.7.1
@@ -19,3 +19,16 @@ scikit-learn==1.7.1
 # Report Agent (scripts/report_agent.py) -- Groq Cloud via the OpenAI-compatible SDK
 openai==2.31.0
 python-dotenv==1.2.1
+
+# Claim pipeline (src/) -- LangGraph orchestration with checkpointed state
+langgraph==0.6.6
+# Pin: langgraph 0.6.6 requires langgraph-checkpoint<3.0.0. The current
+# langgraph-checkpoint-sqlite (3.x) pulls checkpoint 4.x and breaks that
+# constraint, so this stays on the 2.x line until langgraph itself moves.
+langgraph-checkpoint-sqlite==2.0.11
+
+# YOLO inference (src/inference/yolo_detector.py)
+ultralytics==8.4.115
+
+# Tests
+pytest==9.1.1

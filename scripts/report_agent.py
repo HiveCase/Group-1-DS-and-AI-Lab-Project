@@ -37,8 +37,8 @@ MODELS = ["llama-3.3-70b-versatile", "openai/gpt-oss-20b"]
 SYSTEM_PROMPT = """You are a preliminary motor-insurance claims assessment assistant.
 
 You receive a JSON claim payload with: an incident narrative, YOLO-detected \
-vehicle damage (class, severity, confidence), an auto-selected policy \
-document, and, per damage class, retrieved policy clauses split into \
+vehicle damage (class, severity, confidence), the claimant's own uploaded \
+policy document, and, per damage class, retrieved policy clauses split into \
 "coverage" and "exclusion_or_condition".
 
 Rules you must follow exactly:

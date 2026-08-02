@@ -38,6 +38,18 @@ too much sparse weight regresses MRR and introduces a zero-hit incident).
 
 Run as a script to reproduce the evaluation:
     python scripts/hybrid_retrieval.py --evaluate
+
+Per-user policies (architecture change from the fixed 5-policy catalog):
+each user uploads their own policy PDF (scripts/ingest_user_policy.py),
+which is embedded into a ChromaDB collection scoped to that user alone --
+one document per collection, not one shared multi-policy index filtered
+per query. HybridRetriever.for_user(user_id) constructs a retriever bound
+to that collection, so retrieval can never see another user's clauses; the
+default constructor (used by --evaluate and --query below) still points at
+the original shared 5-policy corpus, which is kept as the retrieval-quality
+regression bed described above -- it was never a simulation of the
+production per-user flow, just the test corpus that flow's algorithm was
+tuned against.
 """
 import argparse
 import csv
@@ -55,6 +67,9 @@ CHUNKS_TSV = ROOT / "data" / "rag_outputs" / "chunks_all.tsv"
 INCIDENTS_PATH = ROOT / "data" / "rag_outputs" / "eval" / "incident_descriptions.json"
 DB_PATH = ROOT / "data" / "chroma_db"
 
+USER_DB_PATH = ROOT / "data" / "user_policies" / "chroma_db"
+USER_CHUNKS_DIR = ROOT / "data" / "user_policies" / "chunks"
+
 DENSE_WEIGHT = 3.0
 SPARSE_WEIGHT = 1.0
 RRF_K = 60
@@ -62,7 +77,7 @@ CANDIDATE_POOL = 20
 
 
 class HybridRetriever:
-    def __init__(self, db_path=DB_PATH, collection="policy_clauses",
+    def __init__(self, chunks_tsv=CHUNKS_TSV, db_path=DB_PATH, collection="policy_clauses",
                  embedding_model="all-MiniLM-L6-v2"):
         self.model = SentenceTransformer(embedding_model)
         self.client = chromadb.PersistentClient(path=str(db_path))
@@ -70,7 +85,7 @@ class HybridRetriever:
 
         chunk_ids, chunk_texts = [], []
         self.chunk_meta = {}  # chunk_id -> {doc_id, heading, clause_type, damage_classes, text}
-        with open(CHUNKS_TSV, newline="", encoding="utf-8") as f:
+        with open(chunks_tsv, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f, delimiter="\t"):
                 chunk_ids.append(row["chunk_id"])
                 chunk_texts.append(row["text"])
@@ -85,27 +100,30 @@ class HybridRetriever:
         self.vectorizer = TfidfVectorizer(stop_words="english")
         self.tfidf_matrix = self.vectorizer.fit_transform(chunk_texts)
 
-    def _fused_ranking(self, query: str, dense_weight: float, sparse_weight: float,
-                        pool: int, doc_filter: str = None) -> list:
-        """Return [(chunk_id, fused_score), ...] sorted descending, fusing
-        dense (ChromaDB) and sparse (TF-IDF) rankings via weighted RRF.
-        When doc_filter is set, both rankings are restricted to chunks whose
-        doc_id matches it -- dense via a ChromaDB `where` filter, sparse by
-        masking out non-matching rows before taking the top pool."""
-        where = {"doc_id": doc_filter} if doc_filter else None
+    @classmethod
+    def for_user(cls, user_id: str, embedding_model: str = "all-MiniLM-L6-v2") -> "HybridRetriever":
+        """Bind to a single user's own ingested-policy collection (see
+        scripts/ingest_user_policy.py). The TF-IDF vocabulary is fit only
+        on that user's own chunks, so it never mixes vocabulary across
+        users either -- both the dense and sparse signals are scoped."""
+        return cls(
+            chunks_tsv=USER_CHUNKS_DIR / f"{user_id}.tsv",
+            db_path=USER_DB_PATH,
+            collection=f"user_{user_id}",
+            embedding_model=embedding_model,
+        )
 
+    def _fused_ranking(self, query: str, dense_weight: float, sparse_weight: float,
+                        pool: int) -> list:
+        """Return [(chunk_id, fused_score), ...] sorted descending, fusing
+        dense (ChromaDB) and sparse (TF-IDF) rankings via weighted RRF."""
         q_emb = self.model.encode(query).tolist()
         dense_ids = self.collection.query(
-            query_embeddings=[q_emb], n_results=pool, include=[], where=where
+            query_embeddings=[q_emb], n_results=pool, include=[]
         )["ids"][0]
 
         q_vec = self.vectorizer.transform([query])
         sims = cosine_similarity(q_vec, self.tfidf_matrix)[0]
-        if doc_filter:
-            sims = sims.copy()
-            for i, cid in enumerate(self.chunk_ids):
-                if self.chunk_meta[cid]["doc_id"] != doc_filter:
-                    sims[i] = -1.0
         sparse_ids = [self.chunk_ids[i] for i in sims.argsort()[::-1][:pool]]
 
         scores = {}
@@ -119,22 +137,20 @@ class HybridRetriever:
     def retrieve(self, query: str, top_k: int = 3,
                  dense_weight: float = DENSE_WEIGHT,
                  sparse_weight: float = SPARSE_WEIGHT,
-                 pool: int = CANDIDATE_POOL, doc_filter: str = None) -> list:
+                 pool: int = CANDIDATE_POOL) -> list:
         """Return the top_k chunk_ids for query, fused across dense and
-        sparse rankings via weighted Reciprocal Rank Fusion. If doc_filter is
-        given (a doc_id from chunks_all.tsv), restrict retrieval to that
-        single policy document."""
-        fused = self._fused_ranking(query, dense_weight, sparse_weight, pool, doc_filter)
+        sparse rankings via weighted Reciprocal Rank Fusion."""
+        fused = self._fused_ranking(query, dense_weight, sparse_weight, pool)
         return [cid for cid, _ in fused[:top_k]]
 
     def retrieve_scored(self, query: str, top_k: int = 3,
                          dense_weight: float = DENSE_WEIGHT,
                          sparse_weight: float = SPARSE_WEIGHT,
-                         pool: int = CANDIDATE_POOL, doc_filter: str = None) -> list:
+                         pool: int = CANDIDATE_POOL) -> list:
         """Same as retrieve(), but returns [(chunk_id, fused_score), ...] --
-        used by callers that need the score itself (policy selection) or the
-        chunk metadata to post-filter by clause_type (scoped clause retrieval)."""
-        fused = self._fused_ranking(query, dense_weight, sparse_weight, pool, doc_filter)
+        used by callers that need the score itself or the chunk metadata to
+        post-filter by clause_type (scoped clause retrieval)."""
+        fused = self._fused_ranking(query, dense_weight, sparse_weight, pool)
         return fused[:top_k]
 
 

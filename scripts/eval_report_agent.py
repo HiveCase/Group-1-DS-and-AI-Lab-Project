@@ -19,32 +19,46 @@ Checks per report:
     model's own prose that isn't present verbatim in any clause text shown
     to it -- the system prompt explicitly forbids stating claim amounts.
   - multi_class_chunk_citations: cites a chunk tagged with more than one
-    damage_classes value in clause_groundtruth.json. This does not by itself
+    damage_classes value in that claim's own user's chunk TSV
+    (data/user_policies/chunks/{user_id}.tsv). This does not by itself
     mean the model got anything wrong -- it's a proxy for "this chunk is
     likely a merged/garbled PDF table row spanning multiple coverage
     topics" (see docs/rag_support_mile3.md for the confirmed case: chunk
     chunk_00122 in policy_4_autoguard_premium glues a glass-depreciation
     table cell onto the following tyre row's condition). Flagged for manual
     review, not treated as a hard failure.
+
+    Chunk IDs are only unique within a single user's own ingested policy
+    (each per-user collection restarts numbering at chunk_00000 -- see
+    scripts/ingest_user_policy.py), so this lookup is resolved per-claim
+    against that claim's own user's TSV, not a single shared corpus file.
 """
 import csv
 import json
 import re
 from pathlib import Path
 
+from hybrid_retrieval import USER_CHUNKS_DIR
+
 ROOT = Path(__file__).resolve().parent.parent
 PAYLOADS_PATH = ROOT / "data" / "rag_outputs" / "mile3" / "payloads_all.json"
 REPORTS_DIR = ROOT / "data" / "rag_outputs" / "mile3" / "reports"
-CHUNKS_TSV = ROOT / "data" / "rag_outputs" / "chunks_all.tsv"
 OUT_PATH = ROOT / "data" / "rag_outputs" / "mile3" / "faithfulness_eval.json"
 
 VALID_VERDICTS = {"covered", "excluded", "conditional", "needs_review"}
 CURRENCY_RE = re.compile(r"(₹|Rs\.?\s?\d|INR\s?\d)", re.IGNORECASE)
 
 
-def load_chunk_damage_classes() -> dict:
+def load_chunk_damage_classes(user_id: str) -> dict:
+    """Load the chunk_id -> damage_classes map for one user's own ingested
+    policy. Empty dict (rather than an error) if that user hasn't been
+    ingested -- multi_class_chunk_citations degrades to always-empty for
+    that claim instead of failing the whole eval run."""
+    tsv_path = USER_CHUNKS_DIR / f"{user_id}.tsv"
+    if not tsv_path.exists():
+        return {}
     out = {}
-    with open(CHUNKS_TSV, newline="", encoding="utf-8") as f:
+    with open(tsv_path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f, delimiter="\t"):
             classes = [c for c in row["damage_classes"].split(",") if c]
             out[row["chunk_id"]] = classes
@@ -145,7 +159,7 @@ def check_report(payload: dict, parsed: dict, chunk_classes: dict) -> dict:
     }
 
 
-def evaluate_model(model_file: Path, payloads_by_id: dict, chunk_classes: dict) -> dict:
+def evaluate_model(model_file: Path, payloads_by_id: dict, chunk_classes_cache: dict) -> dict:
     with open(model_file) as f:
         reports = json.load(f)
 
@@ -155,7 +169,10 @@ def evaluate_model(model_file: Path, payloads_by_id: dict, chunk_classes: dict) 
         if not r["ok"]:
             per_claim[r["claim_id"]] = {"schema_valid": False, "issues": [f"API/parse error: {r.get('error')}"]}
             continue
-        per_claim[r["claim_id"]] = check_report(payload, r["parsed"], chunk_classes)
+        user_id = payload["policy"]["user_id"]
+        if user_id not in chunk_classes_cache:
+            chunk_classes_cache[user_id] = load_chunk_damage_classes(user_id)
+        per_claim[r["claim_id"]] = check_report(payload, r["parsed"], chunk_classes_cache[user_id])
 
     n = len(per_claim)
     schema_valid_rate = sum(1 for c in per_claim.values() if c.get("schema_valid")) / n
@@ -199,14 +216,14 @@ def main():
     with open(PAYLOADS_PATH) as f:
         payloads = json.load(f)
     payloads_by_id = {p["claim_id"]: p for p in payloads}
-    chunk_classes = load_chunk_damage_classes()
+    chunk_classes_cache = {}  # user_id -> {chunk_id: damage_classes}, populated lazily
 
     results = {}
     for model_file in sorted(REPORTS_DIR.glob("reports_*.json")):
         if model_file.name == "reports_all.json":
             continue
         model_name = model_file.stem.replace("reports_", "").replace("_", "/", 1) if "openai" in model_file.stem else model_file.stem.replace("reports_", "")
-        results[model_name] = evaluate_model(model_file, payloads_by_id, chunk_classes)
+        results[model_name] = evaluate_model(model_file, payloads_by_id, chunk_classes_cache)
 
     print(f"{'model':28s} {'schema':>7s} {'cov_cmpl':>9s} {'cite_valid':>11s} {'verdict_ok':>11s} {'escal_ok':>9s} {'$viol':>6s} {'multi_cls':>10s} {'neg_cov':>8s} {'composite':>10s}")
     for name, r in results.items():
