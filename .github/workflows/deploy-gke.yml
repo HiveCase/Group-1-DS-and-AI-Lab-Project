@@ -31,6 +31,7 @@ jobs:
         run: pip install -r backend/requirements.txt
 
       - name: Run backend tests
+        working-directory: backend
         env:
           DATABASE_URL: sqlite:///./backend/data/ci_claims.db
           UPLOAD_DIR: backend/uploads-ci
