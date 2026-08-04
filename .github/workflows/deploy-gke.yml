@@ -31,11 +31,14 @@ jobs:
         run: pip install -r backend/requirements.txt
 
       - name: Run backend tests
-        working-directory: backend
+        run: |
+          cd backend
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          python -c "import sys; print(sys.path)"   # debug (optional)
+          pytest
         env:
-          DATABASE_URL: sqlite:///./backend/data/ci_claims.db
-          UPLOAD_DIR: backend/uploads-ci
-        run: pytest
+          DATABASE_URL: sqlite:///./data/ci_claims.db
+          UPLOAD_DIR: uploads-ci
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
