@@ -17,6 +17,7 @@ A local-first MVP portal for car damage insurance claims with four role-based in
 
 **Supervisor/HITL Page**
 ![Supervisor](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/backend/static/images/HITLPage.png)  
+
 ---
 
 ## Architecture
