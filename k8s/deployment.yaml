@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: claims-portal
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claims-portal-data
+  namespace: claims-portal
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claims-portal
+  namespace: claims-portal
+  labels:
+    app: claims-portal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: claims-portal
+  template:
+    metadata:
+      labels:
+        app: claims-portal
+    spec:
+      containers:
+        - name: claims-portal
+          image: claims-portal:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: sqlite:////data/claims.db
+            - name: UPLOAD_DIR
+              value: /data/uploads
+            - name: MODEL_DIR
+              value: /app/backend/models
+            - name: DATA_DIR
+              value: /app/backend/data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: app-data
+              mountPath: /data
+      volumes:
+        - name: app-data
+          persistentVolumeClaim:
+            claimName: claims-portal-data

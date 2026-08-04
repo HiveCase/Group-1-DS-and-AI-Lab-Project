@@ -1,8 +1,11 @@
 import logging
 import time
+from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.db.database import SessionLocal, init_db
@@ -26,6 +29,14 @@ app.add_middleware(
 app.include_router(claims_router)
 app.include_router(policies_router)
 app.include_router(analytics_router)
+
+
+def frontend_dist_dir() -> Path | None:
+    candidates = [
+        Path(__file__).resolve().parents[1] / "frontend" / "dist",
+        Path(__file__).resolve().parents[2] / "frontend" / "dist",
+    ]
+    return next((path for path in candidates if (path / "index.html").exists()), None)
 
 
 @app.middleware("http")
@@ -65,3 +76,15 @@ def startup():
 @app.get('/health')
 def health():
     return {'status': 'ok'}
+
+
+frontend_dist = frontend_dist_dir()
+if frontend_dist:
+    app.mount("/assets", StaticFiles(directory=frontend_dist / "assets"), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def serve_spa(full_path: str):
+        requested_file = frontend_dist / full_path
+        if full_path and requested_file.is_file():
+            return FileResponse(requested_file)
+        return FileResponse(frontend_dist / "index.html")

@@ -258,6 +258,10 @@ npm test
 
 ## Deployment
 
+### GKE CI/CD
+
+This repo includes a Dockerfile, Kubernetes manifests, and a GitHub Actions workflow for deployment to Google Kubernetes Engine through Artifact Registry. See [`docs/gke-cicd.md`](docs/gke-cicd.md) for required Google Cloud resources, GitHub secrets, and manual deployment commands.
+
 ### Build frontend for production
 
 ```powershell

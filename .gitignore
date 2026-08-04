@@ -28,6 +28,9 @@ data/raw/*
 data/processed/*
 models/checkpoints/*
 outputs/*
+backend/data/ci_claims.db
+backend/uploads-ci/
+.local-data/
 
 # Per-user runtime state. Never commit these: policies/ holds the documents
 # people upload (their own contracts) plus the vector index built from them,
