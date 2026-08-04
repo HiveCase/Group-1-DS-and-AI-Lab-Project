@@ -5,7 +5,8 @@ A local-first MVP portal for car damage insurance claims with four role-based in
 - **Adjuster**: review claims, inspect AI-derived damage analysis, and decide claims
 - **SIU**: investigate suspicious or high-risk claims using fraud scoring and claim evidence
 - **Supervisor**: monitor portfolio analytics, risk exposure, and AI performance
- **Home Page**
+  
+**Home Page**
 ![Home Page](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/backend/static/images/HomePage.png)
 
 **Claim Page**
