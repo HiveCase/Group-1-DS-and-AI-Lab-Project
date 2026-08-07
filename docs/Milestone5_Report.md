@@ -276,11 +276,6 @@ Background (no-damage) images are part of the standard train/val/test splits (~7
 
 Within the track evaluated in this report, correcting a hyperparameter-search configuration issue (`optimizer="auto"` silently overriding the intended learning rate) and applying the corrected result produced a model that improved on every reported validation metric versus the untuned baseline, by a larger margin than 20 additional epochs of unmodified training achieved. The model performs strongly on visually distinct damage (shattered glass, broken lamps) and weakest on subtle, high-frequency real-world damage (dents, scratches, cracks) - a pattern that independently reproduces Milestone 4's finding on the separate CarDD-pretrained track, strengthening confidence that this is a genuine property of the damage types rather than an artifact of either track's setup.
 
-**Before this report can be considered final:**
-1. Run the pending test-split evaluation, confusion matrix, ablation study, and robustness check (all prepared, not yet executed).
-2. Decide, as a group, whether Milestone 5's submission should also incorporate error analysis on Milestone 4's CarDD-pretrained checkpoints as originally planned, or formally adopt this track going forward.
-3. Update Sections 8-10 with concrete visual failure-case examples and confusion-matrix values once available.
-
 ---
 
 ***Declaration:***
@@ -289,7 +284,7 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 
 | Name | Date of Review | Sign |
 |---|---|---|
-| Satyajeet Kumar | | |
+| Satyajeet Kumar | 7th Aug'26 | S.K. |
 | Pranab Kumar Manna |07-08-2026 | PK Manna |
 | Venkata Siva Kamal Guddanti | | |
 | Anuj Gautam | 07-08-2026 | Anuj |
