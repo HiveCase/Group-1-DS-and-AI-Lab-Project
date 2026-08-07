@@ -15,17 +15,17 @@ class DamageDetectionService:
 
     def _resolve_default_model_path(self) -> Path:
         candidates = [
-            Path("backend/model"),
-            Path("backend/model/model.pt"),
-            Path("backend/model/model.onnx"),
-            Path("backend/models"),
-            Path("backend/models/model.joblib"),
-            Path("backend/models/model.pt"),
+            Path("model"),
+            Path("model/model.pt"),
+            Path("model/model.onnx"),
+            Path("models"),
+            Path("models/model.joblib"),
+            Path("models/model.pt"),
         ]
         for candidate in candidates:
             if candidate.exists():
                 return candidate
-        return Path("backend/model")
+        return Path("model")
 
     def _load_model(self) -> Any | None:
         if self._model is not None:

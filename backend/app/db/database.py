@@ -32,7 +32,7 @@ def get_db():
 
 
 def init_db():
-    from app.db import models  # noqa: F401
+    from app.db.models import Policy, Claim, ClaimPhoto, AnalysisResult, DecisionRecord, InvestigationCase, PolicyClause  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
     sync_sqlite_schema()

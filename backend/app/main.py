@@ -8,9 +8,11 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
@@ -19,10 +21,15 @@ from app.routes.analytics import router as analytics_router
 from app.routes.claims import router as claims_router
 from app.routes.policies import router as policies_router
 from app.services.policy_service import PolicyService
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
 
-app = FastAPI(title='Claims Portal API')
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    initialize_app_data()
+    yield
+
+
+app = FastAPI(title='Claims Portal API', lifespan=lifespan)
 logger = logging.getLogger("claims_portal")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 
@@ -74,13 +81,8 @@ def initialize_app_data():
         db.close()
 
 
+initialize_app_data()
 
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    initialize_app_data()
-    yield
 
 @app.get('/health')
 def health():
