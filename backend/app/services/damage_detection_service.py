@@ -14,18 +14,17 @@ class DamageDetectionService:
         self._model: Any | None = None
 
     def _resolve_default_model_path(self) -> Path:
+        settings = get_settings()
         candidates = [
-            Path("model"),
-            Path("model/model.pt"),
-            Path("model/model.onnx"),
-            Path("models"),
-            Path("models/model.joblib"),
-            Path("models/model.pt"),
+            settings.model_dir,
+            settings.model_dir / "model.pt",
+            settings.model_dir / "model.onnx",
+            settings.model_dir / "model.joblib"
         ]
         for candidate in candidates:
             if candidate.exists():
                 return candidate
-        return Path("model")
+        return settings.model_dir / "model.pt"
 
     def _load_model(self) -> Any | None:
         if self._model is not None:
@@ -70,15 +69,36 @@ class DamageDetectionService:
                 if not raw_items:
                     detection_keys = {"class_name", "bbox", "mask_polygon", "confidence"}
                     if detection_keys.intersection(result.keys()):
-                        detections.append(self._normalize_detection(result))
+                        normalized = self._normalize_detection(result)
+                        if self._is_valid_detection(normalized):
+                            detections.append(normalized)
                     continue
                 for item in raw_items:
-                    detections.append(self._normalize_detection(item))
+                    normalized = self._normalize_detection(item)
+                    if self._is_valid_detection(normalized):
+                        detections.append(normalized)
                 continue
 
             boxes = getattr(result, "boxes", None)
             if boxes is None:
                 continue
+
+            box_data = getattr(boxes, "data", None)
+            if box_data is not None:
+                for row in box_data:
+                    if len(row) < 6:
+                        continue
+                    x1, y1, x2, y2, conf, cls_id = row.tolist()
+                    detection = {
+                        "class_name": self._class_label(int(cls_id)),
+                        "bbox": [round(float(x1), 2), round(float(y1), 2), round(float(x2), 2), round(float(y2), 2)],
+                        "mask_polygon": None,
+                        "confidence": round(float(conf), 4),
+                    }
+                    if self._is_valid_detection(detection):
+                        detections.append(detection)
+                continue
+
             for index, box in enumerate(boxes):
                 cls = int(box.cls[index]) if hasattr(box, "cls") and len(box.cls) > index else 0
                 conf = float(box.conf[index]) if hasattr(box, "conf") and len(box.conf) > index else 0.0
@@ -87,12 +107,14 @@ class DamageDetectionService:
                 polygon = None
                 if mask is not None and hasattr(mask, "xy") and len(mask.xy) > 0:
                     polygon = mask.xy[0].tolist()
-                detections.append({
+                detection = {
                     "class_name": self._class_label(cls),
                     "bbox": [round(float(coord), 2) for coord in xyxy],
                     "mask_polygon": polygon,
                     "confidence": round(conf, 4),
-                })
+                }
+                if self._is_valid_detection(detection):
+                    detections.append(detection)
         return detections
 
     def _normalize_detection(self, item: Any) -> dict[str, Any]:
@@ -111,6 +133,17 @@ class DamageDetectionService:
             "mask_polygon": getattr(item, "mask_polygon", None),
             "confidence": round(float(getattr(item, "confidence", 0.0)), 4),
         }
+
+    def _is_valid_detection(self, detection: dict[str, Any]) -> bool:
+        bbox = detection.get("bbox") or []
+        if len(bbox) != 4:
+            return False
+        if detection.get("class_name", "unknown") == "unknown":
+            return False
+        x1, y1, x2, y2 = [float(coord) for coord in bbox]
+        width = max(0.0, x2 - x1)
+        height = max(0.0, y2 - y1)
+        return width > 0 and height > 0
 
     def _class_label(self, class_id: int) -> str:
         labels = {

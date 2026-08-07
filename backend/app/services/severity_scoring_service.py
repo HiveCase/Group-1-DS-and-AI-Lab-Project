@@ -18,13 +18,12 @@ class SeverityScoringService:
         area_sum = 0.0
         per_region: list[dict[str, Any]] = []
         for detection in valid_detections:
-            mask_polygon = detection.get("mask_polygon") or []
-            area = self._polygon_area(mask_polygon)
+            area = self._area_from_detection(detection)
             area_sum += area
             per_region.append({
                 "class_name": detection.get("class_name", "unknown"),
                 "confidence": detection.get("confidence", 0.0),
-                "severity": self._severity_label_for_ratio(area_sum),
+                "severity": self._severity_label_for_ratio(area_sum / max(image_width * image_height, 1)),
             })
 
         if image_width <= 0 or image_height <= 0:
@@ -39,6 +38,19 @@ class SeverityScoringService:
             "severity_score": round(ratio, 4),
             "per_region": per_region,
         }
+
+    def _area_from_detection(self, detection: dict[str, Any]) -> float:
+        polygon = detection.get("mask_polygon") or []
+        if polygon:
+            return self._polygon_area(polygon)
+
+        bbox = detection.get("bbox") or []
+        if len(bbox) == 4:
+            x1, y1, x2, y2 = [float(coord) for coord in bbox]
+            width = max(0.0, x2 - x1)
+            height = max(0.0, y2 - y1)
+            return width * height
+        return 0.0
 
     def _polygon_area(self, polygon: list[list[float]] | None) -> float:
         if not polygon:
