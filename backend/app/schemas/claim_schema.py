@@ -27,10 +27,13 @@ class AnalysisRead(BaseModel):
     status: str
     severity_label: str | None = None
     severity_score: Decimal | None = None
-    policy_findings: dict | None = None
+    policy_findings: list[dict] | None = None
     recommendation: str | None = None
     confidence_score: Decimal | None = None
     explanation: str | None = None
+    fraud_score: Decimal | None = None
+    report_json: dict | None = None
+    needs_human_review: bool | None = None
 
 class ClaimRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)

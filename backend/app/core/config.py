@@ -11,7 +11,17 @@ class Settings(BaseSettings):
     model_dir: Path = Field(default=Path("backend/models"))
     data_dir: Path = Field(default=Path("backend/data"))
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    langfuse_public_key: str | None = None
+    langfuse_secret_key: str | None = None
+    langfuse_host: str = "https://cloud.langfuse.com"
+
+    ollama_model: str = "qwen2.5:7b"
+    ollama_base_url: str = "http://localhost:11434"
+
+    model_config = SettingsConfigDict(
+        env_file=str(Path(__file__).resolve().parents[3] / ".env"),
+        extra="ignore",
+    )
 
 
 @lru_cache
