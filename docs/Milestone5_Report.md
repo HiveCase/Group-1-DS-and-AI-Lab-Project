@@ -45,6 +45,7 @@
 - [10. Limitations](#10-limitations)
 - [11. Possible Improvements](#11-possible-improvements)
 - [12. Summary and Next Steps](#12-summary-and-next-steps)
+- [13. Policy Agent (RAG): Evaluation and Tuning Outcome](#13-policy-agent-rag-evaluation-and-tuning-outcome)
 
 ---
 
@@ -275,6 +276,119 @@ Background (no-damage) images are part of the standard train/val/test splits (~7
 ## 12. Summary and Next Steps
 
 Within the track evaluated in this report, correcting a hyperparameter-search configuration issue (`optimizer="auto"` silently overriding the intended learning rate) and applying the corrected result produced a model that improved on every reported validation metric versus the untuned baseline, by a larger margin than 20 additional epochs of unmodified training achieved. The model performs strongly on visually distinct damage (shattered glass, broken lamps) and weakest on subtle, high-frequency real-world damage (dents, scratches, cracks) - a pattern that independently reproduces Milestone 4's finding on the separate CarDD-pretrained track, strengthening confidence that this is a genuine property of the damage types rather than an artifact of either track's setup.
+
+---
+
+## 13. Policy Agent (RAG): Evaluation and Tuning Outcome
+
+Sections 1-12 evaluate the Damage Agent (YOLO). This section asks the same question of the
+Policy Agent's retrieval stack, whose selection and tuning work is documented in Milestone 4,
+Section 13.
+
+**Headline result.** The retrieval stack meets its Milestone 1 target and is the most
+thoroughly validated component in the project. It retrieves relevant policy clauses at
+**P@3 = 0.9133** against a random-retrieval baseline of 0.1634 - a **5.59x lift** - with
+**zero zero-hit incidents** across all 50 test cases, meaning the Report Agent was never left
+without usable clause evidence. Generated reports pass every faithfulness check on both LLMs
+tested (**composite 1.00**, zero fabricated citations or currency figures).
+
+An 84-configuration sweep then asked whether this could be tuned further. It could not, and
+that is a useful finding rather than a disappointing one: the shipped configuration already
+sits at the top of a flat response surface, two parameters were shown to be inactive and can
+be retired, and the exercise established that **the evaluation set, not the configuration, is
+now the limiting factor**. Sections 13.2 and 13.3 give that evidence and state its limits
+precisely.
+
+### 13.1 What Demonstrably Improved
+
+| Change | Before | After |
+| :--- | :--- | :--- |
+| PDF extraction fix (two-column bisection removed) | 179 chunks, words cut mid-token | 185 chunks, zero truncation artifacts |
+| Extraction fix + heading breadcrumb | MiniLM 0.94 / BGE 0.89 | MiniLM **1.00** / BGE 0.94 |
+| Hybrid retrieval (targeted lexical fix) | Rear-window incident P@3 **0.33**, glass clause ranked 9th | Glass clause surfaced; aggregate 0.893 to 0.913 |
+| Two-query coverage/exclusion split | A single query buries the exclusion beneath the coverage clause | Both buckets reach the LLM; unscoped path reproduces 0.913 / 0.977 exactly |
+| Per-user policy architecture | Policy identification top-1 **0.20** | Single candidate - identification eliminated |
+| Report faithfulness | - | Composite **1.00**, citation validity 1.00, 0 currency violations, on both models |
+
+### 13.2 What the Tuning Established
+
+The sweeps in Milestone 4 Section 13.2 report P@3 to four decimals, which invites reading
+0.9200 as beating 0.9133. At n=50 that difference is one retrieved chunk in one incident's top
+three: mean P@3 moves only in quanta of 1/(3x50) = **0.00667**. Each configuration was
+therefore paired against production incident-by-incident and the mean difference bootstrapped
+(10,000 resamples, seed 20260807):
+
+| Configuration | P@3 | Delta vs. production | 95% CI on delta | Verdict |
+| :--- | ---: | ---: | :--- | :--- |
+| **production** (3:1, k=60, pool=20) | 0.9133 | - | - | - |
+| sparse-only (0:1) | 0.7400 | -0.1733 | [-0.2400, -0.1067] | **significant** |
+| dense-only (1:0) | 0.8933 | -0.0200 | [-0.0667, +0.0267] | not distinguishable |
+| ratio 2:1 | 0.9133 | +0.0000 | [+0.0000, +0.0000] | not distinguishable |
+| pool=10 (grid best) | 0.9200 | +0.0067 | [-0.0200, +0.0333] | not distinguishable |
+| rrf_k=100 | 0.9133 | +0.0000 | [+0.0000, +0.0000] | not distinguishable |
+
+**Findings.**
+
+1. **Only sparse-only is statistically distinguishable from production, and it is worse.**
+   Every other parameter's confidence interval spans zero. The apparent winners in the RRF_K,
+   pool and interaction sweeps are noise.
+2. **2:1 and 3:1 change zero incidents.** The Milestone 2 note that these "differ on the exact
+   top-3 for 16/50 incidents, but only by reordering equally relevant chunks" is confirmed
+   numerically: the paired difference is exactly 0.0000. That choice was correctly made on
+   reasoning rather than on a score difference, because there is no score difference.
+3. **The hybrid retriever's headline gain does not reach significance.** Dense-only versus
+   hybrid is a delta of -0.0200 with a CI of [-0.0667, +0.0267], and hybrid is marginally
+   *worse* on MRR (0.9767 vs. 0.9800). The 0.893 to 0.913 improvement is real in direction and
+   changes 13 of 50 incidents, but n=50 is too small to establish it as an aggregate effect.
+
+Finding 3 is **not** an argument for removing the hybrid retriever. It repairs a specific
+diagnosed lexical failure, costs nothing at this corpus scale, and sparse-only's significant
+deficit confirms the two signals are complementary rather than redundant. What should change
+is the claim: cite the per-incident failure it repairs, not "0.893 to 0.913" as a proven
+aggregate gain.
+
+**Conclusion.** No retrieval parameter in this stack is worth tuning further. Production sits
+at 0.9133 P@3 against a 0.1634 random baseline - a **5.59x lift** with zero zero-hit incidents.
+The binding constraint is the evaluation set, not the configuration: at n=50 a 95% interval on
+any realistic improvement spans zero, which is why all 15 candidate configurations came back
+indistinguishable. This mirrors, from the opposite direction, the vision track's finding in
+Section 7 that a single genuine configuration error was worth more than extended search.
+
+### 13.3 Limitations
+
+Three limitations govern every retrieval figure reported above and in Milestone 4 Section 13.
+
+**1. The relevance labels are circular.** `data/clause_groundtruth.json` is not hand-labelled;
+its `damage_classes` are the same regex auto-tags that the chunker writes onto each chunk
+(verified identical for all 185). The scores measure retrieval against the tagger, not against
+a human adjudicator.
+
+**2. The tuning set is the test set.** The rear-window incident that motivated hybrid retrieval
+is one of the 50 incidents used to score it, and the 3:1 ratio was selected on the same 50.
+There is no held-out split, so 0.913 is partly fit to the set it is measured on.
+
+**3. Everything was measured on synthetic policies that suit the method.** A structural check
+of the three genuine IRDAI-filed policies in `data/policy_pdfs/reference/` - never indexed or
+scored - shows they behave very differently:
+
+| | Synthetic (5, tuned on) | Real IRDAI (3) |
+| :--- | :--- | :--- |
+| Damage types **mentioned** in the text | **6 / 6** in all five | **2-4 / 6** |
+| Damage types actually **tagged** | 6 / 6 | **1-3 / 6** |
+| Chunks carrying no damage-class tag | 15-67% | **96-98%** |
+| Chunks falling to `general` | 3-24% | 37-63% |
+| Chunks per document | 29-45 | 79-323 |
+
+This is **not** a tagger defect - the one apparent miss was the word "dental", which the
+tagger correctly ignores. Real motor policies use generic "loss or damage" wording instead of
+enumerating dent, scratch and crack. But because retrieval relevance and clause bucketing both
+run through damage-class tags, the signal available on a real uploaded policy is substantially
+thinner than these figures imply.
+
+**Highest-value next steps:** measure the per-user retrieval path (Milestone 4, Section 13.3);
+broaden the damage-class keyword lists for real-policy language; and obtain human-adjudicated
+relevance labels on 150-200 incidents, which would make differences smaller than one or two
+quanta resolvable at all.
 
 ---
 

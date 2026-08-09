@@ -216,6 +216,7 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 ### 3.5 Storage and Retrieval Components
 
 - **ChromaDB persistent client** (`data/chroma_db/`), the pre-built 185-chunk index covering all 5 catalog policies. Policy selection is catalog-based, there is no per-request user-uploaded-PDF ingestion path in the current implementation.
+  > **Superseded after this milestone.** The catalog-based design described here and in Sections 5.3 and 9 was replaced by per-user policy upload with one ChromaDB collection per user - see Milestone 4, Section 13.3. This section remains as the record of the architecture as it stood at Milestone 3.
 - **Human Review Queue** a lightweight append-only JSON log format (`data/review_queue.jsonl`) defined for claims the Report Agent flags `escalate_to_human=true`. Automatic population of this log by a real escalation gate is planned.
 - **Data retention:** the uploaded image and any incident narrative text are used only for the duration of a single request and are not persisted to disk beyond the claim's processing; no user-uploaded content is stored in ChromaDB or any other durable store.
 

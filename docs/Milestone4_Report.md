@@ -48,6 +48,7 @@
 - [10. Model Selection](#10-model-selection)
 - [11. Challenges Encountered](#11-challenges-encountered)
 - [12. Summary and Next Steps](#12-summary-and-next-steps)
+- [13. Policy Agent (RAG): Selection and Tuning](#13-policy-agent-rag-selection-and-tuning)
 
 ---
 
@@ -362,6 +363,126 @@ According to the original **CarDD** paper (Wang, Li, & Wu, *IEEE Transactions on
 - The two best-performing segmentation checkpoints are ready for detailed error analysis and qualitative evaluation.
 - The persistent gap between this project's results and the CarDD DCN+ benchmark for `dent` and `scratch` provides a clear direction for future work, including investigating alternative architectures, loss functions, or feature extraction methods better suited to these challenging damage categories.
 - With the training infrastructure, evaluation pipeline, and external benchmark now established, Milestone 5 can focus on targeted model improvements rather than further experimentation with training infrastructure.
+
+---
+
+## 13. Policy Agent (RAG): Selection and Tuning
+
+Sections 1-12 cover the Damage Agent (YOLO). This section covers the equivalent work on the
+Policy Agent's retrieval stack.
+
+**The RAG stack contains no trained weights.** MiniLM is used frozen, the Report Agent's LLMs
+are accessed by prompting only, and YOLO is the sole trained model in the project (Milestone 3,
+Section 9). "Fine-tuning" for this agent therefore means **model selection and parameter
+tuning**, which is what follows.
+
+### 13.1 Model and Infrastructure Selection
+
+Each choice was decided by a head-to-head benchmark on the actual 185-chunk corpus, not by
+default.
+
+| Decision | Alternatives compared | Result | Chosen because |
+| :--- | :--- | :--- | :--- |
+| Embedding model | MiniLM-L6-v2 (22.7M) vs. BGE-small-en-v1.5 (33.4M) | P@3 **1.00** vs. **0.94** on the 6-query smoke test (BGE lagged on `crack`, 0.67) | Higher score at two-thirds the parameters; both embed the corpus in under a second |
+| Larger encoders | MPNet-base, E5-base (~110M) | Not run | 3-5x cost for marginal published gain; the demo target is a CPU-only Hugging Face Space |
+| Vector store | ChromaDB vs. FAISS `IndexFlatIP` | Identical top-1 on 6/6 queries; FAISS <0.01ms vs. Chroma ~0.5ms (50-60x) | Latency gap not operationally meaningful at 185 chunks; Chroma provides metadata filtering and persistence out of the box |
+| Report LLM | `llama-3.3-70b-versatile` vs. `openai/gpt-oss-20b` | Both reached faithfulness composite **1.00** | Llama selected: free tier, ~0.7-0.9s per report, OpenAI-compatible API |
+
+An important qualification: the embedding model was **not** what fixed retrieval. On the
+pre-fix 179-chunk corpus the two models scored 0.94 and 0.89; the PDF-extraction fix and
+heading-breadcrumb change moved MiniLM to 1.00. **Corpus quality dominated model choice.**
+
+### 13.2 Retrieval Parameter Tuning
+
+Milestone 2 swept one retrieval parameter (the dense:sparse weight ratio) and settled the rest
+by inspection or by leaving library defaults in place. That gap has since been closed: **84
+configurations across 6 sweeps**, evaluated on the same 50-incident set. The harness was
+validated first by reproducing all four published weight-ratio data points exactly.
+
+**A. Dense:sparse weight ratio** - production **3:1**
+
+| Ratio | P@3 | MRR@5 | zero-hit |
+| :--- | ---: | ---: | ---: |
+| 100:0 (dense-only) | 0.8933 | 0.9800 | 0 |
+| 50:50 | 0.9067 | 0.9717 | 1 |
+| 66:33 (2:1) | 0.9133 | 0.9767 | 0 |
+| **75:25 (3:1)** | **0.9133** | **0.9767** | **0** |
+| 80:20 (4:1) | 0.9067 | 0.9767 | 0 |
+| 0:100 (sparse-only) | 0.7400 | 0.8950 | 1 |
+
+**B. RRF_K** - 13 values from k=1 to k=1000 give a P@3 range of only **0.8933-0.9133**, with
+zero zero-hit incidents throughout. Production k=60 sits on the top plateau it shares with
+k=5, 45, 80 and 100. The parameter is effectively inert at this corpus size.
+
+**C. CANDIDATE_POOL** - 11 values from 3 to 100 give a range of **0.8933-0.9200**. Only
+pool=3 is clearly too shallow. Production pool=20 scores 0.9133.
+
+**D. RRF_K x CANDIDATE_POOL** - the full 5x5 grid spans **0.8933-0.9200**, with no ridge and
+no interaction effect, so the two one-dimensional results above hold jointly.
+
+**E. MIN_CLAUSE_SCORE = 0.01 - inactive.** The lowest score any candidate surviving fusion can
+carry is `min(dense_w, sparse_w) / (RRF_K + CANDIDATE_POOL)` = 1.0 / 80 = **0.0125**, already
+above the configured floor, so no clause can ever be filtered by it. Empirically the margin is
+wider still: the lowest fused score observed was 0.0400, and the lowest score on a clause
+actually returned to the LLM was 0.0435. Across all 12 clause queries the floor removes **0 of
+55** returned clauses. It would have to rise to 0.05 to remove anything.
+
+**F. Chunk size** - production **300**
+
+| chunk_size | chunks | random P@3 | P@3 | lift x | mixed coverage+exclusion |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 150 | 364 | 0.125 | 0.9067 | **7.24** | 9.9% |
+| **300** | **185** | **0.163** | **0.9133** | **5.59** | **15.1%** |
+| 500 | 131 | 0.185 | 0.9467 | **5.13** | 21.4% |
+| 1000 | 93 | 0.203 | 0.9333 | **4.61** | 26.9% |
+
+Raw P@3 rises with chunk size, but that is an artifact rather than an improvement: longer
+chunks match more keyword families, so more of them count as relevant and the random baseline
+rises in step. Measured as lift over random, larger chunks are **worse**. Separately, chunks
+containing both a coverage grant and its qualifying exclusion nearly double (15.1% to 26.9%);
+because `clause_type` is single-valued, one half of such a chunk becomes unreachable from its
+bucket - the exact failure the two-query coverage/exclusion split exists to prevent. 300 is
+retained on this evidence.
+
+**Chunk overlap** - values 0 through 120 yield 184-221 chunks and no meaningful score change;
+40 retained. **DEDUP_THRESHOLD = 0.90 - inactive**: every threshold from 0.80 to 1.00 yields
+an identical 185 chunks, and across all 8 chunk sizes deduplication removes **0 chunks in
+total**. No chunk pair in this corpus reaches even 0.80 word-trigram Jaccard similarity.
+
+Sweeps are reproducible via `scripts/sweep_rag_params.py --with-chunking`.
+
+### 13.3 Architecture Change: The User Uploads Their Own Policy
+
+**The fixed 5-policy catalog described in Milestone 3 (Sections 3.5, 5.3, 9) has been replaced
+by per-user policy upload.**
+
+| | Before (catalog) | After (per-user) |
+| :--- | :--- | :--- |
+| Policy source | Fixed 5-policy catalog | User uploads their own PDF |
+| Index | One shared `policy_clauses` collection | One collection per user, `user_{user_id}` |
+| Scoping | `doc_id` metadata filter | Structural - a separate collection per user |
+| TF-IDF vocabulary | Fit across all 5 policies | Fit on that user's chunks only |
+| Policy identification | Inferred from the damage profile | Not required - only one candidate exists |
+
+**Why it changed.** An exhaustive 315-case census (63 damage-class subsets x 5 documents)
+established that the damage profile alone cannot identify which policy applies:
+
+| Metric | Value |
+| :--- | ---: |
+| top-1 accuracy | **0.20** |
+| top-2 accuracy | 0.40 |
+| MRR | 0.457 |
+| confusions | 252 |
+
+At 0.20 top-1 accuracy the selector was wrong four times in five. `scripts/policy_catalog.py`
+and `scripts/policy_selector.py` were deleted. Per-user upload dissolves the problem rather
+than solving it, and eliminates cross-policy clause leakage by construction.
+
+**Caveat.** The per-user path has **no retrieval metrics of its own**. Every figure in Section
+13.2 comes from the shared 5-policy corpus, which was never a simulation of the per-user flow.
+Under per-user indexing the TF-IDF vocabulary is fit on a single document, a materially
+different sparse signal from the one that was tuned. Measuring the per-user path is the
+highest-value outstanding work on this agent.
 
 ---
 
