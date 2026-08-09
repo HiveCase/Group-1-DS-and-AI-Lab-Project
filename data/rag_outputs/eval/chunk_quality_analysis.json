@@ -1,0 +1,156 @@
+{
+  "chunk_overlap": 40,
+  "dedup_threshold": 0.9,
+  "configs": [
+    {
+      "chunk_size": 150,
+      "n_chunks_pre_dedup": 364,
+      "n_chunks": 364,
+      "chunks_removed_by_dedup": 0,
+      "mean_damage_classes_per_chunk": 0.673,
+      "multi_class_chunks": 35,
+      "multi_class_pct": 9.6,
+      "mixed_coverage_exclusion_chunks": 36,
+      "mixed_signal_pct": 9.9,
+      "clause_type_distribution": {
+        "condition": 2,
+        "coverage": 86,
+        "definition": 1,
+        "exclusion": 171,
+        "general": 69,
+        "sub_limit": 35
+      }
+    },
+    {
+      "chunk_size": 200,
+      "n_chunks_pre_dedup": 275,
+      "n_chunks": 275,
+      "chunks_removed_by_dedup": 0,
+      "mean_damage_classes_per_chunk": 0.753,
+      "multi_class_chunks": 37,
+      "multi_class_pct": 13.5,
+      "mixed_coverage_exclusion_chunks": 34,
+      "mixed_signal_pct": 12.4,
+      "clause_type_distribution": {
+        "condition": 2,
+        "coverage": 61,
+        "definition": 1,
+        "exclusion": 138,
+        "general": 47,
+        "sub_limit": 26
+      }
+    },
+    {
+      "chunk_size": 250,
+      "n_chunks_pre_dedup": 221,
+      "n_chunks": 221,
+      "chunks_removed_by_dedup": 0,
+      "mean_damage_classes_per_chunk": 0.828,
+      "multi_class_chunks": 38,
+      "multi_class_pct": 17.2,
+      "mixed_coverage_exclusion_chunks": 31,
+      "mixed_signal_pct": 14.0,
+      "clause_type_distribution": {
+        "condition": 2,
+        "coverage": 52,
+        "definition": 1,
+        "exclusion": 112,
+        "general": 33,
+        "sub_limit": 21
+      }
+    },
+    {
+      "chunk_size": 300,
+      "n_chunks_pre_dedup": 185,
+      "n_chunks": 185,
+      "chunks_removed_by_dedup": 0,
+      "mean_damage_classes_per_chunk": 0.886,
+      "multi_class_chunks": 36,
+      "multi_class_pct": 19.5,
+      "mixed_coverage_exclusion_chunks": 28,
+      "mixed_signal_pct": 15.1,
+      "clause_type_distribution": {
+        "condition": 2,
+        "coverage": 44,
+        "definition": 1,
+        "exclusion": 96,
+        "general": 25,
+        "sub_limit": 17
+      }
+    },
+    {
+      "chunk_size": 400,
+      "n_chunks_pre_dedup": 149,
+      "n_chunks": 149,
+      "chunks_removed_by_dedup": 0,
+      "mean_damage_classes_per_chunk": 0.966,
+      "multi_class_chunks": 34,
+      "multi_class_pct": 22.8,
+      "mixed_coverage_exclusion_chunks": 28,
+      "mixed_signal_pct": 18.8,
+      "clause_type_distribution": {
+        "condition": 2,
+        "coverage": 35,
+        "definition": 1,
+        "exclusion": 80,
+        "general": 17,
+        "sub_limit": 14
+      }
+    },
+    {
+      "chunk_size": 500,
+      "n_chunks_pre_dedup": 131,
+      "n_chunks": 131,
+      "chunks_removed_by_dedup": 0,
+      "mean_damage_classes_per_chunk": 1.008,
+      "multi_class_chunks": 30,
+      "multi_class_pct": 22.9,
+      "mixed_coverage_exclusion_chunks": 28,
+      "mixed_signal_pct": 21.4,
+      "clause_type_distribution": {
+        "condition": 2,
+        "coverage": 31,
+        "definition": 1,
+        "exclusion": 72,
+        "general": 13,
+        "sub_limit": 12
+      }
+    },
+    {
+      "chunk_size": 700,
+      "n_chunks_pre_dedup": 104,
+      "n_chunks": 104,
+      "chunks_removed_by_dedup": 0,
+      "mean_damage_classes_per_chunk": 1.135,
+      "multi_class_chunks": 28,
+      "multi_class_pct": 26.9,
+      "mixed_coverage_exclusion_chunks": 26,
+      "mixed_signal_pct": 25.0,
+      "clause_type_distribution": {
+        "condition": 2,
+        "coverage": 23,
+        "exclusion": 60,
+        "general": 10,
+        "sub_limit": 9
+      }
+    },
+    {
+      "chunk_size": 1000,
+      "n_chunks_pre_dedup": 93,
+      "n_chunks": 93,
+      "chunks_removed_by_dedup": 0,
+      "mean_damage_classes_per_chunk": 1.118,
+      "multi_class_chunks": 24,
+      "multi_class_pct": 25.8,
+      "mixed_coverage_exclusion_chunks": 25,
+      "mixed_signal_pct": 26.9,
+      "clause_type_distribution": {
+        "condition": 2,
+        "coverage": 21,
+        "exclusion": 53,
+        "general": 9,
+        "sub_limit": 8
+      }
+    }
+  ]
+}

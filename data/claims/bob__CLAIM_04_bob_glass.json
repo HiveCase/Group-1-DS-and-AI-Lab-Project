@@ -1,0 +1,64 @@
+{
+  "claim_id": "CLAIM_04_bob_glass",
+  "user_id": "bob",
+  "image_path": "data/vehide/images/test/3c139c978ec876962fd9.jpg",
+  "incident_narrative": "The driver-side window was smashed during an attempted break-in while parked overnight.",
+  "detections": [
+    {
+      "class_id": 4,
+      "class_name": "shattered_glass",
+      "confidence": 0.744,
+      "bbox_normalized": [
+        0.5065,
+        0.5524,
+        0.2434,
+        0.6072
+      ],
+      "area_ratio": 0.14779,
+      "severity": "severe"
+    }
+  ],
+  "report": {
+    "claim_id": "CLAIM_04_bob_glass",
+    "policy_doc_id": "user_bob",
+    "items": [
+      {
+        "damage_class": "shattered_glass",
+        "verdict": "covered",
+        "rationale": "The policy covers glass damage without depreciation deduction, including door windows, as stated in chunk_00005 and chunk_00009.",
+        "cited_chunk_ids": [
+          "chunk_00005",
+          "chunk_00009"
+        ]
+      }
+    ],
+    "overall_recommendation": "covered",
+    "escalate_to_human": false,
+    "escalation_reason": null
+  },
+  "report_model": "llama-3.3-70b-versatile",
+  "report_error": null,
+  "faithfulness": {
+    "passed": true,
+    "schema_valid": true,
+    "total_citations": 2,
+    "valid_citations": 2,
+    "citation_validity_rate": 1.0,
+    "hard_failures": [],
+    "soft_flags": [
+      {
+        "type": "multi_class_chunk_citation",
+        "chunk_id": "chunk_00005"
+      },
+      {
+        "type": "multi_class_chunk_citation",
+        "chunk_id": "chunk_00009"
+      }
+    ]
+  },
+  "human_reviewed": false,
+  "review_decision": null,
+  "escalation_reasons": [],
+  "errors": [],
+  "outcome": "auto_assessed"
+}
