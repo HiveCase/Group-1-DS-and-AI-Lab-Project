@@ -1,0 +1,8 @@
+{
+  "user_id": "alice",
+  "doc_id": "user_alice",
+  "source_pdf": "policy_2_safedrive_assurance.pdf",
+  "n_chunks": 39,
+  "ingested_at": "2026-08-02T18:53:29",
+  "embedding_model": "all-MiniLM-L6-v2"
+}

@@ -1,0 +1,8 @@
+{
+  "user_id": "bob",
+  "doc_id": "user_bob",
+  "source_pdf": "policy_5_valuemotor.pdf",
+  "n_chunks": 39,
+  "ingested_at": "2026-08-02T18:44:20",
+  "embedding_model": "all-MiniLM-L6-v2"
+}
