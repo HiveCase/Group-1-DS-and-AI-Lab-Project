@@ -36,6 +36,32 @@ COVERAGE_QUERIES = {
     "flat_tyre": "Is a flat tyre or tyre blowout covered under the policy?",
 }
 
+# Damage-class-agnostic query for the policy's main operative/coverage
+# grant (e.g. "accidental loss or damage to the vehicle insured...").
+# Retrieved and merged into every class's coverage candidates alongside the
+# class-specific query above -- not as a replacement for it.
+#
+# Why this exists: a class-specific query can be outranked by an unrelated
+# chunk that happens to share more surface vocabulary with the query than
+# the real operative clause does. Confirmed case: for a policy whose only
+# coverage-typed language for "crack"/"broken_lamp" was the general
+# operative clause (no class-specific coverage line for either), the
+# coverage-phrased queries for both classes still surfaced a coverage-typed
+# tyre-damage condition clause ahead of it -- "concurrent physical damage",
+# "covered subject to a deduction" reads as a closer lexical match to
+# "covered" than the operative clause's plain "accidental loss or damage to
+# the vehicle insured" does. coverage_clause_found came back True, but on a
+# chunk that has nothing to do with cracks or lamps -- worse than an empty
+# bucket, since it reads as grounded evidence to the model. Running this
+# query in parallel and merging by score (see _merge) gives the general
+# grant a chance to be retrieved even when the narrow query alone misses
+# it, without hardcoding any policy-specific chunk_id or heading text, so
+# it holds across differently-structured uploaded policies.
+GENERAL_COVERAGE_QUERY = (
+    "What is the policy's general operative clause describing what loss or "
+    "damage to the vehicle is covered?"
+)
+
 EXCLUSION_QUERIES = {
     "dent": "What exclusions, conditions, or limits apply to a dent claim?",
     "scratch": "What exclusions, conditions, or limits apply to a scratch claim?",
@@ -69,10 +95,13 @@ class ClauseRetriever:
 
         coverage_pool = self.retriever.retrieve_scored(
             COVERAGE_QUERIES[damage_class], top_k=RETRIEVAL_POOL)
+        general_coverage_pool = self.retriever.retrieve_scored(
+            GENERAL_COVERAGE_QUERY, top_k=RETRIEVAL_POOL)
         exclusion_pool = self.retriever.retrieve_scored(
             EXCLUSION_QUERIES[damage_class], top_k=RETRIEVAL_POOL)
 
-        coverage_hits = self._filter(coverage_pool, COVERAGE_CLAUSE_TYPES)
+        coverage_hits = self._filter(
+            self._merge(coverage_pool, general_coverage_pool), COVERAGE_CLAUSE_TYPES)
         exclusion_hits = self._filter(exclusion_pool, EXCLUSION_CLAUSE_TYPES)
 
         return {
@@ -80,6 +109,19 @@ class ClauseRetriever:
             "exclusion_or_condition": exclusion_hits,
             "coverage_clause_found": len(coverage_hits) > 0,
         }
+
+    @staticmethod
+    def _merge(*pools: list) -> list:
+        """Union several (chunk_id, score) pools, deduping by chunk_id and
+        keeping the max score seen for each, sorted descending. A chunk the
+        class-specific query already found scores at least as high after
+        the merge -- this only ever adds candidates, never displaces one."""
+        best = {}
+        for pool in pools:
+            for cid, score in pool:
+                if cid not in best or score > best[cid]:
+                    best[cid] = score
+        return sorted(best.items(), key=lambda kv: -kv[1])
 
     def _filter(self, pool: list, allowed_types: set) -> list:
         """Keep the top CLAUSES_PER_TYPE hits whose clause_type is in the
