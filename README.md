@@ -46,6 +46,7 @@ prompting only. All tuning here is model selection and parameter tuning.
 | Clause retrieval | Two queries per damage class | A single query surfaces coverage and buries the exclusion that qualifies it |
 | Generation | `llama-3.3-70b-versatile` (Groq) | Faithfulness composite **1.00**; `gpt-oss-20b` also scored 1.00 |
 | Grounding check | Deterministic rules, not an LLM judge | Citation validity, verdict–evidence consistency, currency-figure grounding |
+| LLM-judge eval | RAGAs (`context_precision`; `faithfulness`/`answer_relevancy`/`answer_correctness`) via `gemini-2.5-flash` | Deterministic checks catch citation-ID bookkeeping, not whether prose is actually entailed by clause text or whether a verdict is *correct* — an independent third-party judge (never one of the two models it scores) adds that layer |
 
 **Architecture change.** An earlier design inferred which of 5 catalog policies applied from
 the damage profile alone. A 315-case census measured **top-1 accuracy of 0.20**, so the catalog
@@ -68,6 +69,40 @@ Retrieval, on 50 synthetic incidents against a 185-chunk / 5-policy corpus:
 
 Report faithfulness — 10 claims, both models: composite **1.00**, citation validity 1.00,
 verdict–evidence consistency 1.00, **0** fabricated currency figures.
+
+### RAGAs evaluation
+
+An LLM-judge layer (`scripts/ragas_eval.py`) on top of the deterministic checks above, judged
+by `gemini-2.5-flash` — independent of both report-generation models, so neither ever scores
+its own output:
+
+| Metric | `llama-3.3-70b-versatile` | `openai/gpt-oss-20b` |
+| :--- | ---: | ---: |
+| faithfulness | 0.630 | 0.520 |
+| answer_relevancy | 0.435 | 0.481 |
+| answer_correctness | 0.524 | 0.593 |
+
+| Retrieval metric | Value |
+| :--- | ---: |
+| context_precision (50 incidents) | **0.832** |
+
+These sit well below the deterministic figures above (P@3 0.913, faithfulness composite 1.00) —
+expected, not a regression. The deterministic retrieval eval checks whether a retrieved chunk's
+regex `damage_classes` tag intersects the target set; `context_precision` asks an LLM to
+actually read each chunk and judge relevance to the incident, a stricter bar. The deterministic
+faithfulness checks verify citation-ID bookkeeping (does a cited `chunk_id` exist, does its type
+match the verdict); `faithfulness`/`answer_correctness` check whether the model's *prose* is
+actually entailed by the clause text and matches an independently-derived correct verdict
+(`data/eval/reference_reports.json`, hand-written from the clause text alone — 7 of the 14
+reference verdicts disagree with what the models produced, so this is not grading the models
+against themselves). `gpt-oss-20b` scoring higher on correctness despite lower faithfulness than
+`llama-3.3-70b-versatile` is a genuine tension between "grounded in the shown text" and "reaches
+the right verdict," not noise — see `data/rag_outputs/ragas_eval.json` for the per-item breakdown.
+
+`context_recall` is deliberately not computed: it needs a single canonical reference answer, and
+this corpus has 5 differently-worded policies covering each damage class with no canonical
+target document per incident (see `scripts/ragas_eval.py`'s docstring for why an early attempt
+scored 0.0 on every incident).
 
 ### Parameter tuning
 
@@ -102,18 +137,20 @@ scripts/             ingestion, retrieval, report generation, evaluation, parame
 data/policy_pdfs/    5 synthetic policies (tuned on) + 3 real IRDAI-filed policies
 data/rag_outputs/    chunk corpus, evaluation results, sweep results
 data/chroma_db/      prebuilt 185-chunk index — the retrieval-quality regression bed
+data/eval/           reference_reports.json — hand-written reference verdicts for RAGAs
 ```
 
 ## 5. Running it
 
 ```bash
 pip install -r requirements.txt
-cp .env.example .env          # add GROQ_API_KEY for report generation
+cp .env.example .env          # add GROQ_API_KEY for report generation, GOOGLE_API_KEY for RAGAs
 
 PYTHONPATH=. python3 scripts/preprocess_policy_pdfs.py     # rebuild the corpus + index
 PYTHONPATH=. python3 scripts/hybrid_retrieval.py --evaluate # 50-incident retrieval eval
 PYTHONPATH=. python3 scripts/ingest_user_policy.py          # per-user ingestion
 PYTHONPATH=. python3 scripts/eval_report_agent.py           # faithfulness eval (needs API key)
+PYTHONPATH=. python3 scripts/ragas_eval.py --all             # LLM-judge eval (needs GOOGLE_API_KEY)
 
 PYTHONPATH=. python3 scripts/sweep_rag_params.py --with-chunking  # sweeps A–F
 PYTHONPATH=. python3 scripts/sweep_significance.py                # bootstrap comparisons
@@ -144,6 +181,13 @@ State these before someone else finds them.
 4. **The per-user path has no metrics of its own.** Every figure above comes from the shared
    5-policy corpus. Under per-user indexing TF-IDF is fit on a single document, a materially
    different sparse signal. Measuring it is the highest-value outstanding work.
+5. **The RAGAs generation eval is small and single-judge.** 14 damage-class items across 10
+   claims, scored by one judge model (`gemini-2.5-flash`) with no repeat runs to check
+   judge-score variance. The reference verdicts it's scored against are one author's reading of
+   the clause text, not an adjudicated multi-rater ground truth — treat the absolute numbers as
+   directional, not precise. `context_precision`'s reference statement is still seeded from the
+   same regex `damage_classes` tags as limitation #1, so it narrows but does not eliminate that
+   circularity.
 
 ## 7. Notes
 

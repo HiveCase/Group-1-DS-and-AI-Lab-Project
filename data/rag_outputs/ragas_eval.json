@@ -1,0 +1,425 @@
+{
+  "retrieval": {
+    "n_incidents": 50,
+    "mean_context_precision": 0.832,
+    "judge_model": "gemini-2.5-flash",
+    "per_incident": [
+      {
+        "user_input": "While parking, the vehicle was struck by an adjacent car door, leaving a noticeable dent on the front left door panel.",
+        "llm_context_precision_with_reference": 0.9999999999666667
+      },
+      {
+        "user_input": "A reversing vehicle backed into the front bumper in a parking lot, causing a significant dent.",
+        "llm_context_precision_with_reference": 0.8874999999778125
+      },
+      {
+        "user_input": "The car sustained a dent on the rear quarter panel after a minor collision at a junction.",
+        "llm_context_precision_with_reference": 0.6999999999766667
+      },
+      {
+        "user_input": "Hailstorm left multiple small dents across the bonnet and roof of the vehicle.",
+        "llm_context_precision_with_reference": 0.8874999999778125
+      },
+      {
+        "user_input": "During a slow-speed collision on a highway slip road, the driver-side door received a deep dent.",
+        "llm_context_precision_with_reference": 0.999999999975
+      },
+      {
+        "user_input": "A shopping trolley rolled into the vehicle in a supermarket car park, creating a dent on the rear door.",
+        "llm_context_precision_with_reference": 0.8041666666465626
+      },
+      {
+        "user_input": "The vehicle was sideswiped by a truck, leaving a long dent along the passenger-side panels.",
+        "llm_context_precision_with_reference": 0.5833333333041666
+      },
+      {
+        "user_input": "Heavy debris falling from a construction site overhead caused multiple dents on the vehicle roof.",
+        "llm_context_precision_with_reference": 0.249999999975
+      },
+      {
+        "user_input": "A vandal keyed the vehicle overnight in the apartment parking, leaving deep scratches on both side doors.",
+        "llm_context_precision_with_reference": 0.6388888888675925
+      },
+      {
+        "user_input": "The insured accidentally scraped a concrete pillar in an underground car park, scratching the front bumper.",
+        "llm_context_precision_with_reference": 0.9166666666361111
+      },
+      {
+        "user_input": "A motorcyclist clipped the vehicle while overtaking, leaving a paint scratch on the rear quarter panel.",
+        "llm_context_precision_with_reference": 0.6791666666496875
+      },
+      {
+        "user_input": "Tree branches during a storm dragged across the bonnet, leaving multiple surface scratches.",
+        "llm_context_precision_with_reference": 0.699999999965
+      },
+      {
+        "user_input": "Improper car wash brush caused fine circular scratches across the entire vehicle body.",
+        "llm_context_precision_with_reference": 0.999999999975
+      },
+      {
+        "user_input": "The vehicle was scratched on the door sill area when luggage was being loaded at an airport.",
+        "llm_context_precision_with_reference": 0.8874999999778125
+      },
+      {
+        "user_input": "A cyclist lost control and their handlebar scraped the passenger door, causing a paint scratch.",
+        "llm_context_precision_with_reference": 0.249999999975
+      },
+      {
+        "user_input": "During an attempted break-in, the lock area of the driver door was deeply scratched.",
+        "llm_context_precision_with_reference": 0.99999999995
+      },
+      {
+        "user_input": "A large stone thrown up by an oncoming lorry cracked the front bumper assembly.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "The vehicle's plastic bumper cracked after a low-speed collision with a pavement edge.",
+        "llm_context_precision_with_reference": 0.6388888888675925
+      },
+      {
+        "user_input": "Extreme temperature differential caused the dashboard trim to crack along its seam.",
+        "llm_context_precision_with_reference": 0.7555555555303703
+      },
+      {
+        "user_input": "A rear-end shunt in traffic cracked the tail-light housing and the bumper below it.",
+        "llm_context_precision_with_reference": 0.8041666666465626
+      },
+      {
+        "user_input": "A heavy object fell onto the vehicle from a building balcony, cracking the roof panel and the A-pillar trim.",
+        "llm_context_precision_with_reference": 0.8666666666377778
+      },
+      {
+        "user_input": "Side impact from another vehicle cracked the door skin at the pressed crease line.",
+        "llm_context_precision_with_reference": 0.8055555555287036
+      },
+      {
+        "user_input": "The headlight assembly was shattered when the vehicle was rear-ended at a red light.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "A reversing incident in a parking lot broke the left indicator unit completely.",
+        "llm_context_precision_with_reference": 0.8874999999778125
+      },
+      {
+        "user_input": "Vandals smashed both tail light assemblies while the vehicle was parked on a public road overnight.",
+        "llm_context_precision_with_reference": 0.999999999975
+      },
+      {
+        "user_input": "The front fog light was struck and broken when the vehicle went over an unmarked speed breaker at speed.",
+        "llm_context_precision_with_reference": 0.94999999997625
+      },
+      {
+        "user_input": "A side collision broke the rear reflector and the adjacent tail lamp housing.",
+        "llm_context_precision_with_reference": 0.8874999999778125
+      },
+      {
+        "user_input": "The right headlight cluster was completely destroyed when the vehicle clipped a concrete divider.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "Flying debris from roadworks shattered the driver-side fog lamp during highway driving.",
+        "llm_context_precision_with_reference": 0.6999999999766667
+      },
+      {
+        "user_input": "The windscreen shattered after a large stone was projected by a passing truck on the expressway.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "Break-in attempt resulted in the driver-side window being completely smashed.",
+        "llm_context_precision_with_reference": 0.0
+      },
+      {
+        "user_input": "A high-speed impact with a road barrier shattered both the windscreen and the passenger window.",
+        "llm_context_precision_with_reference": 0.8041666666465626
+      },
+      {
+        "user_input": "Hailstones cracked and shattered the rear windscreen while the vehicle was parked in the open.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "A vehicle rollover on a mountain road caused the sunroof glass panel to shatter completely.",
+        "llm_context_precision_with_reference": 0.94999999997625
+      },
+      {
+        "user_input": "Vandals smashed the rear window of the vehicle during a public disturbance event.",
+        "llm_context_precision_with_reference": 0.94999999997625
+      },
+      {
+        "user_input": "A falling tree branch during a storm shattered the windscreen and cracked the driver-side glass.",
+        "llm_context_precision_with_reference": 0.7555555555303703
+      },
+      {
+        "user_input": "A nail embedded in the road punctured the rear left tyre, causing a sudden blowout on the highway.",
+        "llm_context_precision_with_reference": 0.999999999975
+      },
+      {
+        "user_input": "The right front tyre burst after the vehicle drove over sharp debris at a construction site.",
+        "llm_context_precision_with_reference": 0.6791666666496875
+      },
+      {
+        "user_input": "Both tyres on the driver side were slashed by vandals while the vehicle was parked.",
+        "llm_context_precision_with_reference": 0.8874999999778125
+      },
+      {
+        "user_input": "A deep pothole ruptured the inner sidewall of the rear tyre, resulting in a flat.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "A slow puncture developed in the front left tyre after encountering loose gravel.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "The tyre valve was damaged during a kerb strike, causing air loss and a flat.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "Exposure to a sharp piece of metal on a rural road caused a blowout to the rear right tyre.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "A side-swipe collision left a dent and paint scratches along the entire passenger-side door.",
+        "llm_context_precision_with_reference": 0.6791666666496875
+      },
+      {
+        "user_input": "A low-speed front collision cracked the front bumper and shattered the right headlight assembly.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "A vehicle rolled over a road divider at speed, shattering the windscreen and causing roof dents.",
+        "llm_context_precision_with_reference": 0.6388888888675925
+      },
+      {
+        "user_input": "Driving through debris on a flooded road caused a tyre puncture and road rash scratches on the lower sill.",
+        "llm_context_precision_with_reference": 0.99999999998
+      },
+      {
+        "user_input": "A three-vehicle pileup caused front dents, cracked bumper panels, and broken headlight units.",
+        "llm_context_precision_with_reference": 0.94999999997625
+      },
+      {
+        "user_input": "Someone backed into the parked vehicle, scratching the boot lid and cracking the rear bumper moulding.",
+        "llm_context_precision_with_reference": 0.999999999975
+      },
+      {
+        "user_input": "While parking, the vehicle was struck by an adjacent car door, leaving a noticeable dent on the front left door panel.",
+        "llm_context_precision_with_reference": 0.8055555555287036
+      }
+    ]
+  },
+  "generation": {
+    "llama-3.3-70b-versatile": {
+      "n_items": 14,
+      "judge_model": "gemini-2.5-flash",
+      "mean_faithfulness": 0.63,
+      "mean_answer_relevancy": 0.435,
+      "mean_answer_correctness": 0.524,
+      "per_item": [
+        {
+          "claim_id": "CLAIM_01_dent_minor_clean",
+          "damage_class": "dent",
+          "faithfulness": 0.8571428571428571,
+          "answer_relevancy": 0.43857542158597873,
+          "answer_correctness": 0.7268757673030689
+        },
+        {
+          "claim_id": "CLAIM_02_glass_severe_stone",
+          "damage_class": "shattered_glass",
+          "faithfulness": 0.4,
+          "answer_relevancy": 0.5384226391922905,
+          "answer_correctness": 0.39385356146695283
+        },
+        {
+          "claim_id": "CLAIM_03_flat_tyre_alone_no_body_damage",
+          "damage_class": "flat_tyre",
+          "faithfulness": 0.3333333333333333,
+          "answer_relevancy": 0.43167403037527413,
+          "answer_correctness": 0.6171174584384993
+        },
+        {
+          "claim_id": "CLAIM_04_multi_pileup_severe",
+          "damage_class": "dent",
+          "faithfulness": 0.5,
+          "answer_relevancy": 0.3878337553732309,
+          "answer_correctness": 0.6503259046203125
+        },
+        {
+          "claim_id": "CLAIM_04_multi_pileup_severe",
+          "damage_class": "crack",
+          "faithfulness": 0.5454545454545454,
+          "answer_relevancy": 0.41836295833157694,
+          "answer_correctness": 0.42175001780724436
+        },
+        {
+          "claim_id": "CLAIM_04_multi_pileup_severe",
+          "damage_class": "broken_lamp",
+          "faithfulness": 0.75,
+          "answer_relevancy": 0.6161426665523453,
+          "answer_correctness": 0.32644578890984716
+        },
+        {
+          "claim_id": "CLAIM_05_scratch_vandalism_keyed",
+          "damage_class": "scratch",
+          "faithfulness": 0.6190476190476191,
+          "answer_relevancy": 0.0,
+          "answer_correctness": 0.6329867357981004
+        },
+        {
+          "claim_id": "CLAIM_06_low_confidence_dent",
+          "damage_class": "dent",
+          "faithfulness": 0.7,
+          "answer_relevancy": 0.3372027626880471,
+          "answer_correctness": 0.2982563977067792
+        },
+        {
+          "claim_id": "CLAIM_07_glass_vandalism_window",
+          "damage_class": "shattered_glass",
+          "faithfulness": 0.6,
+          "answer_relevancy": 0.44769964630282705,
+          "answer_correctness": 0.7980252720125541
+        },
+        {
+          "claim_id": "CLAIM_08_crack_lamp_rearend",
+          "damage_class": "crack",
+          "faithfulness": 0.6,
+          "answer_relevancy": 0.5156135888076919,
+          "answer_correctness": 0.5953083462085778
+        },
+        {
+          "claim_id": "CLAIM_08_crack_lamp_rearend",
+          "damage_class": "broken_lamp",
+          "faithfulness": 1.0,
+          "answer_relevancy": 0.5275877524903644,
+          "answer_correctness": 0.48749671070250716
+        },
+        {
+          "claim_id": "CLAIM_09_multi_instance_hail_dents",
+          "damage_class": "dent",
+          "faithfulness": 0.9090909090909091,
+          "answer_relevancy": 0.2896291140534993,
+          "answer_correctness": 0.4999683005337388
+        },
+        {
+          "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+          "damage_class": "flat_tyre",
+          "faithfulness": 0.5,
+          "answer_relevancy": 0.460427958513595,
+          "answer_correctness": 0.31458955712453096
+        },
+        {
+          "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+          "damage_class": "scratch",
+          "faithfulness": 0.5,
+          "answer_relevancy": 0.6774592335246484,
+          "answer_correctness": 0.5690824974981452
+        }
+      ]
+    },
+    "openai/gpt-oss-20b": {
+      "n_items": 14,
+      "judge_model": "gemini-2.5-flash",
+      "mean_faithfulness": 0.52,
+      "mean_answer_relevancy": 0.481,
+      "mean_answer_correctness": 0.593,
+      "per_item": [
+        {
+          "claim_id": "CLAIM_01_dent_minor_clean",
+          "damage_class": "dent",
+          "faithfulness": 0.7142857142857143,
+          "answer_relevancy": 0.5847332409965097,
+          "answer_correctness": 0.5790076109404451
+        },
+        {
+          "claim_id": "CLAIM_02_glass_severe_stone",
+          "damage_class": "shattered_glass",
+          "faithfulness": 0.42857142857142855,
+          "answer_relevancy": 0.5582524335289961,
+          "answer_correctness": 0.6641211444156025
+        },
+        {
+          "claim_id": "CLAIM_03_flat_tyre_alone_no_body_damage",
+          "damage_class": "flat_tyre",
+          "faithfulness": 0.5,
+          "answer_relevancy": 0.4708448951326791,
+          "answer_correctness": 0.6028492221841862
+        },
+        {
+          "claim_id": "CLAIM_04_multi_pileup_severe",
+          "damage_class": "dent",
+          "faithfulness": 0.5555555555555556,
+          "answer_relevancy": 0.5218096033019075,
+          "answer_correctness": 0.8120504940318395
+        },
+        {
+          "claim_id": "CLAIM_04_multi_pileup_severe",
+          "damage_class": "crack",
+          "faithfulness": 0.5714285714285714,
+          "answer_relevancy": 0.41947104291471343,
+          "answer_correctness": 0.902682800494371
+        },
+        {
+          "claim_id": "CLAIM_04_multi_pileup_severe",
+          "damage_class": "broken_lamp",
+          "faithfulness": 0.75,
+          "answer_relevancy": 0.0,
+          "answer_correctness": 0.42583470464361367
+        },
+        {
+          "claim_id": "CLAIM_05_scratch_vandalism_keyed",
+          "damage_class": "scratch",
+          "faithfulness": 0.5,
+          "answer_relevancy": 0.4364453021763172,
+          "answer_correctness": 0.6235341602841559
+        },
+        {
+          "claim_id": "CLAIM_06_low_confidence_dent",
+          "damage_class": "dent",
+          "faithfulness": 0.42857142857142855,
+          "answer_relevancy": 0.4943184828737685,
+          "answer_correctness": 0.09861852424810394
+        },
+        {
+          "claim_id": "CLAIM_07_glass_vandalism_window",
+          "damage_class": "shattered_glass",
+          "faithfulness": 0.4,
+          "answer_relevancy": 0.5095621195561012,
+          "answer_correctness": 0.19009793068110156
+        },
+        {
+          "claim_id": "CLAIM_08_crack_lamp_rearend",
+          "damage_class": "crack",
+          "faithfulness": 0.6666666666666666,
+          "answer_relevancy": 0.6190375354401708,
+          "answer_correctness": 0.5555341211767811
+        },
+        {
+          "claim_id": "CLAIM_08_crack_lamp_rearend",
+          "damage_class": "broken_lamp",
+          "faithfulness": 0.2727272727272727,
+          "answer_relevancy": 0.6408257989447607,
+          "answer_correctness": 0.9028162810558844
+        },
+        {
+          "claim_id": "CLAIM_09_multi_instance_hail_dents",
+          "damage_class": "dent",
+          "faithfulness": 0.8181818181818182,
+          "answer_relevancy": 0.4227403759492107,
+          "answer_correctness": 0.37351805681768857
+        },
+        {
+          "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+          "damage_class": "flat_tyre",
+          "faithfulness": 0.25,
+          "answer_relevancy": 0.5275890629805945,
+          "answer_correctness": 0.8281582442515943
+        },
+        {
+          "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+          "damage_class": "scratch",
+          "faithfulness": 0.42857142857142855,
+          "answer_relevancy": 0.5335265911240141,
+          "answer_correctness": 0.73761535192522
+        }
+      ]
+    }
+  }
+}

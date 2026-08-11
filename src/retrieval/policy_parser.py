@@ -13,7 +13,7 @@ import logging
 import re
 
 import pdfplumber
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 log = logging.getLogger(__name__)
 

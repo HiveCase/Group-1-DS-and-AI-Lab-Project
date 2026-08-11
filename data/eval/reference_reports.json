@@ -1,0 +1,100 @@
+[
+  {
+    "claim_id": "CLAIM_01_dent_minor_clean",
+    "damage_class": "dent",
+    "reference_verdict": "covered",
+    "reference_rationale": "Struck by an adjacent car door while parking is impact damage from another vehicle, squarely covered by the accidental-external-means clause (dents from collision/impact with another vehicle or stationary object). No offered exclusion applies: the Rs.1,000 deductible reduces the payout, not admissibility, and the tyre-alone exclusion is irrelevant to a dent claim.",
+    "reference_cited_chunk_ids": ["chunk_00004", "chunk_00002"]
+  },
+  {
+    "claim_id": "CLAIM_02_glass_severe_stone",
+    "damage_class": "shattered_glass",
+    "reference_verdict": "covered",
+    "reference_rationale": "Windscreen glass damage from a stone thrown up by a passing truck is covered: the coverage table lists 'Windscreen, rear screen, side windows' at nil depreciation with no condition of concurrent damage (the concurrent-damage condition attaches to the tyre/tube row of the same table, not glass). None of the offered Glass Exclusions (commercial-carrier registration, tint film, age-related delamination, sunroof add-on, dry-wiper scratching) describe a stone-impact break.",
+    "reference_cited_chunk_ids": ["chunk_00004", "chunk_00005"]
+  },
+  {
+    "claim_id": "CLAIM_03_flat_tyre_alone_no_body_damage",
+    "damage_class": "flat_tyre",
+    "reference_verdict": "excluded",
+    "reference_rationale": "The only tyre coverage clause offered conditions payment on the vehicle having 'also been damaged in the same incident.' The narrative states no other part of the vehicle was affected, so the condition is unmet and the claim is excluded under that same coverage clause -- no separate dedicated exclusion clause is needed to reach this result.",
+    "reference_cited_chunk_ids": ["chunk_00006"]
+  },
+  {
+    "claim_id": "CLAIM_04_multi_pileup_severe",
+    "damage_class": "dent",
+    "reference_verdict": "covered",
+    "reference_rationale": "The operative clause indemnifies 'accidental loss or damage to the vehicle insured' with no peril restriction; a three-vehicle pileup is squarely accidental external damage. The only panel exclusion offered (A1: metal fatigue, long-term vibration, corrosion) does not describe a pileup.",
+    "reference_cited_chunk_ids": ["chunk_00002"]
+  },
+  {
+    "claim_id": "CLAIM_04_multi_pileup_severe",
+    "damage_class": "crack",
+    "reference_verdict": "needs_review",
+    "reference_rationale": "No coverage clause for crack damage was actually retrieved -- the sole entry in the 'coverage' bucket (chunk_00009) is an unrelated tyre-damage special condition. The offered exclusions (C2 engine-block/mechanical cracks, C5 chassis stress fatigue) do not preclude a bumper crack from a pileup, but nothing offered affirmatively brings bumper cracks into coverage either, so coverage cannot be confirmed from the evidence given. A model asserting 'the policy covers cracks' here is not grounded in any shown clause.",
+    "reference_cited_chunk_ids": []
+  },
+  {
+    "claim_id": "CLAIM_04_multi_pileup_severe",
+    "damage_class": "broken_lamp",
+    "reference_verdict": "needs_review",
+    "reference_rationale": "Same gap as the crack item: the only 'coverage' bucket entry (chunk_00009) is the unrelated tyre-damage condition, not a lamp coverage clause. The offered Lamp Exclusions (D1 electrical fault, D2 non-OEM bulbs) don't apply to impact damage, but no clause affirmatively covers lamp breakage either.",
+    "reference_cited_chunk_ids": []
+  },
+  {
+    "claim_id": "CLAIM_05_scratch_vandalism_keyed",
+    "damage_class": "scratch",
+    "reference_verdict": "covered",
+    "reference_rationale": "The coverage clause explicitly includes 'paint and body abrasions arising from ... intentional acts.' Being keyed overnight by a vandal is a single, identifiable intentional act -- not the gradual/cumulative damage or routine-car-wash damage the two offered exclusions describe -- so neither exclusion applies and the claim is covered outright, not merely conditional.",
+    "reference_cited_chunk_ids": ["chunk_00003"]
+  },
+  {
+    "claim_id": "CLAIM_06_low_confidence_dent",
+    "damage_class": "dent",
+    "reference_verdict": "needs_review",
+    "reference_rationale": "The narrative itself is uncertain whether this is fresh damage at all ('unclear from the photo'), compounded by a low YOLO detection confidence (0.35). This is exactly the 'cannot decide confidently' case needs_review exists for, independent of which clause would apply once the damage is confirmed real. escalate_to_human should be true.",
+    "reference_cited_chunk_ids": ["chunk_00004"]
+  },
+  {
+    "claim_id": "CLAIM_07_glass_vandalism_window",
+    "damage_class": "shattered_glass",
+    "reference_verdict": "conditional",
+    "reference_rationale": "The general glass-coverage clause is qualified by an offered exclusion fragment stating glass claims '...without concurrent vehicle body damage are not admissible.' The narrative describes only window damage with no mention of body damage, so admissibility under that condition cannot be confirmed from the evidence given.",
+    "reference_cited_chunk_ids": ["chunk_00007", "chunk_00012"]
+  },
+  {
+    "claim_id": "CLAIM_08_crack_lamp_rearend",
+    "damage_class": "crack",
+    "reference_verdict": "covered",
+    "reference_rationale": "The coverage table explicitly lists 'Panel fractures / Cracks to bumpers, door panels, trims from impact' as covered. A rear-end shunt cracking the bumper is exactly this peril; the offered Crack Exclusions (engine block, interior trim, aftermarket bodywork) do not describe a bumper struck in a collision.",
+    "reference_cited_chunk_ids": ["chunk_00004"]
+  },
+  {
+    "claim_id": "CLAIM_08_crack_lamp_rearend",
+    "damage_class": "broken_lamp",
+    "reference_verdict": "covered",
+    "reference_rationale": "The same coverage table lists 'Headlamps, tail lamps ... broken / Lighting assembly damage by impact' as covered. A rear-end shunt cracking the tail-light housing is impact damage to the lighting assembly; the offered Lamp Exclusions (electrical fault, non-OEM bulbs) each require the absence of physical impact damage, which is not the case here.",
+    "reference_cited_chunk_ids": ["chunk_00004"]
+  },
+  {
+    "claim_id": "CLAIM_09_multi_instance_hail_dents",
+    "damage_class": "dent",
+    "reference_verdict": "needs_review",
+    "reference_rationale": "The only dent-coverage clause offered ties dents to 'collision, impact with another vehicle or stationary object' -- discrete-object impact language, not a weather/hailstorm peril. No natural-calamity/hailstorm peril clause was retrieved for this policy in this payload (other policies in this corpus separately list hailstorm as a covered natural-calamity peril, which underscores the omission here), so hail-caused dents cannot be confirmed as covered from the evidence shown.",
+    "reference_cited_chunk_ids": ["chunk_00004"]
+  },
+  {
+    "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+    "damage_class": "flat_tyre",
+    "reference_verdict": "covered",
+    "reference_rationale": "The tyre-coverage clause conditions payment on the vehicle having 'also been damaged in the same incident.' This same claim also reports scratch damage to the lower sill from the same flood-debris event, which satisfies that condition -- the concurrent-damage requirement is met by the co-reported scratch, so the tyre damage is covered at the stated 50% deduction, not merely conditional.",
+    "reference_cited_chunk_ids": ["chunk_00006"]
+  },
+  {
+    "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+    "damage_class": "scratch",
+    "reference_verdict": "covered",
+    "reference_rationale": "The cosmetic-damage clause covers scratching 'caused by an accidental ... event'; road debris on a flooded road striking the lower sill is such an event. No offered scratch exclusion (car-wash brushes, UV fade, loading/unloading) applies.",
+    "reference_cited_chunk_ids": ["chunk_00004", "chunk_00003"]
+  }
+]
