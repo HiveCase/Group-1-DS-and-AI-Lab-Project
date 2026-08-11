@@ -1,20 +1,3 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: claims-portal
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: claims-portal-data
-  namespace: claims-portal
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -44,9 +27,9 @@ spec:
             - name: UPLOAD_DIR
               value: /data/uploads
             - name: MODEL_DIR
-              value: /app/backend/models
+              value: /app/models
             - name: DATA_DIR
-              value: /app/backend/data
+              value: /app/data
           readinessProbe:
             httpGet:
               path: /health

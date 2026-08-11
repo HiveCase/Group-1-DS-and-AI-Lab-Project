@@ -15,7 +15,7 @@ env:
 
 jobs:
   test:
-    name: Test
+    name: Test (CI)
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +28,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install backend dependencies
-        run: pip install -r backend/requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Run backend tests
         run: |
@@ -60,7 +60,7 @@ jobs:
         run: npm run build
 
   build-and-deploy:
-    name: Build and Deploy
+    name: Build and Deploy (CD)
     needs: test
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest

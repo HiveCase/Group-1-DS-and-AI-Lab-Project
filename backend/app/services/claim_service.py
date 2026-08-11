@@ -57,10 +57,12 @@ class ClaimService:
             raise HTTPException(status_code=404, detail="claim not found")
         return claim
 
-    def list_claims(self, status: str | None = None) -> list[Claim]:
+    def list_claims(self, status: str | list[str] | None = None) -> list[Claim]:
         query = self.db.query(Claim).order_by(Claim.submitted_at.desc())
-        if status:
+        if isinstance(status, str):
             query = query.filter(Claim.status == status)
+        elif status:
+            query = query.filter(Claim.status.in_(status))
         return query.all()
 
     def _next_claim_id(self) -> str:

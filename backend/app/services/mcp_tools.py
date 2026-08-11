@@ -29,9 +29,15 @@ def build_toolkit(damage_service: DamageDetectionService | None = None, severity
         return severity_service.score_detections(detections, image_width=image_width, image_height=image_height)
 
     @tool
-    def retrieve_policy_clauses_tool(claim_type: str, amount: str | None) -> list[dict[str, Any]]:
-        """Retrieve relevant policy clauses for a claim using the policy retrieval service."""
-        return policy_service.retrieve_clauses(claim_type, amount)
+    def retrieve_policy_clauses_tool(
+        policy_number: str | None,
+        damage_classes: list[str],
+        incident_description: str,
+        claimed_amount: str | None,
+        policy_limit: str | None,
+    ) -> list[dict[str, Any]]:
+        """Retrieve source-cited policy clauses for the claim's detected damage classes and check the claimed amount against the policy limit."""
+        return policy_service.retrieve_clauses(policy_number, damage_classes, incident_description, claimed_amount, policy_limit)
 
     @tool
     def synthesize_report_tool(detections: list[dict[str, Any]], severity_summary: dict[str, Any], policy_findings: list[dict[str, Any]]) -> dict[str, Any]:

@@ -12,5 +12,5 @@ __pycache__/
 venv/
 dist/
 build/
-backend/data/claims.db
+data/claims.db
 uploads/

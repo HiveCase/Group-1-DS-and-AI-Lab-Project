@@ -1,0 +1,157 @@
+{
+  "method": "paired bootstrap over 50 incidents, 10000 resamples, seed 20260807; baseline = production config",
+  "p3_quantum": 0.00667,
+  "quantum_note": "smallest possible change in mean P@3 = one top-3 slot on one incident",
+  "comparisons": [
+    {
+      "config": "production (3:1, k=60, pool=20)",
+      "mean_p3": 0.9133,
+      "delta_vs_production": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "incidents_differing": 0,
+      "top3_slots_differing": 0,
+      "significant": false
+    },
+    {
+      "config": "dense-only (1:0)",
+      "mean_p3": 0.8933,
+      "delta_vs_production": -0.02,
+      "ci95_low": -0.0667,
+      "ci95_high": 0.0267,
+      "incidents_differing": 13,
+      "top3_slots_differing": 13,
+      "significant": false
+    },
+    {
+      "config": "sparse-only (0:1)",
+      "mean_p3": 0.74,
+      "delta_vs_production": -0.1733,
+      "ci95_low": -0.24,
+      "ci95_high": -0.1067,
+      "incidents_differing": 22,
+      "top3_slots_differing": 28,
+      "significant": true
+    },
+    {
+      "config": "ratio 2:1",
+      "mean_p3": 0.9133,
+      "delta_vs_production": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "incidents_differing": 0,
+      "top3_slots_differing": 0,
+      "significant": false
+    },
+    {
+      "config": "ratio 1:1",
+      "mean_p3": 0.9067,
+      "delta_vs_production": -0.0067,
+      "ci95_low": -0.0333,
+      "ci95_high": 0.02,
+      "incidents_differing": 5,
+      "top3_slots_differing": 5,
+      "significant": false
+    },
+    {
+      "config": "ratio 4:1",
+      "mean_p3": 0.9067,
+      "delta_vs_production": -0.0067,
+      "ci95_low": -0.02,
+      "ci95_high": 0.0,
+      "incidents_differing": 1,
+      "top3_slots_differing": 1,
+      "significant": false
+    },
+    {
+      "config": "rrf_k=5",
+      "mean_p3": 0.9133,
+      "delta_vs_production": 0.0,
+      "ci95_low": -0.04,
+      "ci95_high": 0.0335,
+      "incidents_differing": 8,
+      "top3_slots_differing": 8,
+      "significant": false
+    },
+    {
+      "config": "rrf_k=10",
+      "mean_p3": 0.8933,
+      "delta_vs_production": -0.02,
+      "ci95_low": -0.0467,
+      "ci95_high": 0.0067,
+      "incidents_differing": 5,
+      "top3_slots_differing": 5,
+      "significant": false
+    },
+    {
+      "config": "rrf_k=100",
+      "mean_p3": 0.9133,
+      "delta_vs_production": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0,
+      "incidents_differing": 0,
+      "top3_slots_differing": 0,
+      "significant": false
+    },
+    {
+      "config": "rrf_k=1000",
+      "mean_p3": 0.9067,
+      "delta_vs_production": -0.0067,
+      "ci95_low": -0.02,
+      "ci95_high": 0.0,
+      "incidents_differing": 1,
+      "top3_slots_differing": 1,
+      "significant": false
+    },
+    {
+      "config": "pool=3",
+      "mean_p3": 0.8933,
+      "delta_vs_production": -0.02,
+      "ci95_low": -0.0667,
+      "ci95_high": 0.0267,
+      "incidents_differing": 13,
+      "top3_slots_differing": 13,
+      "significant": false
+    },
+    {
+      "config": "pool=5",
+      "mean_p3": 0.9133,
+      "delta_vs_production": 0.0,
+      "ci95_low": -0.04,
+      "ci95_high": 0.04,
+      "incidents_differing": 10,
+      "top3_slots_differing": 10,
+      "significant": false
+    },
+    {
+      "config": "pool=10 (grid best)",
+      "mean_p3": 0.92,
+      "delta_vs_production": 0.0067,
+      "ci95_low": -0.02,
+      "ci95_high": 0.0333,
+      "incidents_differing": 5,
+      "top3_slots_differing": 5,
+      "significant": false
+    },
+    {
+      "config": "pool=50",
+      "mean_p3": 0.92,
+      "delta_vs_production": 0.0067,
+      "ci95_low": 0.0,
+      "ci95_high": 0.02,
+      "incidents_differing": 1,
+      "top3_slots_differing": 1,
+      "significant": false
+    },
+    {
+      "config": "pool=100",
+      "mean_p3": 0.92,
+      "delta_vs_production": 0.0067,
+      "ci95_low": 0.0,
+      "ci95_high": 0.02,
+      "incidents_differing": 1,
+      "top3_slots_differing": 1,
+      "significant": false
+    }
+  ]
+}

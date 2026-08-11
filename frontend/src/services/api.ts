@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const defaultBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? '/api' : '');
+
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  baseURL: defaultBaseUrl,
   timeout: 10000,
 });
 
@@ -52,6 +54,11 @@ export async function submitDecision(claimId: string, payload: Record<string, un
 
 export async function getSIUDashboard() {
   const response = await client.get('/claims/siu-dashboard');
+  return response.data;
+}
+
+export async function submitSIUAction(claimId: string, payload: Record<string, unknown>) {
+  const response = await client.post(`/claims/${claimId}/siu-action`, payload);
   return response.data;
 }
 

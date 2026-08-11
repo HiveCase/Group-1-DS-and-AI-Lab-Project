@@ -1,17 +1,49 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from typing import Any
 
 from app.core.config import get_settings
 from app.services.langfuse_observability import LangfuseObserver
 
+logger = logging.getLogger("claims_portal.report_synthesis_service")
+
+SYSTEM_PROMPT = """You are a preliminary motor-insurance claims assessment assistant.
+
+You receive a JSON payload with: detected vehicle damage regions (class, \
+confidence, severity), an overall severity summary, and policy-clause \
+findings retrieved for the claim (coverage clauses, exclusion/condition \
+clauses, and a policy-limit check).
+
+Rules you must follow exactly:
+1. Only use clause text present in payload.policy_findings. Never invent, \
+assume, or recall from general knowledge any coverage term, exclusion, \
+deductible, or limit not present in the given clause text.
+2. Do not state or compute any new currency amount. A policy-limit check is \
+already provided in payload.policy_findings if applicable -- reuse it, \
+don't recompute it.
+3. Output ONLY valid JSON, no prose outside the JSON, matching exactly this schema:
+{
+  "damage_table": [{"class": string, "severity": string, "confidence": number}],
+  "severity_summary": object (copy payload.severity_summary as-is),
+  "applicable_coverage": [{"summary": string, "citations": [{"clause_id": string, "source": string}]}],
+  "recommendation": "Approve" | "Investigate" | "Deny",
+  "confidence_score": number between 0 and 1,
+  "next_steps": [string]
+}
+4. Base confidence_score on how directly the retrieved clauses and detections support the recommendation -- low if clauses are missing or ambiguous.
+"""
+
 
 class ReportSynthesisService:
-    def __init__(self, ollama_model: str | None = None):
+    def __init__(self, groq_model: str | None = None, max_retries: int = 3):
         settings = get_settings()
-        self.ollama_model = ollama_model or settings.ollama_model
-        self.ollama_base_url = settings.ollama_base_url
+        self.groq_api_key = settings.groq_api_key
+        self.groq_model = groq_model or settings.groq_model
+        self.groq_base_url = settings.groq_base_url
+        self.max_retries = max_retries
         self.observer = LangfuseObserver()
 
     def synthesize_report(self, detections: list[dict[str, Any]], severity_summary: dict[str, Any], policy_findings: list[dict[str, Any]]) -> dict[str, Any]:
@@ -21,8 +53,9 @@ class ReportSynthesisService:
             "policy_findings": policy_findings,
         }
         try:
-            response = self._call_ollama(payload)
+            response = self._call_groq(payload)
         except Exception:
+            logger.exception("Groq report synthesis failed; using deterministic fallback")
             response = self._fallback_report(payload)
 
         report = {
@@ -37,25 +70,41 @@ class ReportSynthesisService:
             name="claim_report_synthesis",
             input_data={"detections": detections, "severity_summary": severity_summary, "policy_findings": policy_findings},
             output_data=report,
-            metadata={"model": self.ollama_model},
+            metadata={"model": self.groq_model},
         )
         return report
 
-    def _call_ollama(self, payload: dict[str, Any]) -> dict[str, Any]:
-        import requests
+    def _call_groq(self, payload: dict[str, Any]) -> dict[str, Any]:
+        if not self.groq_api_key:
+            raise RuntimeError("GROQ_API_KEY is not configured")
 
-        response = requests.post(
-            self.ollama_base_url + "/api/generate",
-            json={
-                "model": self.ollama_model,
-                "prompt": json.dumps(payload),
-                "stream": False,
-            },
-            timeout=5,
-        )
-        response.raise_for_status()
-        data = response.json()
-        return json.loads(data.get("response", "{}"))
+        from openai import OpenAI
+
+        client = OpenAI(api_key=self.groq_api_key, base_url=self.groq_base_url)
+        user_content = json.dumps(payload)
+
+        last_error: Exception | None = None
+        for attempt in range(self.max_retries):
+            try:
+                response = client.chat.completions.create(
+                    model=self.groq_model,
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_content},
+                    ],
+                    temperature=0.2,
+                    response_format={"type": "json_object"},
+                )
+                return json.loads(response.choices[0].message.content)
+            except json.JSONDecodeError as error:
+                last_error = error
+                logger.warning("Groq attempt %d/%d: JSON parse error: %s", attempt + 1, self.max_retries, error)
+            except Exception as error:  # noqa: BLE001 - retried below, re-raised after exhausting attempts
+                last_error = error
+                logger.warning("Groq attempt %d/%d failed: %s", attempt + 1, self.max_retries, error)
+                time.sleep(2 * (attempt + 1))
+
+        raise last_error or RuntimeError("Groq report synthesis failed with no error detail")
 
     def _fallback_report(self, payload: dict[str, Any]) -> dict[str, Any]:
         return {

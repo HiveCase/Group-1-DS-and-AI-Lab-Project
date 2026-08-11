@@ -11,81 +11,87 @@
 
     <div class="grid two-col">
       <div class="card">
-        <h2>Policy lookup</h2>
+        <h2 class="section-title">Policy lookup</h2>
         <div class="inline-group">
-          <input v-model="policyNumber" placeholder="Enter policy number" />
-          <button type="button" @click="lookUpPolicy">Lookup policy</button>
+          <InputText v-model="policyNumber" placeholder="Enter policy number" />
+          <Button label="Lookup policy" @click="lookUpPolicy" />
         </div>
-        <p v-if="policyDetails" class="status">Policy {{ policyDetails.policy_number }} is {{ policyDetails.status }} with limit {{ policyDetails.policy_limit }}</p>
-        <p v-if="policyError" class="error">{{ policyError }}</p>
+        <p v-if="policyDetails" class="status">Policy {{ policyDetails.policy_number || policyDetails.policyNumber }} is {{ policyDetails.status || 'active' }} with limit {{ policyDetails.policy_limit || policyDetails.limit }}</p>
+        <Message v-if="policyError" severity="error">{{ policyError }}</Message>
       </div>
 
       <div class="card">
-        <h2>Claim status</h2>
+        <h2 class="section-title">Claim status</h2>
         <div class="inline-group">
-          <input v-model="lookupClaimId" placeholder="Enter claim ID" />
-          <button type="button" @click="lookUpClaim">Check status</button>
+          <InputText v-model="lookupClaimId" placeholder="Enter claim ID" />
+          <Button label="Check status" @click="lookUpClaim" />
         </div>
         <p v-if="claimStatus" class="status">{{ claimStatus }}</p>
-        <p v-if="claimError" class="error">{{ claimError }}</p>
+        <Message v-if="claimError" severity="error">{{ claimError }}</Message>
       </div>
     </div>
 
     <form class="card" @submit.prevent="submitClaim">
-      <h2>Submit a new claim</h2>
+      <h2 class="section-title">Submit a new claim</h2>
       <div class="grid two-col">
         <label>
           Policy Number
-          <input v-model="policyNumber" placeholder="Enter policy number" />
+          <InputText v-model="policyNumber" placeholder="Enter policy number" />
         </label>
         <label>
           Claimant Name
-          <input v-model="claimantName" placeholder="Full name" />
+          <InputText v-model="claimantName" placeholder="Full name" />
         </label>
         <label>
           Contact Information
-          <input v-model="contactInfo" placeholder="Email or phone" />
+          <InputText v-model="contactInfo" placeholder="Email or phone" />
         </label>
         <label>
           Incident Date
-          <input v-model="incidentDate" type="date" />
+          <DatePicker v-model="incidentDate" dateFormat="yy-mm-dd" showIcon />
         </label>
       </div>
       <label>
         Incident Description
-        <textarea v-model="incidentDescription" placeholder="Describe the incident"></textarea>
+        <Textarea v-model="incidentDescription" rows="3" placeholder="Describe the incident" />
       </label>
       <label>
         Claimed Amount
-        <input v-model="claimedAmount" type="number" />
+        <InputNumber v-model="claimedAmount" mode="currency" currency="USD" locale="en-US" />
       </label>
       <label>
         Damage Photos
         <input type="file" accept="image/*" multiple @change="selectPhotos" />
       </label>
       <p class="muted">{{ photos.length }} photo(s) selected</p>
-      <button type="submit">Submit Claim</button>
+      <Button type="submit" label="Submit Claim" :loading="submitting" />
     </form>
 
     <div v-if="message" class="card success-panel">
-      <h2>Confirmation</h2>
+      <h2 class="section-title">Confirmation</h2>
       <p class="status">{{ message }}</p>
       <p v-if="submittedClaimId">Status: submitted</p>
     </div>
-    <p v-if="submitError" class="error">{{ submitError }}</p>
+    <Message v-if="submitError" severity="error">{{ submitError }}</Message>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
+import Textarea from 'primevue/textarea';
+import DatePicker from 'primevue/datepicker';
+import Button from 'primevue/button';
+import Message from 'primevue/message';
 import { getClaim, lookupPolicy, submitClaim as submitClaimApi } from '../services/api';
 
 const policyNumber = ref('');
 const claimantName = ref('');
 const contactInfo = ref('');
-const incidentDate = ref('');
+const incidentDate = ref(null);
 const incidentDescription = ref('');
-const claimedAmount = ref('');
+const claimedAmount = ref(null);
 const photos = ref([]);
 const message = ref('');
 const submittedClaimId = ref('');
@@ -95,6 +101,7 @@ const claimError = ref('');
 const policyDetails = ref(null);
 const policyError = ref('');
 const submitError = ref('');
+const submitting = ref(false);
 
 const lookUpPolicy = async () => {
   policyError.value = '';
@@ -110,32 +117,41 @@ const selectPhotos = (event) => {
   photos.value = Array.from(event.target.files || []);
 };
 
+const toIsoDate = (value) => {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  return date.toISOString().slice(0, 10);
+};
+
 const submitClaim = async () => {
   submitError.value = '';
   message.value = '';
 
-  try {
-    if (photos.value.length < 1 || photos.value.length > 5) {
-      submitError.value = 'Upload between 1 and 5 photos';
-      return;
-    }
+  if (photos.value.length < 1 || photos.value.length > 5) {
+    submitError.value = 'Upload between 1 and 5 photos';
+    return;
+  }
 
+  submitting.value = true;
+  try {
     const payload = {
       policy_number: policyNumber.value,
       claimant_name: claimantName.value,
       contact_info: contactInfo.value,
-      incident_date: incidentDate.value,
+      incident_date: toIsoDate(incidentDate.value),
       incident_description: incidentDescription.value,
       claimed_amount: Number(claimedAmount.value),
       photos: photos.value,
     };
 
     const response = await submitClaimApi(payload);
-    submittedClaimId.value = response.claim_id;
-    lookupClaimId.value = response.claim_id;
-    message.value = `Claim submitted successfully with id ${response.claim_id}`;
+    submittedClaimId.value = response.claim_id || response.id || '';
+    lookupClaimId.value = submittedClaimId.value;
+    message.value = `Claim submitted successfully with id ${submittedClaimId.value}`;
   } catch (error) {
     submitError.value = error.response?.data?.detail || 'Unable to submit claim';
+  } finally {
+    submitting.value = false;
   }
 };
 
@@ -144,7 +160,7 @@ const lookUpClaim = async () => {
   claimStatus.value = '';
   try {
     const response = await getClaim(lookupClaimId.value);
-    claimStatus.value = `Claim ${response.claim_id} is ${response.status}`;
+    claimStatus.value = `Claim ${response.claim_id || response.id || lookupClaimId.value} is ${response.status || 'unknown'}`;
   } catch (error) {
     claimError.value = error.response?.data?.detail || 'Unable to find claim';
   }

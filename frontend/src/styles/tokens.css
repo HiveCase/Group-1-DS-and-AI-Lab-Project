@@ -1,0 +1,55 @@
+:root {
+  color-scheme: light;
+
+  /* Shared palette */
+  --color-bg: #f4f7fb;
+  --color-surface: #ffffff;
+  --color-border: #d7dee8;
+  --color-text: #14213d;
+  --color-text-muted: #5b677a;
+
+  /* Portal accents (also drive PrimeVue primary color via App.vue route meta) */
+  --portal-claimant: #2563eb;
+  --portal-adjuster: #0f766e;
+  --portal-siu: #7c3aed;
+  --portal-supervisor: #b45309;
+  --accent: var(--portal-claimant);
+
+  /* Status/severity language: green = minor/approve, amber = moderate/investigate, red = severe/deny */
+  --status-good: #166534;
+  --status-good-bg: #dcfce7;
+  --status-warning: #92400e;
+  --status-warning-bg: #fef3c7;
+  --status-danger: #b91c1c;
+  --status-danger-bg: #fee2e2;
+  --status-neutral: #475569;
+  --status-neutral-bg: #e2e8f0;
+
+  /* Type scale */
+  --font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-card-hover: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+/* Severity/recommendation color language, reused by StatusTag and PrimeVue Tag severity overrides */
+.status-good { color: var(--status-good); background: var(--status-good-bg); }
+.status-warning { color: var(--status-warning); background: var(--status-warning-bg); }
+.status-danger { color: var(--status-danger); background: var(--status-danger-bg); }
+.status-neutral { color: var(--status-neutral); background: var(--status-neutral-bg); }

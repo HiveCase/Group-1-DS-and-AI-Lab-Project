@@ -28,8 +28,8 @@ data/raw/*
 data/processed/*
 models/checkpoints/*
 outputs/*
-backend/data/ci_claims.db
-backend/uploads-ci/
+data/ci_claims.db
+uploads-ci/
 .local-data/
 
 # Per-user runtime state. Never commit these: policies/ holds the documents

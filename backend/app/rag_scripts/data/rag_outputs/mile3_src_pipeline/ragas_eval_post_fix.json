@@ -1,0 +1,109 @@
+{
+  "gemini-2.5-flash": {
+    "n_items": 14,
+    "judge_model": "gemini-2.5-flash",
+    "mean_faithfulness": 0.475,
+    "mean_answer_relevancy": 0.489,
+    "mean_answer_correctness": 0.659,
+    "per_item": [
+      {
+        "claim_id": "CLAIM_01_dent_minor_clean",
+        "damage_class": "dent",
+        "faithfulness": 0.42857142857142855,
+        "answer_relevancy": 0.6611479598300599,
+        "answer_correctness": 0.7250150383018609
+      },
+      {
+        "claim_id": "CLAIM_02_glass_severe_stone",
+        "damage_class": "shattered_glass",
+        "faithfulness": 0.8666666666666667,
+        "answer_relevancy": 0.0,
+        "answer_correctness": 0.27236129255295327
+      },
+      {
+        "claim_id": "CLAIM_03_flat_tyre_alone_no_body_damage",
+        "damage_class": "flat_tyre",
+        "faithfulness": 0.4,
+        "answer_relevancy": 0.4538522090455404,
+        "answer_correctness": 0.7858880767493777
+      },
+      {
+        "claim_id": "CLAIM_04_multi_pileup_severe",
+        "damage_class": "dent",
+        "faithfulness": 0.5454545454545454,
+        "answer_relevancy": 0.5140550054756454,
+        "answer_correctness": 0.7600939709989918
+      },
+      {
+        "claim_id": "CLAIM_04_multi_pileup_severe",
+        "damage_class": "crack",
+        "faithfulness": 0.5,
+        "answer_relevancy": 0.5367063172885485,
+        "answer_correctness": 0.5513565650549275
+      },
+      {
+        "claim_id": "CLAIM_04_multi_pileup_severe",
+        "damage_class": "broken_lamp",
+        "faithfulness": 0.6153846153846154,
+        "answer_relevancy": 0.6381607804634369,
+        "answer_correctness": 0.48744995660416957
+      },
+      {
+        "claim_id": "CLAIM_05_scratch_vandalism_keyed",
+        "damage_class": "scratch",
+        "faithfulness": 0.5,
+        "answer_relevancy": 0.5548117156054279,
+        "answer_correctness": 0.7804071448691603
+      },
+      {
+        "claim_id": "CLAIM_06_low_confidence_dent",
+        "damage_class": "dent",
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.42282631401632664,
+        "answer_correctness": 0.7151305462594735
+      },
+      {
+        "claim_id": "CLAIM_07_glass_vandalism_window",
+        "damage_class": "shattered_glass",
+        "faithfulness": 0.375,
+        "answer_relevancy": 0.0,
+        "answer_correctness": 0.5996914692828227
+      },
+      {
+        "claim_id": "CLAIM_08_crack_lamp_rearend",
+        "damage_class": "crack",
+        "faithfulness": 0.2,
+        "answer_relevancy": 0.6065222177226038,
+        "answer_correctness": 0.7702453255291319
+      },
+      {
+        "claim_id": "CLAIM_08_crack_lamp_rearend",
+        "damage_class": "broken_lamp",
+        "faithfulness": 0.3333333333333333,
+        "answer_relevancy": 0.6191058446765433,
+        "answer_correctness": 0.7931744529226312
+      },
+      {
+        "claim_id": "CLAIM_09_multi_instance_hail_dents",
+        "damage_class": "dent",
+        "faithfulness": 0.8181818181818182,
+        "answer_relevancy": 0.5835924476358807,
+        "answer_correctness": 0.4015118060146148
+      },
+      {
+        "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+        "damage_class": "flat_tyre",
+        "faithfulness": 0.5,
+        "answer_relevancy": 0.5386343902707774,
+        "answer_correctness": 0.6995140974746077
+      },
+      {
+        "claim_id": "CLAIM_10_tyre_scratch_flood_debris",
+        "damage_class": "scratch",
+        "faithfulness": 0.5714285714285714,
+        "answer_relevancy": 0.7198539142408241,
+        "answer_correctness": 0.8879205686868626
+      }
+    ]
+  }
+}

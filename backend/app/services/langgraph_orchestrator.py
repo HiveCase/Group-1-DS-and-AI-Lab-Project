@@ -132,10 +132,16 @@ class LangGraphClaimOrchestrator:
 
     def _retrieve_policy(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
         claim = state.get("claim")
+        policy = state.get("policy")
+        detections = state.get("detections") or []
+        damage_classes = sorted({d.get("class_name") for d in detections if d.get("class_name")})
         state["policy_findings"] = self._call_tool(
             "retrieve_policy_clauses_tool",
+            getattr(policy, "policy_number", None),
+            damage_classes,
             getattr(claim, "incident_description", ""),
             getattr(claim, "claimed_amount", None),
+            getattr(policy, "policy_limit", None),
         )
         return state
 

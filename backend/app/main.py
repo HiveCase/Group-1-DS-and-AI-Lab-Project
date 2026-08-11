@@ -20,6 +20,7 @@ from app.db.database import SessionLocal, init_db
 from app.routes.analytics import router as analytics_router
 from app.routes.claims import router as claims_router
 from app.routes.policies import router as policies_router
+from app.services.policy_clause_service import PolicyClauseService
 from app.services.policy_service import PolicyService
 
 
@@ -79,6 +80,7 @@ def initialize_app_data():
         PolicyService(db).seed_defaults()
     finally:
         db.close()
+    PolicyClauseService().ensure_all_seeded_policies_ingested()
 
 
 initialize_app_data()

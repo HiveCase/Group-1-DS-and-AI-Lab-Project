@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from sqlalchemy import func
 
 from app.db.models import AnalysisResult, Claim, DecisionRecord
@@ -30,5 +32,46 @@ class AnalyticsService:
             'average_fraud_score': float(avg_fraud_score),
             'severity_counts': severity_counts,
             'coverage_flag_rate': float(coverage_flag_rate),
-            'claims_processed_today': 0,
+            'claims_processed_today': self._claims_processed_today(),
+            'system_status': self._system_status(),
+        }
+
+    def _claims_processed_today(self) -> int:
+        # completed_at/created_at are stored via datetime.utcnow(), so the
+        # "today" boundary must also be computed in UTC -- comparing against
+        # a local-timezone date would miss rows for hours around local
+        # midnight in any timezone ahead of UTC.
+        now_utc = datetime.utcnow()
+        today_start = datetime(now_utc.year, now_utc.month, now_utc.day)
+        return self.db.query(AnalysisResult).filter(
+            AnalysisResult.status == 'completed',
+            AnalysisResult.completed_at.isnot(None),
+            AnalysisResult.completed_at >= today_start,
+        ).count()
+
+    def _system_status(self) -> dict:
+        completed = self.db.query(AnalysisResult).filter(
+            AnalysisResult.status == 'completed',
+            AnalysisResult.completed_at.isnot(None),
+        ).order_by(AnalysisResult.completed_at.desc()).limit(50).all()
+
+        durations = [
+            (result.completed_at - result.created_at).total_seconds()
+            for result in completed
+            if result.completed_at and result.created_at
+        ]
+        avg_analysis_time_seconds = round(sum(durations) / len(durations), 2) if durations else None
+
+        recent_failures = self.db.query(AnalysisResult).filter(
+            AnalysisResult.status == 'failed',
+            AnalysisResult.created_at >= datetime.utcnow() - timedelta(hours=1),
+        ).count()
+
+        pending_count = self.db.query(AnalysisResult).filter(AnalysisResult.status == 'pending').count()
+
+        return {
+            'pipeline_status': 'degraded' if recent_failures > 0 else 'operational',
+            'avg_analysis_time_seconds': avg_analysis_time_seconds,
+            'claims_awaiting_analysis': pending_count,
+            'recent_failure_count': recent_failures,
         }

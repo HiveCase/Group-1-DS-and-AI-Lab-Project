@@ -7,16 +7,16 @@ A local-first MVP portal for car damage insurance claims with four role-based in
 - **Supervisor**: monitor portfolio analytics, risk exposure, and AI performance
   
 **Home Page**
-![Home Page](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/backend/static/images/HomePage.png)
+![Home Page](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/static/images/HomePage.png)
 
 **Claim Page**
-![Claim Page](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/backend/static/images/ClaimPage.png)  
+![Claim Page](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/static/images/ClaimPage.png)  
 
 **Adjuster Page**
-![Adjuster](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/backend/static/images/Adjuster.png)  
+![Adjuster](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/static/images/Adjuster.png)  
 
 **Supervisor/HITL Page**
-![Supervisor](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/backend/static/images/HITLPage.png)  
+![Supervisor](https://raw.githubusercontent.com/HiveCase/Group-1-DS-and-AI-Lab-Project/car-damage-claim-frontend/static/images/HITLPage.png)  
 
 ---
 
@@ -24,7 +24,7 @@ A local-first MVP portal for car damage insurance claims with four role-based in
 
 This repository contains two main applications:
 
-- `backend/`: FastAPI service with SQLite persistence and local file upload handling
+- ``: FastAPI service with SQLite persistence and local file upload handling
 - `frontend/`: Vue 3/Vite single-page app for the four portal views
 
 ### System architecture
@@ -45,13 +45,13 @@ This repository contains two main applications:
 
 Key backend components:
 
-- `backend/app/main.py`: FastAPI application entry point and route registration
-- `backend/app/routes/claims.py`: claim intake, detail lookup, adjuster actions, SIU actions
-- `backend/app/routes/policies.py`: policy lookup support for claimant intake
-- `backend/app/routes/analytics.py`: supervisor analytics summary
-- `backend/app/db/models.py`: SQLAlchemy ORM models for policies, claims, photos, analysis, decisions, and investigations
-- `backend/app/services/`: domain services for claims, analysis, investigations, and analytics
-- `backend/uploads/`: locally stored uploaded claim photos
+- `app/main.py`: FastAPI application entry point and route registration
+- `app/routes/claims.py`: claim intake, detail lookup, adjuster actions, SIU actions
+- `app/routes/policies.py`: policy lookup support for claimant intake
+- `app/routes/analytics.py`: supervisor analytics summary
+- `app/db/models.py`: SQLAlchemy ORM models for policies, claims, photos, analysis, decisions, and investigations
+- `app/services/`: domain services for claims, analysis, investigations, and analytics
+- `uploads/`: locally stored uploaded claim photos
 
 ### Frontend
 
@@ -116,6 +116,17 @@ The current implementation is a lightweight, local rule-based analysis engine th
 - Fraud score and severity are returned as structured evidence for downstream UI workflows.
 
 ---
+
+## Environment variables
+
+The backend supports `.env` configuration via `pydantic-settings`.
+Create a `.env` file from `.env.example` at the repository root:
+
+```bash
+copy .env.example .env
+```
+
+Then edit `.env` and fill in any secret values such as `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY`.
 
 ## Database schema
 
@@ -298,7 +309,7 @@ Use the current `backend` app and point the frontend to the deployed backend end
 ## Project structure
 
 ```text
-backend/
+
   app/
     main.py
     routes/

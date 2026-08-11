@@ -21,7 +21,39 @@ SEED_POLICIES = [
         "effective_date": date(2025, 6, 1),
         "policy_limit": Decimal("3500.00"),
     },
+    {
+        "policy_number": "POL-003",
+        "coverage_type": "Comprehensive",
+        "status": "active",
+        "effective_date": date(2025, 3, 1),
+        "policy_limit": Decimal("4000.00"),
+    },
+    {
+        "policy_number": "POL-004",
+        "coverage_type": "Comprehensive Premium",
+        "status": "active",
+        "effective_date": date(2025, 2, 1),
+        "policy_limit": Decimal("6000.00"),
+    },
+    {
+        "policy_number": "POL-005",
+        "coverage_type": "Third Party",
+        "status": "active",
+        "effective_date": date(2025, 4, 1),
+        "policy_limit": Decimal("2500.00"),
+    },
 ]
+
+# Maps each seeded policy to the synthetic policy-wording PDF that
+# PolicyClauseService ingests for real clause retrieval. Files live under
+# backend/app/rag_scripts/data/policy_pdfs/synthetic/.
+POLICY_PDF_MAP = {
+    "POL-001": "policy_1_bharat_suraksha.pdf",
+    "POL-002": "policy_2_safedrive_assurance.pdf",
+    "POL-003": "policy_3_quickclaim_general.pdf",
+    "POL-004": "policy_4_autoguard_premium.pdf",
+    "POL-005": "policy_5_valuemotor.pdf",
+}
 
 SEED_CLAUSES = [
     ("CL-AUTO-001", "Comprehensive coverage applies to accidental body damage up to the policy limit."),

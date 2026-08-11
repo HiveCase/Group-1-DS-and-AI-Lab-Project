@@ -6,11 +6,11 @@ import SIUView from './views/SIUView.vue';
 import SupervisorView from './views/SupervisorView.vue';
 
 export const routes = [
-  { path: '/', name: 'landing', component: LandingView },
-  { path: '/claimant', name: 'claimant', component: ClaimantView },
-  { path: '/adjuster', name: 'adjuster', component: AdjusterView },
-  { path: '/siu', name: 'siu', component: SIUView },
-  { path: '/supervisor', name: 'supervisor', component: SupervisorView },
+  { path: '/', name: 'landing', component: LandingView, meta: { label: 'Portal selection' } },
+  { path: '/claimant', name: 'claimant', component: ClaimantView, meta: { label: 'Claimant', accent: 'claimant' } },
+  { path: '/adjuster', name: 'adjuster', component: AdjusterView, meta: { label: 'Adjuster', accent: 'adjuster' } },
+  { path: '/siu', name: 'siu', component: SIUView, meta: { label: 'SIU', accent: 'siu' } },
+  { path: '/supervisor', name: 'supervisor', component: SupervisorView, meta: { label: 'Supervisor', accent: 'supervisor' } },
 ];
 
 const router = createRouter({

@@ -10,21 +10,21 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DATABASE_URL=sqlite:////data/claims.db \
     UPLOAD_DIR=/data/uploads \
-    MODEL_DIR=/app/backend/models \
-    DATA_DIR=/app/backend/data
+    MODEL_DIR=/app/models \
+    DATA_DIR=/app/data
 
 WORKDIR /app
 
 RUN addgroup --system app && adduser --system --ingroup app app
 
-COPY backend/requirements.txt ./requirements.txt
+COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY backend/app ./app
-COPY backend/data ./backend/data
+COPY app ./app
+COPY data ./data
 COPY --from=frontend-builder /frontend/dist ./frontend/dist
 
-RUN mkdir -p /data/uploads /app/backend/models && chown -R app:app /app /data
+RUN mkdir -p /data/uploads /app/models && chown -R app:app /app /data
 USER app
 
 EXPOSE 8000
