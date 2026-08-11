@@ -6,7 +6,6 @@ import time
 from typing import Any
 
 from app.core.config import get_settings
-from app.services.langfuse_observability import LangfuseObserver
 
 logger = logging.getLogger("claims_portal.report_synthesis_service")
 
@@ -44,7 +43,6 @@ class ReportSynthesisService:
         self.groq_model = groq_model or settings.groq_model
         self.groq_base_url = settings.groq_base_url
         self.max_retries = max_retries
-        self.observer = LangfuseObserver()
 
     def synthesize_report(self, detections: list[dict[str, Any]], severity_summary: dict[str, Any], policy_findings: list[dict[str, Any]]) -> dict[str, Any]:
         payload = {
@@ -66,12 +64,6 @@ class ReportSynthesisService:
             "confidence_score": response.get("confidence_score") or 0.5,
             "next_steps": response.get("next_steps") or [],
         }
-        self.observer.trace_generation(
-            name="claim_report_synthesis",
-            input_data={"detections": detections, "severity_summary": severity_summary, "policy_findings": policy_findings},
-            output_data=report,
-            metadata={"model": self.groq_model},
-        )
         return report
 
     def _call_groq(self, payload: dict[str, Any]) -> dict[str, Any]:

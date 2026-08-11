@@ -4,6 +4,7 @@ from typing import Any, TypedDict
 
 from langgraph.graph import END, StateGraph
 
+from app.services.langfuse_observability import LangfuseObserver
 from app.services.mcp_tools import build_toolkit
 
 
@@ -19,15 +20,17 @@ class ClaimAnalysisState(TypedDict, total=False):
     final_status: str
     planned_action: str
     completed_actions: list[str]
+    trace: Any
 
 
 class LangGraphClaimOrchestrator:
-    def __init__(self, damage_service: Any, severity_service: Any, policy_service: Any, report_service: Any, fraud_service: Any | None = None):
+    def __init__(self, damage_service: Any, severity_service: Any, policy_service: Any, report_service: Any, fraud_service: Any | None = None, observer: LangfuseObserver | None = None):
         self.damage_service = damage_service
         self.severity_service = severity_service
         self.policy_service = policy_service
         self.report_service = report_service
         self.fraud_service = fraud_service
+        self.observer = observer or LangfuseObserver()
         self.toolkit = build_toolkit(
             damage_service=self.damage_service,
             severity_service=self.severity_service,
@@ -117,17 +120,31 @@ class LangGraphClaimOrchestrator:
 
     def _detect_damage(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
         claim = state.get("claim")
+        photos = getattr(claim, "photos", []) or []
         detections: list[dict[str, Any]] = []
-        for photo in getattr(claim, "photos", []) or []:
+        for photo in photos:
             image_path = getattr(photo, "file_path", None)
             if image_path:
                 detections.extend(self._call_tool("detect_damage_tool", image_path))
         state["detections"] = detections
+        self.observer.span(
+            state.get("trace"),
+            name="damage_detection",
+            input_data={"photo_paths": [getattr(p, "file_path", None) for p in photos]},
+            output_data={"detections": detections},
+        )
         return state
 
     def _score_severity(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
         detections = state.get("detections") or []
-        state["severity_summary"] = self._call_tool("score_severity_tool", detections, image_width=100, image_height=100)
+        severity_summary = self._call_tool("score_severity_tool", detections, image_width=100, image_height=100)
+        state["severity_summary"] = severity_summary
+        self.observer.span(
+            state.get("trace"),
+            name="severity_scoring",
+            input_data={"detections": detections},
+            output_data=severity_summary,
+        )
         return state
 
     def _retrieve_policy(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
@@ -135,13 +152,27 @@ class LangGraphClaimOrchestrator:
         policy = state.get("policy")
         detections = state.get("detections") or []
         damage_classes = sorted({d.get("class_name") for d in detections if d.get("class_name")})
-        state["policy_findings"] = self._call_tool(
+        policy_input = {
+            "policy_number": getattr(policy, "policy_number", None),
+            "damage_classes": damage_classes,
+            "incident_description": getattr(claim, "incident_description", ""),
+            "claimed_amount": str(getattr(claim, "claimed_amount", None)),
+            "policy_limit": str(getattr(policy, "policy_limit", None)),
+        }
+        policy_findings = self._call_tool(
             "retrieve_policy_clauses_tool",
-            getattr(policy, "policy_number", None),
+            policy_input["policy_number"],
             damage_classes,
-            getattr(claim, "incident_description", ""),
+            policy_input["incident_description"],
             getattr(claim, "claimed_amount", None),
             getattr(policy, "policy_limit", None),
+        )
+        state["policy_findings"] = policy_findings
+        self.observer.span(
+            state.get("trace"),
+            name="policy_clause_retrieval",
+            input_data=policy_input,
+            output_data={"policy_findings": policy_findings},
         )
         return state
 
@@ -149,7 +180,15 @@ class LangGraphClaimOrchestrator:
         detections = state.get("detections") or []
         severity_summary = state.get("severity_summary") or {}
         policy_findings = state.get("policy_findings") or []
-        state["report_json"] = self._call_tool("synthesize_report_tool", detections, severity_summary, policy_findings)
+        report_json = self._call_tool("synthesize_report_tool", detections, severity_summary, policy_findings)
+        state["report_json"] = report_json
+        self.observer.generation(
+            state.get("trace"),
+            name="report_synthesis",
+            input_data={"detections": detections, "severity_summary": severity_summary, "policy_findings": policy_findings},
+            output_data=report_json,
+            model=getattr(self.report_service, "groq_model", None),
+        )
         return state
 
     def _assess_fraud(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
@@ -159,12 +198,25 @@ class LangGraphClaimOrchestrator:
         claim = state.get("claim")
         severity_summary = state.get("severity_summary") or {}
         report_json = state.get("report_json") or {}
-        state["fraud_assessment"] = self._call_tool(
+        fraud_input = {
+            "incident_description": getattr(claim, "incident_description", ""),
+            "claimed_amount": str(getattr(claim, "claimed_amount", None)),
+            "severity_summary": severity_summary,
+            "report_confidence": (report_json or {}).get("confidence_score", 0.5),
+        }
+        fraud_assessment = self._call_tool(
             "assess_fraud_tool",
-            getattr(claim, "incident_description", ""),
+            fraud_input["incident_description"],
             getattr(claim, "claimed_amount", None),
             severity_summary,
-            (report_json or {}).get("confidence_score", 0.5),
+            fraud_input["report_confidence"],
+        )
+        state["fraud_assessment"] = fraud_assessment
+        self.observer.span(
+            state.get("trace"),
+            name="fraud_assessment",
+            input_data=fraud_input,
+            output_data=fraud_assessment,
         )
         return state
 
@@ -193,8 +245,18 @@ class LangGraphClaimOrchestrator:
         return None
 
     def run(self, claim: Any, policy: Any = None) -> dict[str, Any]:
-        result = self.graph.invoke({"claim": claim, "policy": policy})
-        return {
+        trace = self.observer.start_trace(
+            name="claim_analysis_pipeline",
+            input_data={
+                "claim_id": getattr(claim, "claim_id", None),
+                "policy_number": getattr(policy, "policy_number", None),
+                "incident_description": getattr(claim, "incident_description", None),
+                "claimed_amount": str(getattr(claim, "claimed_amount", None)),
+            },
+            metadata={"agents": ["damage_detection", "severity_scoring", "policy_clause_retrieval", "report_synthesis", "fraud_assessment"]},
+        )
+        result = self.graph.invoke({"claim": claim, "policy": policy, "trace": trace})
+        output = {
             "detections": result.get("detections", []),
             "severity_summary": result.get("severity_summary", {}),
             "policy_findings": result.get("policy_findings", []),
@@ -202,3 +264,6 @@ class LangGraphClaimOrchestrator:
             "fraud_assessment": result.get("fraud_assessment", {}),
             "needs_human_review": result.get("needs_human_review", False),
         }
+        self.observer.end_trace(trace, output_data=output)
+        self.observer.flush()
+        return output
