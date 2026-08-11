@@ -43,8 +43,22 @@ cp .env.example .env   # add GROQ_API_KEY (report generation) and GOOGLE_API_KEY
 
 ## Results
 
-- **Policy Agent (RAG)**: P@3 0.913 (5.59x lift over random), report faithfulness composite 1.00, RAGAs `context_precision` 0.832. Full breakdown: [`docs/RAG_Component.md`](docs/RAG_Component.md) §2-3.
-- **Damage Agent (Vision)**: add model metrics, qualitative results, and evaluation summaries here.
+**Policy Agent (RAG)** — deterministic retrieval/faithfulness checks, plus a RAGAs LLM-judge layer on top:
+
+| Metric | Value |
+| :--- | ---: |
+| Retrieval P@3 (deterministic, 50 incidents) | 0.913 (5.59x lift over random) |
+| Report faithfulness composite (deterministic, both models) | 1.00 |
+| RAGAs `context_precision` (50 incidents) | 0.832 |
+| RAGAs `faithfulness` (pre-fix, `llama-3.3-70b-versatile`) | 0.630 |
+| RAGAs `answer_relevancy` (pre-fix) | 0.435 |
+| RAGAs `answer_correctness` (pre-fix) | 0.524 |
+| RAGAs `answer_correctness` (post retrieval fix, `gemini-2.5-flash`) | 0.659 |
+| Deterministic checks passed, post retrieval fix | 10 / 10 claims |
+
+Full breakdown and how the post-fix numbers were produced: [`docs/RAG_Component.md`](docs/RAG_Component.md) §2-3.
+
+**Damage Agent (Vision)**: add model metrics, qualitative results, and evaluation summaries here.
 
 ## Demo Screenshots
 
