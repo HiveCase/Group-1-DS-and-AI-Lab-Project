@@ -216,7 +216,7 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 ### 3.5 Storage and Retrieval Components
 
 - **ChromaDB persistent client** (`data/chroma_db/`), the pre-built 185-chunk index covering all 5 catalog policies. Policy selection is catalog-based, there is no per-request user-uploaded-PDF ingestion path in the current implementation.
-  > **Superseded after this milestone.** The catalog-based design described here and in Sections 5.3 and 9 was replaced by per-user policy upload with one ChromaDB collection per user - see Milestone 4, Section 13.3. This section remains as the record of the architecture as it stood at Milestone 3.
+  > **Superseded after this milestone.** The catalog-based design described here and in Sections 5.3 and 9 was replaced by per-user policy upload, with one ChromaDB collection per user. This section remains as the record of the architecture as it stood at Milestone 3.
 - **Human Review Queue** a lightweight append-only JSON log format (`data/review_queue.jsonl`) defined for claims the Report Agent flags `escalate_to_human=true`. Automatic population of this log by a real escalation gate is planned.
 - **Data retention:** the uploaded image and any incident narrative text are used only for the duration of a single request and are not persisted to disk beyond the claim's processing; no user-uploaded content is stored in ChromaDB or any other durable store.
 
@@ -322,6 +322,8 @@ The MiniLM-vs-BGE-small and ChromaDB-vs-FAISS comparisons were run empirically i
 
 **Advantages of this stack:** near-zero marginal inference cost (no GPU required for retrieval), fully offline/on-CPU, transparent (each retrieved chunk carries its source document and heading for citation in the report), and doc-scoping prevents cross-policy clause leakage into a single claim's context.
 **Disadvantages:** MiniLM is a general-purpose encoder with no insurance-domain fine-tuning, so retrieval quality is capped by its ability to bridge damage-class vocabulary and policy-clause vocabulary — the 0.893→0.913 (not 1.00) Precision@3 on realistic incidents reflects this ceiling; two scoped passes per damage class also roughly doubles retrieval calls per claim relative to a single mixed query, though this remains sub-second in aggregate (Section 12) given the corpus size.
+
+> **Superseded after this milestone.** The doc-scoped, catalog-based retrieval described above was replaced by per-user policy upload, with one collection per user rather than one shared collection filtered by `doc_id`. This section remains as the record of the architecture as it stood at Milestone 3.
 
 ### 5.4 Report Agent: Open-Weight Models via Groq vs. Alternatives
 
@@ -473,7 +475,7 @@ Both models scored a full **1.0 composite** across all 10 payloads on every hard
 **Two data-quality issues were found through this evaluation:**
 
 - **Found and fixed** — `chunk_00004` (policy_1's umbrella coverage grant) was mistagged by the Milestone 2 auto-tagger's bare `\bmeans\b` keyword firing on "external **means**," causing a coverage-only clause filter to drop it. Before the fix, the two models disagreed on claim 09 (hail dents): one verdict was `covered`, the other `excluded`, both citing a substitute chunk because the real coverage clause had been filtered out. After correcting the filter to also accept `definition`-tagged chunks, both models converged on the same correct verdict, citing `chunk_00004`.
-- **Found, not yet fixed** — in policy_4, `pdfplumber` linearised a coverage table such that a glass row's value and a tyre row's condition merged into one chunk (`chunk_00122`); both models then read the tyre condition as if it applied to glass (claim 02). This is citation-valid but semantically wrong, and is only partially detectable via a soft flag (36 of 185 corpus chunks carry more than one damage-class tag). The recommended fix is to re-extract the affected table pages with `pdfplumber.extract_tables()` rather than plain text extraction.
+- **Found, not yet fixed** — in policy_4, `pdfplumber` linearised a coverage table such that a glass row's value and a tyre row's condition merged into one chunk (`chunk_00122`); both models then read the tyre condition as if it applied to glass (claim 02). This is citation-valid but semantically wrong, and is only partially detectable via a soft flag (36 of 185 corpus chunks carry more than one damage-class tag). The recommended fix is to re-extract the affected table pages with `pdfplumber.extract_tables()` rather than plain text extraction. A second, unrelated case of the same citation-valid-but-wrong pattern (claim 04, a coverage citation that pointed at an off-topic tyre clause instead of the real one) turned up later and was fixed.
 
 **Headline finding:** the claim-09 episode is the clearest evidence that context quality, not model choice, gates report correctness — given the same flawed context, two different models produced opposite confident verdicts; given the same corrected context, both converged on the same correct answer, with no change to prompt, temperature, or model. This supports the Report Agent model selection in Section 5.4: retrieval and chunking quality matter more than model size or cost, since a stronger model cannot recover a clause that was never retrieved.
 
@@ -545,6 +547,8 @@ No trained Damage Agent checkpoint exists yet (Milestone 4), so the Damage Agent
 | Re-ranking | RRF fusion score itself acts as the re-ranking step; no separate cross-encoder re-ranker is used, judged unnecessary at 185-chunk corpus scale (added latency not justified by the Milestone 2 evaluation) | — |
 
 `HybridRetriever` was extended with a `doc_filter` parameter in Milestone 3 to support the doc-scoped, two-pass retrieval described above (Section 5.3); this closes the integration item flagged in Milestone 2, Section 13.4.
+
+The shared policy catalog described here was later replaced with per-user policy upload, and the retrieval and report-generation logic kept improving from there. See `docs/RAG_Component.md` for how the RAG component looks today.
 
 ---
 

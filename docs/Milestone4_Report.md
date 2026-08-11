@@ -484,6 +484,12 @@ Under per-user indexing the TF-IDF vocabulary is fit on a single document, a mat
 different sparse signal from the one that was tuned. Measuring the per-user path is the
 highest-value outstanding work on this agent.
 
+A first pass at measuring the per-user path (10 claims, run through the real per-user pipeline
+instead of the shared corpus) found and fixed a real retrieval bug along the way — some damage
+types were getting no useful policy clause at all, which a closer evaluation of report quality
+caught. Details and results are in Milestone 5, Section 13.4. This is still a small, one-time
+check, not the fuller per-user evaluation this caveat is really asking for.
+
 ---
 
 ***Declaration:***

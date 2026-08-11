@@ -289,8 +289,13 @@ Section 13.
 thoroughly validated component in the project. It retrieves relevant policy clauses at
 **P@3 = 0.9133** against a random-retrieval baseline of 0.1634 - a **5.59x lift** - with
 **zero zero-hit incidents** across all 50 test cases, meaning the Report Agent was never left
-without usable clause evidence. Generated reports pass every faithfulness check on both LLMs
-tested (**composite 1.00**, zero fabricated citations or currency figures).
+without usable clause evidence. Generated reports pass every mechanical faithfulness check on
+both LLMs tested (**composite 1.00**, zero fabricated citations or currency figures) — as
+Milestone 3, Section 8.2 already noted, this composite confirms a report's citations are real
+and consistent with its verdict, not that the clause behind each citation is the right one; that
+section's own claim-02 example (a citation-valid but semantically wrong table-merge case) was one
+instance of the gap. Section 13.4 puts a number on it: a deeper, content-level check finds a
+second instance and scores the gap directly rather than leaving it to manual review.
 
 An 84-configuration sweep then asked whether this could be tuned further. It could not, and
 that is a useful finding rather than a disappointing one: the shipped configuration already
@@ -385,10 +390,58 @@ enumerating dent, scratch and crack. But because retrieval relevance and clause 
 run through damage-class tags, the signal available on a real uploaded policy is substantially
 thinner than these figures imply.
 
-**Highest-value next steps:** measure the per-user retrieval path (Milestone 4, Section 13.3);
-broaden the damage-class keyword lists for real-policy language; and obtain human-adjudicated
-relevance labels on 150-200 incidents, which would make differences smaller than one or two
-quanta resolvable at all.
+**Highest-value next steps:** measure the per-user retrieval path (Milestone 4, Section 13.3) —
+Section 13.4 below takes a first pass at exactly this; broaden the damage-class keyword lists
+for real-policy language; and obtain human-adjudicated relevance labels on 150-200 incidents,
+which would make differences smaller than one or two quanta resolvable at all.
+
+### 13.4 A Closer Look at Report Quality
+
+The checks in Section 8.2 confirm a report cites *a* clause and doesn't contradict itself, but
+they can't tell whether that clause actually says what the report claims it says. To catch that,
+we added a second layer of evaluation, using the RAGAs framework: each generated report is
+compared against the policy text it was supposed to be based on, and separately, each retrieved
+clause is compared against the incident it was retrieved for. We also wrote our own answer key by
+hand for the 10 test claims — what a careful reader of the policy would conclude — so this
+evaluation has something independent to check the reports against.
+
+**Retrieval side:** the retrieved clauses were rated relevant about 83% of the
+time, close to but a bit stricter than our earlier, simpler check (91%), which only looked at
+whether a clause's topic tag matched, not whether it was actually useful.
+
+**Report side:** scored against our hand-written answer key, both models landed in the 0.4-0.6
+range out of 1.0 on the three things we checked: is the reasoning actually backed by the cited
+text, is the answer relevant to the question, and is the final verdict correct.
+
+**What this caught.** Writing the answer key by hand surfaced a real bug, not just a low score.
+For one claim, the system had to decide whether cracked and broken parts from a multi-vehicle
+collision were covered. It technically had *a* clause to point to, but that clause was actually
+about tyre damage, unrelated to cracks or lamps — the real "what's covered" clause for that
+policy was never found for those two damage types, even though it was there in the same
+document. Our earlier checks didn't catch this because they only check that a citation exists
+and is the right *type* of clause, not whether it's actually on-topic. The model ended up stating
+"the policy covers cracks" with nothing real behind that claim.
+
+**The fix.** We changed the clause search so that, alongside the specific search for each damage
+type, it also always searches for the policy's general "what's covered" clause and adds it to
+the candidates if the specific search missed it. This doesn't remove anything the search already
+found — it only adds a fallback option. After the fix, the correct clause showed up for the
+previously broken cases, and checking across all 5 policies and all 6 damage types, every one of
+them now has at least one relevant "what's covered" clause to work with.
+
+**Re-testing with the real fix in place.** We reran all 10 test claims through the actual system
+(not a simplified test version) with the fix applied. All 10 now pass our basic checks, and the
+previously broken case now correctly points to the right clause and reasons about it properly.
+
+On the deeper 3-question evaluation, the "is the verdict correct" score improved with the fix, which
+matches what we'd expect: the model now has real information to work with for the cases that were
+previously broken. The "is the reasoning backed by the text" score didn't improve in this same
+run, but we can't cleanly credit that to the fix either way, because we also had to switch which
+AI model was writing the reports partway through (our usual model hit its daily free usage limit
+partway through testing). A cleaner side-by-side comparison, with only the fix changing and
+nothing else, is the natural next step.
+
+More detail and the full numbers are in `docs/RAG_Component.md`.
 
 ---
 
