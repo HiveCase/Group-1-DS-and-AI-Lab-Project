@@ -4,7 +4,7 @@ echo 🚀 Deploying to Vercel and GitHub 🚀
 echo ==============================================
 echo.
 echo Committing deployment configuration files to Git...
-git add render.yaml frontend/vercel.json backend/app/core/config.py
+git add .
 git commit -m "Add Render configs and fix Pydantic validation"
 
 echo.

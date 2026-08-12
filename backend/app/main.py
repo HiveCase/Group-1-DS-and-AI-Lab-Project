@@ -24,9 +24,14 @@ from app.services.policy_clause_service import PolicyClauseService
 from app.services.policy_service import PolicyService
 
 
+import threading
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    initialize_app_data()
+    # Initialize quick DB stuff synchronously
+    _init_fast_data()
+    # Run the slow ML model download in a background thread so we don't block port binding
+    threading.Thread(target=_init_slow_data, daemon=True).start()
     yield
     _flush_observability()
 
@@ -82,7 +87,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-def initialize_app_data():
+def _init_fast_data():
     settings = get_settings()
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
     settings.data_dir.mkdir(parents=True, exist_ok=True)
@@ -94,7 +99,13 @@ def initialize_app_data():
         _fail_orphaned_pending_analyses(db)
     finally:
         db.close()
-    PolicyClauseService().ensure_all_seeded_policies_ingested()
+
+def _init_slow_data():
+    try:
+        PolicyClauseService().ensure_all_seeded_policies_ingested()
+        logger.info("Successfully ingested policies and downloaded models.")
+    except Exception:
+        logger.exception("Failed to ingest policies in background")
 
 
 def _fail_orphaned_pending_analyses(db) -> None:
@@ -114,7 +125,7 @@ def _fail_orphaned_pending_analyses(db) -> None:
         db.commit()
 
 
-initialize_app_data()
+
 
 
 @app.get('/health')
