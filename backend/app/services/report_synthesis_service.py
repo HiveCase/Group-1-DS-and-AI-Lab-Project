@@ -51,12 +51,19 @@ and unambiguous.
 7. next_steps must be specific to this claim's actual gaps or conditions \
 (e.g. a specific document to verify, a specific clause condition to \
 confirm) -- not generic filler like "review the claim".
-8. Output ONLY valid JSON, no prose outside the JSON, matching exactly this schema:
+8. recommendation_reason must explain, in 1-3 sentences, exactly why you \
+chose this recommendation -- naming the specific clause_id(s), damage \
+class(es), or policy-limit status that drove the decision (per rule 4 \
+above). Do not restate the recommendation itself or write a generic \
+sentence like "based on the evidence provided" -- cite the specific \
+evidence.
+9. Output ONLY valid JSON, no prose outside the JSON, matching exactly this schema:
 {
   "damage_table": [{"class": string, "severity": string, "confidence": number}],
   "severity_summary": object (copy payload.severity_summary as-is),
   "applicable_coverage": [{"summary": string, "citations": [{"clause_id": string, "source": string}]}],
   "recommendation": "Approve" | "Investigate" | "Deny",
+  "recommendation_reason": string,
   "confidence_score": number between 0 and 1,
   "next_steps": [string]
 }
@@ -90,6 +97,7 @@ class ReportSynthesisService:
             "severity_summary": response.get("severity_summary") or severity_summary,
             "applicable_coverage": response.get("applicable_coverage") or [],
             "recommendation": response.get("recommendation") or "Investigate",
+            "recommendation_reason": response.get("recommendation_reason") or "",
             "confidence_score": response.get("confidence_score") or 0.5,
             "next_steps": response.get("next_steps") or [],
             # Lets callers (and the adjuster UI) tell a genuine LLM-synthesized
@@ -155,6 +163,10 @@ class ReportSynthesisService:
                 for finding in payload.get("policy_findings", [])
             ],
             "recommendation": "Investigate",
+            "recommendation_reason": (
+                "No reasoning available: the report-synthesis model could not be reached, "
+                "so this is a deterministic fallback recommendation, not a genuine assessment."
+            ),
             "confidence_score": 0.5,
             "next_steps": ["Confirm findings with human review"],
         }

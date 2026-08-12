@@ -152,6 +152,7 @@ def test_report_synthesis_service_outputs_frontend_matching_json(monkeypatch):
         "severity_summary": {"overall": "Minor", "per_region": [{"class": "dent", "severity": "Minor"}]},
         "applicable_coverage": [{"summary": "Covered", "citations": [{"clause_id": "CL-001", "source": "section 3.1"}]}],
         "recommendation": "Approve",
+        "recommendation_reason": "Clause CL-001 directly covers the detected dent with no conflicting exclusion.",
         "confidence_score": 0.86,
         "next_steps": ["Monitor claim"],
     })
@@ -167,6 +168,7 @@ def test_report_synthesis_service_outputs_frontend_matching_json(monkeypatch):
     assert report["confidence_score"] == 0.86
     assert report["is_fallback"] is False
     assert report["fallback_reason"] is None
+    assert "CL-001" in report["recommendation_reason"]
 
 
 def test_report_synthesis_service_falls_back_without_groq_api_key(monkeypatch):
@@ -183,6 +185,7 @@ def test_report_synthesis_service_falls_back_without_groq_api_key(monkeypatch):
     assert report["damage_table"][0]["class"] == "dent"
     assert report["is_fallback"] is True
     assert "GROQ_API_KEY" in report["fallback_reason"]
+    assert report["recommendation_reason"]
 
 
 def test_report_synthesis_service_real_groq_call():
@@ -200,6 +203,7 @@ def test_report_synthesis_service_real_groq_call():
 
     assert report["recommendation"] in {"Approve", "Investigate", "Deny"}
     assert 0.0 <= report["confidence_score"] <= 1.0
+    assert report["recommendation_reason"], "the live model must justify its recommendation, not just state it"
 
 
 def test_claim_analysis_orchestrator_runs_five_step_pipeline():

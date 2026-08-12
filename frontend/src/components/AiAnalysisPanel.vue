@@ -42,6 +42,11 @@
         <Tag v-if="isFallbackReport" value="Default report" severity="warn" />
       </div>
 
+      <div v-if="recommendationReason" class="nested-card">
+        <strong>Why this recommendation</strong>
+        <p>{{ recommendationReason }}</p>
+      </div>
+
       <div v-if="fraudReason" class="nested-card">
         <strong>Fraud factors</strong>
         <ul v-if="fraudSignals.length" class="clause-list">
@@ -104,6 +109,7 @@ const fraudReason = computed(() => report.value.fraud_assessment?.reason || '');
 const fraudSignals = computed(() => report.value.fraud_assessment?.signals || []);
 const isFallbackReport = computed(() => !!report.value.is_fallback);
 const fallbackReason = computed(() => report.value.fallback_reason || '');
+const recommendationReason = computed(() => report.value.recommendation_reason || '');
 const isRecommendationOverridden = computed(() => !!report.value.original_recommendation);
 const recommendationOverrideReason = computed(() => report.value.recommendation_override_reason || '');
 const recommendationTagText = computed(() => {
