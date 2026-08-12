@@ -160,7 +160,7 @@ class LangGraphClaimOrchestrator:
         try:
             from openai import OpenAI
 
-            client = OpenAI(api_key=self.groq_api_key, base_url=self.groq_base_url)
+            client = OpenAI(api_key=self.groq_api_key, base_url=self.groq_base_url, timeout=15.0)
             response = client.chat.completions.create(
                 model=self.groq_model,
                 messages=[
@@ -411,5 +411,12 @@ class LangGraphClaimOrchestrator:
             "needs_human_review": result.get("needs_human_review", False),
         }
         self.observer.end_trace(trace, output_data=output)
-        self.observer.flush()
+        # No flush() here on purpose: it blocks until Langfuse's internal
+        # queue drains, retrying on failure -- which previously meant a
+        # slow/unreachable Langfuse endpoint could stall this claim's
+        # completion for minutes (run() wouldn't return, so the caller
+        # never got to mark analysis_result.status = 'completed'). The SDK's
+        # background worker sends queued events on its own schedule
+        # regardless; a final flush happens on app shutdown instead (see
+        # main.py's lifespan handler).
         return output

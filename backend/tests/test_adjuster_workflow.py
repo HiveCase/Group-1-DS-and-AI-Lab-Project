@@ -99,9 +99,9 @@ def test_claim_submission_syncs_retrieved_clauses_into_policy_clauses_table():
     from app.db.models import Claim, PolicyClause
 
     payload = {
-        'policy_number': 'POL-003',
-        'claimant_name': 'Tanmay Mal',
-        'contact_info': 'tanmay@example.com',
+        'policy_number': 'POL-001',
+        'claimant_name': 'Ada Lovelace',
+        'contact_info': 'ada@example.com',
         'incident_date': '2026-08-09',
         'incident_description': 'There is a dent and a scratch on the rear panel',
         'claimed_amount': 500,

@@ -165,6 +165,8 @@ def test_report_synthesis_service_outputs_frontend_matching_json(monkeypatch):
     assert report["damage_table"][0]["class"] == "dent"
     assert report["applicable_coverage"][0]["citations"][0]["source"] == "section 3.1"
     assert report["confidence_score"] == 0.86
+    assert report["is_fallback"] is False
+    assert report["fallback_reason"] is None
 
 
 def test_report_synthesis_service_falls_back_without_groq_api_key(monkeypatch):
@@ -179,6 +181,8 @@ def test_report_synthesis_service_falls_back_without_groq_api_key(monkeypatch):
 
     assert report["recommendation"] == "Investigate"
     assert report["damage_table"][0]["class"] == "dent"
+    assert report["is_fallback"] is True
+    assert "GROQ_API_KEY" in report["fallback_reason"]
 
 
 def test_report_synthesis_service_real_groq_call():

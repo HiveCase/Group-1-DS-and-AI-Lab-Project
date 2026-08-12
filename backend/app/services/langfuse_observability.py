@@ -30,10 +30,16 @@ class LangfuseObserver:
                 self.enabled = False
             else:
                 try:
+                    # Bounded so a slow/unreachable Langfuse endpoint can't
+                    # make flush() (called at the end of every claim's
+                    # analysis) retry for minutes -- observability must
+                    # never be able to block a claim from completing.
                     self.client = Langfuse(
                         public_key=settings.langfuse_public_key,
                         secret_key=settings.langfuse_secret_key,
                         host=settings.langfuse_host,
+                        timeout=10,
+                        max_retries=2,
                     )
                 except Exception:
                     logger.exception("Failed to initialize Langfuse client")

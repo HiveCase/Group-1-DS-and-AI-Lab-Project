@@ -50,10 +50,12 @@ class ReportSynthesisService:
             "severity_summary": severity_summary,
             "policy_findings": policy_findings,
         }
+        fallback_reason: str | None = None
         try:
             response = self._call_groq(payload)
-        except Exception:
+        except Exception as error:
             logger.exception("Groq report synthesis failed; using deterministic fallback")
+            fallback_reason = str(error)
             response = self._fallback_report(payload)
 
         report = {
@@ -63,6 +65,11 @@ class ReportSynthesisService:
             "recommendation": response.get("recommendation") or "Investigate",
             "confidence_score": response.get("confidence_score") or 0.5,
             "next_steps": response.get("next_steps") or [],
+            # Lets callers (and the adjuster UI) tell a genuine LLM-synthesized
+            # report apart from the deterministic template used when Groq is
+            # unavailable/rate-limited -- otherwise both look identical.
+            "is_fallback": fallback_reason is not None,
+            "fallback_reason": fallback_reason,
         }
         return report
 
@@ -72,7 +79,11 @@ class ReportSynthesisService:
 
         from openai import OpenAI
 
-        client = OpenAI(api_key=self.groq_api_key, base_url=self.groq_base_url)
+        # No explicit timeout previously meant the SDK's 10-minute default
+        # applied per attempt -- a single slow/hung Groq call could block a
+        # claim's background task for 30+ minutes across max_retries,
+        # looking like the analysis had hung forever.
+        client = OpenAI(api_key=self.groq_api_key, base_url=self.groq_base_url, timeout=30.0)
         user_content = json.dumps(payload)
 
         last_error: Exception | None = None
