@@ -42,11 +42,16 @@ jobs:
 
       - name: Run backend tests
         working-directory: backend
+        # `python -m pytest` (not bare `pytest`) so the current directory
+        # (backend/, containing the app/ package) is added to sys.path
+        # automatically -- the repo's own pytest.ini also sets this via
+        # `pythonpath = backend`, but that file is gitignored and never
+        # reaches a fresh CI checkout, so this can't depend on it.
         # DATABASE_URL/UPLOAD_DIR are forced to backend/data/ci_claims.db and
         # backend/uploads-ci by tests/conftest.py before any app module
         # loads, regardless of this runner's environment -- CI never touches
         # a real database.
-        run: pytest -q
+        run: python -m pytest -q
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
