@@ -7,6 +7,7 @@ vi.mock('../src/services/api', () => ({
   getAdjusterDashboard: vi.fn(),
   getClaimDetail: vi.fn(),
   submitDecision: vi.fn(),
+  annotatedPhotoUrl: vi.fn((claimId) => `/mock/${claimId}/annotated-photo`),
 }));
 
 const dashboardResponse = {
@@ -47,8 +48,8 @@ describe('AdjusterView', () => {
     const wrapper = mount(AdjusterView);
     await flushPromises();
 
-    const reviewButtons = wrapper.findAll('button').filter((b) => b.text() === 'Review');
-    await reviewButtons[0].trigger('click');
+    const row = wrapper.find('tbody tr');
+    await row.trigger('click');
     await flushPromises();
 
     expect(api.getClaimDetail).toHaveBeenCalledWith('CLM-1001');

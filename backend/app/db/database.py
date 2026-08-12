@@ -34,8 +34,48 @@ def get_db():
 def init_db():
     from app.db.models import Policy, Claim, ClaimPhoto, AnalysisResult, DecisionRecord, InvestigationCase, PolicyClause  # noqa: F401
 
+    _rename_legacy_policy_clauses_table()
     Base.metadata.create_all(bind=engine)
+    _restore_legacy_policy_clauses_rows()
     sync_sqlite_schema()
+
+
+def _rename_legacy_policy_clauses_table() -> None:
+    """policy_clauses originally had a UNIQUE constraint on clause_id alone
+    (one row per clause, app-wide). Tracking clauses per claim needs
+    uniqueness scoped to (claim_id, clause_id) instead, since the same
+    clause is legitimately cited by many claims -- and SQLite can't ALTER
+    a constraint in place, so the old table is renamed out of the way and
+    create_all() (called right after this) creates a fresh one matching the
+    current model. _restore_legacy_policy_clauses_rows() then copies the
+    old rows back in with claim_id left NULL, since pre-migration rows
+    never recorded which claim (if any) they came from."""
+    if not settings.database_url.startswith("sqlite"):
+        return
+    with engine.begin() as connection:
+        existing_columns = {
+            row[1] for row in connection.exec_driver_sql('PRAGMA table_info("policy_clauses")')
+        }
+        if not existing_columns or "claim_id" in existing_columns:
+            return  # table doesn't exist yet, or already migrated
+        connection.exec_driver_sql('DROP TABLE IF EXISTS "policy_clauses_legacy"')
+        connection.exec_driver_sql('ALTER TABLE "policy_clauses" RENAME TO "policy_clauses_legacy"')
+
+
+def _restore_legacy_policy_clauses_rows() -> None:
+    if not settings.database_url.startswith("sqlite"):
+        return
+    with engine.begin() as connection:
+        tables = {
+            row[0] for row in connection.exec_driver_sql("SELECT name FROM sqlite_master WHERE type='table'")
+        }
+        if "policy_clauses_legacy" not in tables:
+            return
+        connection.exec_driver_sql(
+            'INSERT INTO "policy_clauses" (policy_id, clause_id, text, clause_metadata, embedding_id) '
+            'SELECT policy_id, clause_id, text, clause_metadata, embedding_id FROM "policy_clauses_legacy"'
+        )
+        connection.exec_driver_sql('DROP TABLE "policy_clauses_legacy"')
 
 
 def sync_sqlite_schema():

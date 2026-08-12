@@ -47,6 +47,10 @@ export async function getClaimDetail(claimId: string) {
   return response.data;
 }
 
+export function annotatedPhotoUrl(claimId: string) {
+  return `${defaultBaseUrl}/claims/${claimId}/annotated-photo`;
+}
+
 export async function submitDecision(claimId: string, payload: Record<string, unknown>) {
   const response = await client.post(`/claims/${claimId}/decision`, payload);
   return response.data;

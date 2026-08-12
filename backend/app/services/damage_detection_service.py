@@ -117,6 +117,17 @@ class DamageDetectionService:
                     detections.append(detection)
         return detections
 
+    def get_image_dimensions(self, image_path: str | Path) -> tuple[int, int]:
+        try:
+            from PIL import Image
+        except Exception:
+            return (0, 0)
+        try:
+            with Image.open(image_path) as image:
+                return image.size
+        except Exception:
+            return (0, 0)
+
     def _normalize_detection(self, item: Any) -> dict[str, Any]:
         if isinstance(item, dict):
             class_name = item.get("class_name") or self._class_label(int(item.get("class_id", 0)))
@@ -156,6 +167,16 @@ class DamageDetectionService:
         }
         return labels.get(class_id, "unknown")
 
+    _CLASS_COLORS = {
+        "dent": (37, 99, 235),
+        "scratch": (6, 182, 212),
+        "crack": (239, 68, 68),
+        "broken_lamp": (16, 185, 129),
+        "shattered_glass": (168, 85, 247),
+        "flat_tyre": (236, 72, 153),
+    }
+    _DEFAULT_COLOR = (250, 204, 21)
+
     def annotate_image(self, image_path: str | Path, detections: list[dict[str, Any]], output_path: str | Path | None = None) -> str | None:
         source = Path(image_path)
         destination = Path(output_path or source.with_suffix(".annotated.jpg"))
@@ -163,19 +184,46 @@ class DamageDetectionService:
         if not source.exists():
             return None
         try:
-            from PIL import Image, ImageDraw
+            from PIL import Image, ImageDraw, ImageFont
         except Exception:
             shutil.copy2(source, destination)
             return str(destination)
 
         with Image.open(source) as image:
+            image = image.convert("RGB")
             draw = ImageDraw.Draw(image)
+            # Line width and font size are scaled to the image's own
+            # dimensions, not a fixed pixel count -- a fixed 2px box is
+            # invisible once the dashboard shrinks a real (e.g. 640x640)
+            # photo down to a small thumbnail via CSS.
+            short_side = min(image.width, image.height)
+            line_width = max(3, round(short_side * 0.008))
+            font_size = max(16, round(short_side * 0.045))
+            try:
+                font = ImageFont.truetype("arial.ttf", font_size)
+            except Exception:
+                font = ImageFont.load_default()
+
             for detection in detections:
                 bbox = detection.get("bbox") or [0, 0, 0, 0]
-                if len(bbox) == 4:
-                    x1, y1, x2, y2 = [int(round(coord)) for coord in bbox]
-                    draw.rectangle([x1, y1, x2, y2], outline="red", width=2)
-            image.save(destination)
+                if len(bbox) != 4:
+                    continue
+                x1, y1, x2, y2 = [int(round(coord)) for coord in bbox]
+                class_name = detection.get("class_name", "unknown")
+                confidence = detection.get("confidence", 0.0) or 0.0
+                color = self._CLASS_COLORS.get(class_name, self._DEFAULT_COLOR)
+                draw.rectangle([x1, y1, x2, y2], outline=color, width=line_width)
+
+                label = f"{class_name} {confidence:.2f}"
+                text_box = draw.textbbox((0, 0), label, font=font)
+                text_width = text_box[2] - text_box[0]
+                text_height = text_box[3] - text_box[1]
+                label_x1, label_y1 = x1, max(0, y1 - text_height - 10)
+                label_x2, label_y2 = label_x1 + text_width + 10, label_y1 + text_height + 10
+                draw.rectangle([label_x1, label_y1, label_x2, label_y2], fill=color)
+                draw.text((label_x1 + 5, label_y1 + 3), label, fill=(0, 0, 0), font=font)
+
+            image.save(destination, format="JPEG", quality=90)
         return str(destination)
 
     def _default_model_dir(self) -> Path:

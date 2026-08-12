@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Date, DateTime, ForeignKey, Index, Numeric, String, Text, JSON
+from sqlalchemy import Date, DateTime, ForeignKey, Index, Numeric, String, Text, JSON, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -12,9 +12,11 @@ class Policy(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     policy_number: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    policy_holder_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     coverage_type: Mapped[str] = mapped_column(String(100))
     status: Mapped[str] = mapped_column(String(50), index=True)
     effective_date: Mapped[date] = mapped_column(Date)
+    expiry_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     policy_limit: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
 
     claims: Mapped[list["Claim"]] = relationship(back_populates="policy")
@@ -107,16 +109,25 @@ class InvestigationCase(Base):
 
 
 class PolicyClause(Base):
+    """One row per (claim, clause) citation. clause_id alone is NOT unique
+    here on purpose: the same policy clause is routinely cited by many
+    different claims, so uniqueness is scoped to claim_id+clause_id instead
+    -- otherwise a second claim citing an already-seen clause would either
+    be silently dropped or overwrite the first claim's citation."""
+
     __tablename__ = "policy_clauses"
+    __table_args__ = (UniqueConstraint("claim_id", "clause_id", name="uq_policy_clause_claim_clause"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     policy_id: Mapped[int | None] = mapped_column(ForeignKey("policies.id"), nullable=True)
-    clause_id: Mapped[str] = mapped_column(String(80), unique=True)
+    claim_id: Mapped[int | None] = mapped_column(ForeignKey("claims.id"), nullable=True, index=True)
+    clause_id: Mapped[str] = mapped_column(String(80))
     text: Mapped[str] = mapped_column(Text)
     clause_metadata: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     embedding_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
 
     policy: Mapped[Policy | None] = relationship(back_populates="clauses")
+    claim: Mapped["Claim | None"] = relationship()
 
 
 Index("ix_claim_policy_status", Claim.policy_id, Claim.status)

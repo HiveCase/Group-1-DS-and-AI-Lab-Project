@@ -27,7 +27,10 @@
 
       <div v-if="fraudReason" class="nested-card">
         <strong>Fraud factors</strong>
-        <p class="muted">{{ fraudReason }}</p>
+        <ul v-if="fraudSignals.length" class="clause-list">
+          <li v-for="(signal, index) in fraudSignals" :key="index">{{ signal }}</li>
+        </ul>
+        <p v-else class="muted">{{ fraudReason }}</p>
       </div>
 
       <div v-if="damageTable.length" class="nested-card">
@@ -81,6 +84,7 @@ const damageTable = computed(() => report.value.damage_table || []);
 const nextSteps = computed(() => report.value.next_steps || []);
 const clauseFindings = computed(() => (props.analysis?.policy_findings || []).filter((f) => f.clause_id !== 'POLICY-LIMIT-CHECK'));
 const fraudReason = computed(() => report.value.fraud_assessment?.reason || '');
+const fraudSignals = computed(() => report.value.fraud_assessment?.signals || []);
 
 const percent = (value) => `${Math.round(Number(value) * 100)}%`;
 
