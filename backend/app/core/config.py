@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     model_dir: Path = Field(default=BASE_DIR / "models")
     data_dir: Path = Field(default=BASE_DIR / "data")
 
-    langfuse_public_key: str= os.getenv("LANGFUSE_PUBLIC_KEY") or None
-    langfuse_secret_key: str= os.getenv("LANGFUSE_SECRET_KEY") or None
+    langfuse_public_key: str | None = os.getenv("LANGFUSE_PUBLIC_KEY") or None
+    langfuse_secret_key: str | None = os.getenv("LANGFUSE_SECRET_KEY") or None
     # .env historically used LANGFUSE_BASE_URL; the field is langfuse_host to
     # match the Langfuse SDK's own `host` kwarg, so both names are accepted.
     langfuse_host: str = Field(
