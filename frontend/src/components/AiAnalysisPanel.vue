@@ -24,6 +24,11 @@
         </p>
       </div>
 
+      <div v-if="isRecommendationOverridden" class="nested-card status-warning">
+        <strong><i class="pi pi-exclamation-triangle" /> Recommendation overridden</strong>
+        <p class="muted">{{ recommendationOverrideReason }}</p>
+      </div>
+
       <div v-if="analysis.needs_human_review" class="nested-card status-warning">
         <strong><i class="pi pi-exclamation-triangle" /> Needs human review</strong>
         <p class="muted">{{ escalationReason }}</p>
@@ -31,7 +36,7 @@
 
       <div class="inline-group">
         <Tag :value="`Severity: ${analysis.severity_label || 'Unknown'}`" :severity="severityTagColor(analysis.severity_label)" />
-        <Tag :value="`Recommendation: ${analysis.recommendation || 'Pending'}`" :severity="recommendationTagColor(analysis.recommendation)" />
+        <Tag :value="recommendationTagText" :severity="recommendationTagColor(analysis.recommendation)" />
         <Tag v-if="analysis.confidence_score != null" :value="`Confidence: ${percent(analysis.confidence_score)}`" severity="secondary" />
         <Tag v-if="analysis.fraud_score != null" :value="`Fraud score: ${percent(analysis.fraud_score)}`" :severity="fraudTagColor(analysis.fraud_score)" />
         <Tag v-if="isFallbackReport" value="Default report" severity="warn" />
@@ -99,6 +104,14 @@ const fraudReason = computed(() => report.value.fraud_assessment?.reason || '');
 const fraudSignals = computed(() => report.value.fraud_assessment?.signals || []);
 const isFallbackReport = computed(() => !!report.value.is_fallback);
 const fallbackReason = computed(() => report.value.fallback_reason || '');
+const isRecommendationOverridden = computed(() => !!report.value.original_recommendation);
+const recommendationOverrideReason = computed(() => report.value.recommendation_override_reason || '');
+const recommendationTagText = computed(() => {
+  if (isRecommendationOverridden.value) {
+    return `Recommendation: ${props.analysis?.recommendation || 'Pending'} (AI said ${report.value.original_recommendation})`;
+  }
+  return `Recommendation: ${props.analysis?.recommendation || 'Pending'}`;
+});
 
 // needs_human_review can be forced by either a low confidence score or a
 // fraud hard-rule signal (see _should_escalate_to_human in the backend

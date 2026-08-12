@@ -364,7 +364,32 @@ class LangGraphClaimOrchestrator:
             input_data=fraud_input,
             output_data=fraud_assessment,
         )
+        self._override_recommendation_if_policy_invalid(state, fraud_assessment)
         return state
+
+    def _override_recommendation_if_policy_invalid(self, state: ClaimAnalysisState, fraud_assessment: dict[str, Any]) -> None:
+        """The report-synthesis model only ever sees clause text, detections,
+        and severity -- it has no visibility into policy status/expiry, so it
+        can (and does) confidently recommend "Approve" against a policy that
+        wasn't even active on the incident date. That's not a plausible
+        outcome to leave standing: there's no valid contract to approve a
+        claim under. Enforce it deterministically here rather than relying on
+        the LLM to reason about a fact it was never given, the same way fraud
+        hard-rule violations already force needs_human_review regardless of
+        confidence."""
+        report_json = state.get("report_json") or {}
+        if report_json.get("recommendation") != "Approve":
+            return
+        if not (fraud_assessment.get("rule_flags") or {}).get("policy_inactive"):
+            return
+        report_json["original_recommendation"] = "Approve"
+        report_json["recommendation"] = "Investigate"
+        report_json["recommendation_override_reason"] = (
+            "The report-synthesis model recommended Approve, but the policy was not active "
+            "(or had already expired) on the incident date, so there is no valid coverage "
+            "basis for an automated approval. Changed to Investigate."
+        )
+        state["report_json"] = report_json
 
     def _should_escalate_to_human(self, state: ClaimAnalysisState) -> str:
         report_json = state.get("report_json") or {}

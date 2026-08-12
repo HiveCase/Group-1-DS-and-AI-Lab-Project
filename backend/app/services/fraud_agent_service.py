@@ -36,17 +36,20 @@ class FraudAgentService:
         if "fire" in description.lower() or "fraud" in description.lower():
             fraud_score = min(0.99, fraud_score + 0.15)
 
-        if self._names_mismatch(claimant_name, policy_holder_name):
+        name_mismatch = self._names_mismatch(claimant_name, policy_holder_name)
+        if name_mismatch:
             fraud_score = min(0.99, fraud_score + 0.25)
             signals.append(f"Claimant name '{claimant_name}' does not match policyholder of record '{policy_holder_name}'")
 
-        if self._policy_inactive_at_incident(policy_status, incident_date, policy_expiry_date):
+        policy_inactive = self._policy_inactive_at_incident(policy_status, incident_date, policy_expiry_date)
+        if policy_inactive:
             fraud_score = min(0.99, fraud_score + 0.3)
             signals.append("Policy was expired or not active on the incident date")
 
         policy_limit_decimal = self._to_decimal(policy_limit)
         already_claimed = self._to_decimal(already_claimed_amount)
-        if policy_limit_decimal and (already_claimed + claim_amount) > policy_limit_decimal:
+        exceeds_policy_limit = bool(policy_limit_decimal and (already_claimed + claim_amount) > policy_limit_decimal)
+        if exceeds_policy_limit:
             signals.append(
                 f"Already-claimed amount ({already_claimed}) plus this claim ({claim_amount}) "
                 f"exceeds the policy limit ({policy_limit_decimal})"
@@ -65,6 +68,15 @@ class FraudAgentService:
             "needs_investigation": needs_investigation,
             "reason": reason,
             "signals": signals,
+            # Structured flags so downstream logic (e.g. overriding a
+            # recommendation the report-synthesis model made without this
+            # context) can check a specific rule without fragile-matching
+            # against the free-text signal strings above.
+            "rule_flags": {
+                "name_mismatch": name_mismatch,
+                "policy_inactive": policy_inactive,
+                "exceeds_policy_limit": exceeds_policy_limit,
+            },
         }
 
     def _names_mismatch(self, claimant_name: str | None, policy_holder_name: str | None) -> bool:

@@ -499,6 +499,28 @@ def test_fraud_agent_no_signals_for_clean_claim():
 
     assert result["signals"] == []
     assert result["needs_investigation"] is False
+    assert result["rule_flags"] == {
+        "name_mismatch": False,
+        "policy_inactive": False,
+        "exceeds_policy_limit": False,
+    }
+
+
+def test_fraud_agent_rule_flags_reflect_expired_policy():
+    service = FraudAgentService()
+    result = service.assess_fraud_risk(
+        claimant_name="Jane Doe",
+        claimed_amount="500",
+        incident_description="small scratch",
+        severity_summary={"severity_score": 0.02},
+        confidence_score=0.9,
+        policy_holder_name="Jane Doe",
+        policy_status="active",
+        incident_date="2026-08-09",
+        policy_expiry_date="2026-01-01",
+    )
+
+    assert result["rule_flags"]["policy_inactive"] is True
 
 
 def test_orchestrator_assess_fraud_computes_cumulative_amount_from_policy_claims():
@@ -541,3 +563,70 @@ def test_orchestrator_assess_fraud_computes_cumulative_amount_from_policy_claims
     # + this claim (1500) = 4500 > policy_limit 4000.
     assert assessment["needs_investigation"] is True
     assert any("exceeds the policy limit" in signal for signal in assessment["signals"])
+
+
+def test_orchestrator_overrides_approve_recommendation_when_policy_inactive():
+    """An Approve recommendation is never valid when the policy wasn't active
+    at the incident date -- the report-synthesis model has no visibility
+    into policy status/expiry, so it can (and does) recommend Approve
+    against a lapsed policy. That must be corrected deterministically."""
+    engine = _build_engine()
+
+    policy = SimpleNamespace(
+        policy_holder_name="Jane Doe",
+        status="inactive",
+        expiry_date=None,
+        policy_limit=Decimal("4000"),
+        claims=[],
+    )
+    claim = SimpleNamespace(
+        claim_id="CLM-CURRENT",
+        claimant_name="Jane Doe",
+        incident_description="fender bender",
+        incident_date="2026-08-09",
+        claimed_amount=Decimal("500"),
+    )
+
+    state = {
+        "claim": claim,
+        "policy": policy,
+        "severity_summary": {"severity_score": 0.02},
+        "report_json": {"recommendation": "Approve", "confidence_score": 0.9},
+    }
+    result_state = engine._assess_fraud(state)
+
+    report_json = result_state["report_json"]
+    assert report_json["recommendation"] == "Investigate"
+    assert report_json["original_recommendation"] == "Approve"
+    assert report_json["recommendation_override_reason"]
+
+
+def test_orchestrator_does_not_override_recommendation_when_policy_active():
+    engine = _build_engine()
+
+    policy = SimpleNamespace(
+        policy_holder_name="Jane Doe",
+        status="active",
+        expiry_date=None,
+        policy_limit=Decimal("4000"),
+        claims=[],
+    )
+    claim = SimpleNamespace(
+        claim_id="CLM-CURRENT",
+        claimant_name="Jane Doe",
+        incident_description="fender bender",
+        incident_date="2026-08-09",
+        claimed_amount=Decimal("500"),
+    )
+
+    state = {
+        "claim": claim,
+        "policy": policy,
+        "severity_summary": {"severity_score": 0.02},
+        "report_json": {"recommendation": "Approve", "confidence_score": 0.9},
+    }
+    result_state = engine._assess_fraud(state)
+
+    report_json = result_state["report_json"]
+    assert report_json["recommendation"] == "Approve"
+    assert "original_recommendation" not in report_json
