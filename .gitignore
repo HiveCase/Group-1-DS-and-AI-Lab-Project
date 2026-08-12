@@ -29,8 +29,9 @@ models/checkpoints/*
 outputs/*
 data/ci_claims.db
 uploads-ci/
-backend/data/ci_claims.db
+backend/data/*
 backend/uploads-ci/
+backend/uploads/*
 .local-data/
 
 # Per-user runtime state. Never commit these: policies/ holds the documents
