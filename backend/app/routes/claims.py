@@ -1,12 +1,14 @@
 import logging
 from datetime import date, datetime
 from decimal import Decimal
+from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.db.database import SessionLocal, get_db
-from app.db.models import DecisionRecord
+from app.db.models import Claim, DecisionRecord, Policy, PolicyClause
 from app.schemas.adjuster_schema import AdjusterDashboardResponse, AdjusterDashboardSummary, DecisionRead, DecisionRequest
 from app.schemas.claim_schema import ClaimListResponse, ClaimRead
 from app.services.analytics_service import AnalyticsService
@@ -21,6 +23,40 @@ logger = logging.getLogger("claims_portal.claims")
 # sentence-transformer embeddings, and each policy's TF-IDF index are loaded
 # once and reused, rather than reloaded on every claim submission.
 _orchestrator = ClaimAnalysisOrchestrator()
+
+
+def _sync_policy_clauses(db: Session, policy: Policy | None, claim: Claim | None, policy_findings: list[dict]) -> None:
+    """Records the real, RAG-retrieved clauses a claim's analysis actually
+    cited into the policy_clauses SQL table, one row per (claim, clause)
+    citation -- so it reflects real ingested policy text (queryable via
+    plain SQL and traceable back to the claim that used it) instead of
+    staying disconnected from the ChromaDB-backed retrieval
+    PolicyClauseService uses. The same clause is routinely cited by many
+    claims, so uniqueness is scoped to claim+clause, not clause alone."""
+    if policy is None or claim is None:
+        return
+    for finding in policy_findings or []:
+        clause_id = finding.get("clause_id")
+        if not clause_id or clause_id == "POLICY-LIMIT-CHECK":
+            continue
+        exists = db.query(PolicyClause).filter(
+            PolicyClause.clause_id == clause_id,
+            PolicyClause.claim_id == claim.id,
+        ).first()
+        if exists:
+            continue
+        db.add(PolicyClause(
+            policy_id=policy.id,
+            claim_id=claim.id,
+            clause_id=clause_id,
+            text=finding.get("text") or "",
+            clause_metadata={
+                "source_citation": finding.get("source_citation"),
+                "clause_type": finding.get("clause_type"),
+                "damage_class": finding.get("damage_class"),
+                "score": finding.get("score"),
+            },
+        ))
 
 
 def run_claim_analysis(claim_id: str) -> None:
@@ -55,6 +91,18 @@ def run_claim_analysis(claim_id: str) -> None:
         claim.analysis_result.needs_human_review = analysis_result['needs_human_review']
         claim.analysis_result.completed_at = datetime.utcnow()
         db.add(claim.analysis_result)
+
+        _sync_policy_clauses(db, claim.policy, claim, analysis_result['policy_findings'])
+
+        photos = claim.photos or []
+        detections = analysis_result.get('detections') or []
+        if photos and detections:
+            primary_photo = photos[0]
+            annotated_path = _orchestrator.damage_service.annotate_image(primary_photo.file_path, detections)
+            if annotated_path:
+                primary_photo.annotated_path = annotated_path
+                db.add(primary_photo)
+
         db.commit()
     finally:
         db.close()
@@ -157,6 +205,34 @@ def siu_dashboard(db: Session = Depends(get_db)):
 @router.get('/{claim_id}', response_model=ClaimRead)
 def get_claim(claim_id: str, db: Session = Depends(get_db)):
     return ClaimService(db).get_claim(claim_id)
+
+@router.get('/{claim_id}/annotated-photo')
+def get_annotated_photo(claim_id: str, db: Session = Depends(get_db)):
+    """Returns the claim's primary uploaded photo with the damage-detection
+    model's bounding boxes drawn on it, so an adjuster can see what the
+    model predicted without leaving the dashboard. Falls back to the raw
+    photo if detections aren't available yet (analysis still pending)."""
+    claim = ClaimService(db).get_claim(claim_id)
+    photos = claim.photos or []
+    if not photos:
+        raise HTTPException(status_code=404, detail='No photo uploaded for this claim')
+    photo = photos[0]
+    source_path = Path(photo.file_path)
+    if not source_path.exists():
+        raise HTTPException(status_code=404, detail='Photo file is missing on disk')
+
+    if photo.annotated_path and Path(photo.annotated_path).exists():
+        return FileResponse(photo.annotated_path, media_type='image/jpeg')
+
+    detections = claim.analysis_result.detections if claim.analysis_result else None
+    if detections:
+        annotated_path = _orchestrator.damage_service.annotate_image(source_path, detections)
+        if annotated_path and Path(annotated_path).exists():
+            photo.annotated_path = annotated_path
+            db.add(photo)
+            db.commit()
+            return FileResponse(annotated_path, media_type='image/jpeg')
+    return FileResponse(source_path, media_type=photo.mime_type or 'image/jpeg')
 
 @router.get('/{claim_id}/detail')
 def get_claim_detail(claim_id: str, db: Session = Depends(get_db)):

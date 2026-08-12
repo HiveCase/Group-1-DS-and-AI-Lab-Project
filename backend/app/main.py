@@ -28,6 +28,19 @@ from app.services.policy_service import PolicyService
 async def lifespan(app: FastAPI):
     initialize_app_data()
     yield
+    _flush_observability()
+
+
+def _flush_observability() -> None:
+    # Flushes the same observer instance the app has been queuing traces
+    # into all along (a fresh LangfuseObserver() here would have its own,
+    # empty queue and flush nothing).
+    try:
+        from app.routes.claims import _orchestrator
+
+        _orchestrator._engine.observer.flush()
+    except Exception:
+        logger.exception("Failed to flush Langfuse on shutdown")
 
 
 app = FastAPI(title='Claims Portal API', lifespan=lifespan)
@@ -78,9 +91,27 @@ def initialize_app_data():
     db = SessionLocal()
     try:
         PolicyService(db).seed_defaults()
+        _fail_orphaned_pending_analyses(db)
     finally:
         db.close()
     PolicyClauseService().ensure_all_seeded_policies_ingested()
+
+
+def _fail_orphaned_pending_analyses(db) -> None:
+    """AnalysisResult rows still 'pending' at startup are guaranteed
+    orphaned: run_claim_analysis runs as a FastAPI BackgroundTask in-process,
+    so any analysis that was mid-flight when the previous process stopped
+    (crash, --reload restart, etc.) can never resume. Left alone, this makes
+    the dashboard look like the analysis silently hung forever instead of
+    surfacing a clear, actionable failure."""
+    from app.db.models import AnalysisResult
+
+    orphaned = db.query(AnalysisResult).filter(AnalysisResult.status == 'pending').all()
+    for analysis in orphaned:
+        analysis.status = 'failed'
+        analysis.explanation = 'Analysis was interrupted by a server restart before it could complete.'
+    if orphaned:
+        db.commit()
 
 
 initialize_app_data()

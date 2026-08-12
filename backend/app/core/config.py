@@ -1,6 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
-
+import os
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     model_dir: Path = Field(default=BASE_DIR / "models")
     data_dir: Path = Field(default=BASE_DIR / "data")
 
-    langfuse_public_key: str | None = None
-    langfuse_secret_key: str | None = None
+    langfuse_public_key: str= os.getenv("LANGFUSE_PUBLIC_KEY") or None
+    langfuse_secret_key: str= os.getenv("LANGFUSE_SECRET_KEY") or None
     # .env historically used LANGFUSE_BASE_URL; the field is langfuse_host to
     # match the Langfuse SDK's own `host` kwarg, so both names are accepted.
     langfuse_host: str = Field(
@@ -26,8 +26,8 @@ class Settings(BaseSettings):
     )
 
     groq_api_key: str | None = None
-    groq_model: str = "llama-3.3-70b-versatile"
-    groq_base_url: str = "https://api.groq.com/openai/v1"
+    groq_model: str = os.getenv("MODEL_NAME") or "llama-3.3-70b-versatile"
+    groq_base_url: str = os.getenv("GROQ_BASE_URL") or "https://api.groq.com/openai/v1"
 
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).resolve().parents[3] / ".env"),

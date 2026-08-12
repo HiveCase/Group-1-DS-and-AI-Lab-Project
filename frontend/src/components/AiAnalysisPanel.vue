@@ -13,21 +13,46 @@
     </div>
 
     <template v-else>
+      <div v-if="isFallbackReport" class="nested-card status-warning">
+        <strong><i class="pi pi-exclamation-triangle" /> Default report -- not AI-assessed</strong>
+        <p class="muted">
+          The report-synthesis model could not be reached (e.g. rate-limited or misconfigured), so the
+          recommendation, confidence score, and next steps below are a fixed fallback template, not a
+          genuine model assessment of this claim. The damage table and policy findings above are still
+          real detection/retrieval output.
+          <span v-if="fallbackReason">Reason: {{ fallbackReason }}</span>
+        </p>
+      </div>
+
+      <div v-if="isRecommendationOverridden" class="nested-card status-warning">
+        <strong><i class="pi pi-exclamation-triangle" /> Recommendation overridden</strong>
+        <p class="muted">{{ recommendationOverrideReason }}</p>
+      </div>
+
       <div v-if="analysis.needs_human_review" class="nested-card status-warning">
         <strong><i class="pi pi-exclamation-triangle" /> Needs human review</strong>
-        <p class="muted">Confidence fell below the automated-decision threshold, so this claim was routed for manual review instead of an AI recommendation.</p>
+        <p class="muted">{{ escalationReason }}</p>
       </div>
 
       <div class="inline-group">
         <Tag :value="`Severity: ${analysis.severity_label || 'Unknown'}`" :severity="severityTagColor(analysis.severity_label)" />
-        <Tag :value="`Recommendation: ${analysis.recommendation || 'Pending'}`" :severity="recommendationTagColor(analysis.recommendation)" />
+        <Tag :value="recommendationTagText" :severity="recommendationTagColor(analysis.recommendation)" />
         <Tag v-if="analysis.confidence_score != null" :value="`Confidence: ${percent(analysis.confidence_score)}`" severity="secondary" />
         <Tag v-if="analysis.fraud_score != null" :value="`Fraud score: ${percent(analysis.fraud_score)}`" :severity="fraudTagColor(analysis.fraud_score)" />
+        <Tag v-if="isFallbackReport" value="Default report" severity="warn" />
+      </div>
+
+      <div v-if="recommendationReason" class="nested-card">
+        <strong>Why this recommendation</strong>
+        <p>{{ recommendationReason }}</p>
       </div>
 
       <div v-if="fraudReason" class="nested-card">
         <strong>Fraud factors</strong>
-        <p class="muted">{{ fraudReason }}</p>
+        <ul v-if="fraudSignals.length" class="clause-list">
+          <li v-for="(signal, index) in fraudSignals" :key="index">{{ signal }}</li>
+        </ul>
+        <p v-else class="muted">{{ fraudReason }}</p>
       </div>
 
       <div v-if="damageTable.length" class="nested-card">
@@ -81,6 +106,34 @@ const damageTable = computed(() => report.value.damage_table || []);
 const nextSteps = computed(() => report.value.next_steps || []);
 const clauseFindings = computed(() => (props.analysis?.policy_findings || []).filter((f) => f.clause_id !== 'POLICY-LIMIT-CHECK'));
 const fraudReason = computed(() => report.value.fraud_assessment?.reason || '');
+const fraudSignals = computed(() => report.value.fraud_assessment?.signals || []);
+const isFallbackReport = computed(() => !!report.value.is_fallback);
+const fallbackReason = computed(() => report.value.fallback_reason || '');
+const recommendationReason = computed(() => report.value.recommendation_reason || '');
+const isRecommendationOverridden = computed(() => !!report.value.original_recommendation);
+const recommendationOverrideReason = computed(() => report.value.recommendation_override_reason || '');
+const recommendationTagText = computed(() => {
+  if (isRecommendationOverridden.value) {
+    return `Recommendation: ${props.analysis?.recommendation || 'Pending'} (AI said ${report.value.original_recommendation})`;
+  }
+  return `Recommendation: ${props.analysis?.recommendation || 'Pending'}`;
+});
+
+// needs_human_review can be forced by either a low confidence score or a
+// fraud hard-rule signal (see _should_escalate_to_human in the backend
+// orchestrator) -- these are independent triggers, so the banner text must
+// reflect which one actually fired instead of always blaming confidence.
+const escalationReason = computed(() => {
+  const fraudFlagged = !!report.value.fraud_assessment?.needs_investigation;
+  const lowConfidence = props.analysis?.confidence_score != null && Number(props.analysis.confidence_score) < 0.6;
+  if (fraudFlagged && lowConfidence) {
+    return 'This claim was flagged for potential fraud and its confidence score fell below the automated-decision threshold, so it was routed for manual review instead of an AI recommendation.';
+  }
+  if (fraudFlagged) {
+    return 'This claim was flagged for potential fraud, so it was routed for manual review instead of an AI recommendation.';
+  }
+  return 'Confidence fell below the automated-decision threshold, so this claim was routed for manual review instead of an AI recommendation.';
+});
 
 const percent = (value) => `${Math.round(Number(value) * 100)}%`;
 

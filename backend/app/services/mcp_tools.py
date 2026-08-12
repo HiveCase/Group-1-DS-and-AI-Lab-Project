@@ -24,9 +24,9 @@ def build_toolkit(damage_service: DamageDetectionService | None = None, severity
         return damage_service.detect_from_path(image_path)
 
     @tool
-    def score_severity_tool(detections: list[dict[str, Any]], image_width: int = 100, image_height: int = 100) -> dict[str, Any]:
+    def score_severity_tool(detections: list[dict[str, Any]], image_width: int = 100, image_height: int = 100, image_area: int | None = None) -> dict[str, Any]:
         """Score the severity of a set of detections using area-ratio heuristics."""
-        return severity_service.score_detections(detections, image_width=image_width, image_height=image_height)
+        return severity_service.score_detections(detections, image_width=image_width, image_height=image_height, image_area=image_area)
 
     @tool
     def retrieve_policy_clauses_tool(
@@ -45,14 +45,33 @@ def build_toolkit(damage_service: DamageDetectionService | None = None, severity
         return report_service.synthesize_report(detections, severity_summary, policy_findings)
 
     @tool
-    def assess_fraud_tool(claim_type: str, claimed_amount: str | None, severity_summary: dict[str, Any], confidence_score: float) -> dict[str, Any]:
-        """Assess fraud risk for a claim based on severity, amount, and report confidence."""
-        class _ClaimProxy:
-            def __init__(self, claim_type: str, claimed_amount: str | None) -> None:
-                self.incident_description = claim_type
-                self.claimed_amount = claimed_amount
-        claim_proxy = _ClaimProxy(claim_type, claimed_amount)
-        return fraud_service.assess_fraud_risk(claim_proxy, severity_summary, {"confidence_score": confidence_score})
+    def assess_fraud_tool(
+        claimant_name: str,
+        claimed_amount: str | None,
+        incident_description: str,
+        severity_summary: dict[str, Any],
+        confidence_score: float,
+        policy_holder_name: str | None = None,
+        policy_status: str | None = None,
+        incident_date: str | None = None,
+        policy_expiry_date: str | None = None,
+        already_claimed_amount: str | None = None,
+        policy_limit: str | None = None,
+    ) -> dict[str, Any]:
+        """Assess fraud risk for a claim based on severity, amount, report confidence, and policy-holder-name / expiry / cumulative-claimed-amount checks against the policy on record."""
+        return fraud_service.assess_fraud_risk(
+            claimant_name=claimant_name,
+            claimed_amount=claimed_amount,
+            incident_description=incident_description,
+            severity_summary=severity_summary,
+            confidence_score=confidence_score,
+            policy_holder_name=policy_holder_name,
+            policy_status=policy_status,
+            incident_date=incident_date,
+            policy_expiry_date=policy_expiry_date,
+            already_claimed_amount=already_claimed_amount,
+            policy_limit=policy_limit,
+        )
 
     return [
         detect_damage_tool,

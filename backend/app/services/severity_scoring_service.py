@@ -7,13 +7,24 @@ class SeverityScoringService:
     def __init__(self, confidence_floor: float = 0.7):
         self.confidence_floor = confidence_floor
 
-    def score_detections(self, detections: list[dict[str, Any]], image_width: int = 100, image_height: int = 100) -> dict[str, Any]:
+    def score_detections(self, detections: list[dict[str, Any]], image_width: int = 100, image_height: int = 100, image_area: int | None = None) -> dict[str, Any]:
         valid_detections = [
             detection for detection in detections
             if (detection.get("confidence") or 0.0) >= self.confidence_floor
         ]
         if not valid_detections and detections:
             valid_detections = list(detections)
+
+        # image_area (the real photo's pixel area, from the caller) takes
+        # precedence over image_width * image_height, which is only ever a
+        # caller-supplied placeholder -- using it directly on a real photo's
+        # bbox coordinates produces nonsensical ratios far above 1.0.
+        if image_area and image_area > 0:
+            effective_area = image_area
+        elif image_width > 0 and image_height > 0:
+            effective_area = image_width * image_height
+        else:
+            effective_area = 0
 
         area_sum = 0.0
         per_region: list[dict[str, Any]] = []
@@ -23,14 +34,10 @@ class SeverityScoringService:
             per_region.append({
                 "class_name": detection.get("class_name", "unknown"),
                 "confidence": detection.get("confidence", 0.0),
-                "severity": self._severity_label_for_ratio(area_sum / max(image_width * image_height, 1)),
+                "severity": self._severity_label_for_ratio(area_sum / max(effective_area, 1)),
             })
 
-        if image_width <= 0 or image_height <= 0:
-            ratio = 0.0
-        else:
-            image_area = image_width * image_height
-            ratio = area_sum / image_area if image_area else 0.0
+        ratio = area_sum / effective_area if effective_area else 0.0
 
         overall_severity = self._severity_label_for_ratio(ratio)
         return {

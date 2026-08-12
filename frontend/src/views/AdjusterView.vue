@@ -29,15 +29,22 @@
       <DataTable :value="claims" size="small" selectionMode="single" @row-click="(event) => selectClaim(event.data.claim_id)">
         <Column field="claim_id" header="Claim ID" />
         <Column field="claimant_name" header="Claimant" />
+        <Column header="Predicted damage">
+          <template #body="{ data }">
+            <a :href="annotatedPhotoUrl(data.claim_id)" target="_blank" rel="noopener" @click.stop>
+              <img
+                :src="annotatedPhotoUrl(data.claim_id)"
+                alt="Predicted damage regions"
+                class="predicted-damage-thumb"
+                @error="(event) => { event.target.style.visibility = 'hidden'; }"
+              />
+            </a>
+          </template>
+        </Column>
         <Column field="status" header="Status">
           <template #body="{ data }"><Tag :value="data.status" :severity="statusTagColor(data.status)" /></template>
         </Column>
         <Column field="claimed_amount" header="Claimed amount" />
-        <Column header="">
-          <template #body="{ data }">
-            <Button label="Review" size="small" text @click="selectClaim(data.claim_id)" />
-          </template>
-        </Column>
       </DataTable>
       <p v-if="!claims.length" class="muted">No claims are waiting for review right now.</p>
     </div>
@@ -85,7 +92,7 @@ import InputNumber from 'primevue/inputnumber';
 import Textarea from 'primevue/textarea';
 import Message from 'primevue/message';
 import AiAnalysisPanel from '../components/AiAnalysisPanel.vue';
-import { getAdjusterDashboard, getClaimDetail, submitDecision } from '../services/api';
+import { annotatedPhotoUrl, getAdjusterDashboard, getClaimDetail, submitDecision } from '../services/api';
 
 const loading = ref(true);
 const summary = ref({ pending_count: 0, approved_count: 0, denied_count: 0 });
@@ -167,3 +174,13 @@ const submitDecisionForClaim = async () => {
 onMounted(loadDashboard);
 onBeforeUnmount(() => clearTimeout(pollTimer));
 </script>
+
+<style scoped>
+.predicted-damage-thumb {
+  height: 72px;
+  width: 108px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: zoom-in;
+}
+</style>

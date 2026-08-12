@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import logging
+from decimal import Decimal
 from typing import Any, TypedDict
 
 from langgraph.graph import END, StateGraph
@@ -7,11 +10,31 @@ from langgraph.graph import END, StateGraph
 from app.services.langfuse_observability import LangfuseObserver
 from app.services.mcp_tools import build_toolkit
 
+logger = logging.getLogger("claims_portal.langgraph_orchestrator")
+
+AGENT_DESCRIPTIONS = {
+    "detect_damage": "Damage Detection agent: runs the YOLO model on the claim photos to find damage regions.",
+    "score_severity": "Severity Scoring agent: computes a severity label from the damage regions already detected.",
+    "retrieve_policy": "Policy Clause agent: retrieves coverage/exclusion clauses for the claim's detected damage classes.",
+    "synthesize_report": "Report Synthesis agent: produces the structured claim assessment report from the other agents' outputs.",
+    "assess_fraud": "Fraud agent: assesses fraud risk from severity, amount, and the synthesized report's confidence.",
+}
+
+COORDINATOR_SYSTEM_PROMPT = """You are the coordinator for an insurance-claim AI analysis pipeline.
+
+At each turn you are given the set of agents that are currently valid to run \
+next (their prerequisites are already satisfied) and a compact summary of \
+what the pipeline has produced so far. Call exactly one of the tools you are \
+given to choose which agent runs next, and give a one-sentence reason. \
+You may only choose from the tools provided in this turn -- do not invent \
+an agent name that isn't offered."""
+
 
 class ClaimAnalysisState(TypedDict, total=False):
     claim: Any
     policy: Any
     detections: list[dict[str, Any]]
+    image_area: int
     severity_summary: dict[str, Any]
     policy_findings: list[dict[str, Any]]
     report_json: dict[str, Any]
@@ -31,6 +54,9 @@ class LangGraphClaimOrchestrator:
         self.report_service = report_service
         self.fraud_service = fraud_service
         self.observer = observer or LangfuseObserver()
+        self.groq_api_key = getattr(report_service, "groq_api_key", None)
+        self.groq_model = getattr(report_service, "groq_model", None)
+        self.groq_base_url = getattr(report_service, "groq_base_url", "https://api.groq.com/openai/v1")
         self.toolkit = build_toolkit(
             damage_service=self.damage_service,
             severity_service=self.severity_service,
@@ -71,28 +97,128 @@ class LangGraphClaimOrchestrator:
         return compiled
 
     def _coordinate(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
-        completed_actions = set(state.get("completed_actions") or [])
+        valid_actions = self._valid_next_actions(state)
 
-        if "detect_damage" not in completed_actions and not state.get("detections"):
-            state["planned_action"] = "detect_damage"
+        if not valid_actions:
+            if self._should_escalate_to_human(state) == "escalate":
+                state["planned_action"] = "flag_human_review"
+            else:
+                state["planned_action"] = "finalize_claim"
             return state
-        if "score_severity" not in completed_actions and not state.get("severity_summary"):
-            state["planned_action"] = "score_severity"
+
+        if len(valid_actions) == 1:
+            # No real choice to make -- skip the LLM call entirely.
+            state["planned_action"] = valid_actions[0]
             return state
-        if "retrieve_policy" not in completed_actions and not state.get("policy_findings"):
-            state["planned_action"] = "retrieve_policy"
-            return state
-        if "synthesize_report" not in completed_actions and not state.get("report_json"):
-            state["planned_action"] = "synthesize_report"
-            return state
-        if self.fraud_service is not None and "assess_fraud" not in completed_actions and not state.get("fraud_assessment"):
-            state["planned_action"] = "assess_fraud"
-            return state
-        if self._should_escalate_to_human(state) == "escalate":
-            state["planned_action"] = "flag_human_review"
-            return state
-        state["planned_action"] = "finalize_claim"
+
+        state["planned_action"] = self._plan_next_action(state, valid_actions)
         return state
+
+    def _valid_next_actions(self, state: ClaimAnalysisState) -> list[str]:
+        """Agents whose prerequisites are already satisfied and that haven't
+        run yet, in dependency order. Membership in completed_actions is the
+        only gate (not truthiness of the produced data), so a step that
+        legitimately produces an empty result -- e.g. detect_damage finding
+        no detections -- is never re-triggered."""
+        completed = set(state.get("completed_actions") or [])
+
+        if "detect_damage" not in completed:
+            return ["detect_damage"]
+
+        # score_severity and retrieve_policy both only depend on detections
+        # being available, so once detection is done either can run next --
+        # this is the genuine choice point handed to the planner.
+        parallel = [
+            action for action in ("score_severity", "retrieve_policy")
+            if action not in completed
+        ]
+        if parallel:
+            return parallel
+
+        if "synthesize_report" not in completed:
+            return ["synthesize_report"]
+
+        if self.fraud_service is not None and "assess_fraud" not in completed:
+            return ["assess_fraud"]
+
+        return []
+
+    def _plan_next_action(self, state: ClaimAnalysisState, valid_actions: list[str]) -> str:
+        trace = state.get("trace")
+        context = self._planning_context(state)
+        fallback = valid_actions[0]
+
+        if not self.groq_api_key:
+            self.observer.span(
+                trace, name="coordinator_planning",
+                input_data={"valid_actions": valid_actions, "context": context},
+                output_data={"chosen_action": fallback, "reason": "GROQ_API_KEY not configured; used deterministic order"},
+            )
+            return fallback
+
+        chosen, reason = fallback, None
+        try:
+            from openai import OpenAI
+
+            client = OpenAI(api_key=self.groq_api_key, base_url=self.groq_base_url, timeout=15.0)
+            response = client.chat.completions.create(
+                model=self.groq_model,
+                messages=[
+                    {"role": "system", "content": COORDINATOR_SYSTEM_PROMPT},
+                    {"role": "user", "content": json.dumps({"valid_actions": valid_actions, "context": context})},
+                ],
+                tools=[self._tool_schema(action) for action in valid_actions],
+                tool_choice="required",
+                temperature=0,
+            )
+            tool_calls = response.choices[0].message.tool_calls or []
+            if tool_calls:
+                candidate = tool_calls[0].function.name
+                try:
+                    reason = json.loads(tool_calls[0].function.arguments or "{}").get("reason")
+                except (json.JSONDecodeError, AttributeError):
+                    reason = None
+                if candidate in valid_actions:
+                    chosen = candidate
+                else:
+                    reason = f"LLM chose unavailable action '{candidate}'; used deterministic fallback"
+        except Exception as error:
+            logger.warning("Coordinator planning call failed: %s", error)
+            reason = f"Groq planning call failed: {error}"
+
+        self.observer.span(
+            trace, name="coordinator_planning",
+            input_data={"valid_actions": valid_actions, "context": context},
+            output_data={"chosen_action": chosen, "reason": reason},
+        )
+        return chosen
+
+    def _planning_context(self, state: ClaimAnalysisState) -> dict[str, Any]:
+        detections = state.get("detections") or []
+        return {
+            "completed_agents": state.get("completed_actions") or [],
+            "detections_count": len(detections),
+            "damage_classes": sorted({d.get("class_name") for d in detections if d.get("class_name")}),
+            "has_severity_summary": bool(state.get("severity_summary")),
+            "has_policy_findings": bool(state.get("policy_findings")),
+            "has_report": bool(state.get("report_json")),
+        }
+
+    def _tool_schema(self, action: str) -> dict[str, Any]:
+        return {
+            "type": "function",
+            "function": {
+                "name": action,
+                "description": AGENT_DESCRIPTIONS.get(action, action),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "reason": {"type": "string", "description": "One sentence explaining why this agent should run next."},
+                    },
+                    "required": ["reason"],
+                },
+            },
+        }
 
     def _route_from_coordinator(self, state: ClaimAnalysisState) -> str:
         action = state.get("planned_action") or ""
@@ -122,22 +248,29 @@ class LangGraphClaimOrchestrator:
         claim = state.get("claim")
         photos = getattr(claim, "photos", []) or []
         detections: list[dict[str, Any]] = []
+        total_image_area = 0
+        get_dimensions = getattr(self.damage_service, "get_image_dimensions", None)
         for photo in photos:
             image_path = getattr(photo, "file_path", None)
             if image_path:
                 detections.extend(self._call_tool("detect_damage_tool", image_path))
+                if get_dimensions is not None:
+                    width, height = get_dimensions(image_path)
+                    total_image_area += (width or 0) * (height or 0)
         state["detections"] = detections
+        state["image_area"] = total_image_area
         self.observer.span(
             state.get("trace"),
             name="damage_detection",
             input_data={"photo_paths": [getattr(p, "file_path", None) for p in photos]},
-            output_data={"detections": detections},
+            output_data={"detections": detections, "image_area": total_image_area},
         )
         return state
 
     def _score_severity(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
         detections = state.get("detections") or []
-        severity_summary = self._call_tool("score_severity_tool", detections, image_width=100, image_height=100)
+        image_area = state.get("image_area") or 0
+        severity_summary = self._call_tool("score_severity_tool", detections, image_area=image_area)
         state["severity_summary"] = severity_summary
         self.observer.span(
             state.get("trace"),
@@ -193,24 +326,37 @@ class LangGraphClaimOrchestrator:
 
     def _assess_fraud(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
         if self.fraud_service is None:
-            state["fraud_assessment"] = {"fraud_score": 0.0, "needs_investigation": False, "reason": "No fraud agent configured"}
+            state["fraud_assessment"] = {"fraud_score": 0.0, "needs_investigation": False, "reason": "No fraud agent configured", "signals": []}
             return state
         claim = state.get("claim")
+        policy = state.get("policy")
         severity_summary = state.get("severity_summary") or {}
         report_json = state.get("report_json") or {}
+
+        already_claimed = Decimal("0")
+        for sibling in getattr(policy, "claims", None) or []:
+            if getattr(sibling, "claim_id", None) == getattr(claim, "claim_id", None):
+                continue
+            if getattr(sibling, "status", None) == "denied":
+                continue
+            already_claimed += getattr(sibling, "claimed_amount", None) or Decimal("0")
+
+        expiry_date = getattr(policy, "expiry_date", None)
+        policy_limit = getattr(policy, "policy_limit", None)
         fraud_input = {
-            "incident_description": getattr(claim, "incident_description", ""),
+            "claimant_name": getattr(claim, "claimant_name", ""),
             "claimed_amount": str(getattr(claim, "claimed_amount", None)),
+            "incident_description": getattr(claim, "incident_description", ""),
             "severity_summary": severity_summary,
-            "report_confidence": (report_json or {}).get("confidence_score", 0.5),
+            "confidence_score": (report_json or {}).get("confidence_score", 0.5),
+            "policy_holder_name": getattr(policy, "policy_holder_name", None),
+            "policy_status": getattr(policy, "status", None),
+            "incident_date": str(getattr(claim, "incident_date", "") or "") or None,
+            "policy_expiry_date": str(expiry_date) if expiry_date else None,
+            "already_claimed_amount": str(already_claimed),
+            "policy_limit": str(policy_limit) if policy_limit is not None else None,
         }
-        fraud_assessment = self._call_tool(
-            "assess_fraud_tool",
-            fraud_input["incident_description"],
-            getattr(claim, "claimed_amount", None),
-            severity_summary,
-            fraud_input["report_confidence"],
-        )
+        fraud_assessment = self._call_tool("assess_fraud_tool", **fraud_input)
         state["fraud_assessment"] = fraud_assessment
         self.observer.span(
             state.get("trace"),
@@ -218,7 +364,32 @@ class LangGraphClaimOrchestrator:
             input_data=fraud_input,
             output_data=fraud_assessment,
         )
+        self._override_recommendation_if_policy_invalid(state, fraud_assessment)
         return state
+
+    def _override_recommendation_if_policy_invalid(self, state: ClaimAnalysisState, fraud_assessment: dict[str, Any]) -> None:
+        """The report-synthesis model only ever sees clause text, detections,
+        and severity -- it has no visibility into policy status/expiry, so it
+        can (and does) confidently recommend "Approve" against a policy that
+        wasn't even active on the incident date. That's not a plausible
+        outcome to leave standing: there's no valid contract to approve a
+        claim under. Enforce it deterministically here rather than relying on
+        the LLM to reason about a fact it was never given, the same way fraud
+        hard-rule violations already force needs_human_review regardless of
+        confidence."""
+        report_json = state.get("report_json") or {}
+        if report_json.get("recommendation") != "Approve":
+            return
+        if not (fraud_assessment.get("rule_flags") or {}).get("policy_inactive"):
+            return
+        report_json["original_recommendation"] = "Approve"
+        report_json["recommendation"] = "Investigate"
+        report_json["recommendation_override_reason"] = (
+            "The report-synthesis model recommended Approve, but the policy was not active "
+            "(or had already expired) on the incident date, so there is no valid coverage "
+            "basis for an automated approval. Changed to Investigate."
+        )
+        state["report_json"] = report_json
 
     def _should_escalate_to_human(self, state: ClaimAnalysisState) -> str:
         report_json = state.get("report_json") or {}
@@ -265,5 +436,12 @@ class LangGraphClaimOrchestrator:
             "needs_human_review": result.get("needs_human_review", False),
         }
         self.observer.end_trace(trace, output_data=output)
-        self.observer.flush()
+        # No flush() here on purpose: it blocks until Langfuse's internal
+        # queue drains, retrying on failure -- which previously meant a
+        # slow/unreachable Langfuse endpoint could stall this claim's
+        # completion for minutes (run() wouldn't return, so the caller
+        # never got to mark analysis_result.status = 'completed'). The SDK's
+        # background worker sends queued events on its own schedule
+        # regardless; a final flush happens on app shutdown instead (see
+        # main.py's lifespan handler).
         return output
