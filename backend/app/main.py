@@ -43,7 +43,8 @@ def _flush_observability() -> None:
     try:
         from app.routes.claims import _orchestrator
 
-        _orchestrator._engine.observer.flush()
+        if _orchestrator is not None:
+            _orchestrator._engine.observer.flush()
     except Exception:
         logger.exception("Failed to flush Langfuse on shutdown")
 

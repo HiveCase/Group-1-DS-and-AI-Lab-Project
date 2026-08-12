@@ -19,10 +19,15 @@ from app.services.investigation_service import InvestigationService
 router = APIRouter(prefix='/claims', tags=['claims'])
 logger = logging.getLogger("claims_portal.claims")
 
-# Built once at import time (not per request) so the YOLO model, the
-# sentence-transformer embeddings, and each policy's TF-IDF index are loaded
-# once and reused, rather than reloaded on every claim submission.
-_orchestrator = ClaimAnalysisOrchestrator()
+# Built lazily so the YOLO model and sentence-transformer embeddings don't
+# block FastAPI from binding to the port during startup (preventing Render timeouts).
+_orchestrator = None
+
+def get_orchestrator() -> ClaimAnalysisOrchestrator:
+    global _orchestrator
+    if _orchestrator is None:
+        _orchestrator = ClaimAnalysisOrchestrator()
+    return _orchestrator
 
 
 def _sync_policy_clauses(db: Session, policy: Policy | None, claim: Claim | None, policy_findings: list[dict]) -> None:
@@ -70,7 +75,7 @@ def run_claim_analysis(claim_id: str) -> None:
         claim.status = 'under review'
         db.commit()
         try:
-            analysis_result = _orchestrator.run(claim, claim.policy)
+            analysis_result = get_orchestrator().run(claim, claim.policy)
         except Exception:
             logger.exception("AI analysis failed for claim %s", claim_id)
             claim.analysis_result.status = 'failed'
@@ -98,7 +103,7 @@ def run_claim_analysis(claim_id: str) -> None:
         detections = analysis_result.get('detections') or []
         if photos and detections:
             primary_photo = photos[0]
-            annotated_path = _orchestrator.damage_service.annotate_image(primary_photo.file_path, detections)
+            annotated_path = get_orchestrator().damage_service.annotate_image(primary_photo.file_path, detections)
             if annotated_path:
                 primary_photo.annotated_path = annotated_path
                 db.add(primary_photo)
@@ -226,7 +231,7 @@ def get_annotated_photo(claim_id: str, db: Session = Depends(get_db)):
 
     detections = claim.analysis_result.detections if claim.analysis_result else None
     if detections:
-        annotated_path = _orchestrator.damage_service.annotate_image(source_path, detections)
+        annotated_path = get_orchestrator().damage_service.annotate_image(source_path, detections)
         if annotated_path and Path(annotated_path).exists():
             photo.annotated_path = annotated_path
             db.add(photo)
