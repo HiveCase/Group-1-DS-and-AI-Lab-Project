@@ -89,8 +89,9 @@ The system is a **four-agent pipeline coordinated by a LangGraph state machine**
                                                    │
         ┌───────────────┐   image   ┌───────────────▼───────────────┐   detections      ┌────────────────────┐
         │  User Input   │─────────▶│         Damage Agent           │─────────────────▶│   Severity Agent   │
-        │ (Gradio UI)   │           │   YOLO11m (fine-tuned)        │                   │  area-ratio proxy  │
-        └──────┬────────┘           └───────────────┬───────────────┘                   └─────────┬──────────┘
+        │ (Gradio UI)   │           │   YOLO11m-seg (fine-tuned)     │                   │ mask area-ratio    │
+        └──────┬────────┘           └───────────────┬───────────────┘                   │      proxy         │
+                                                                                          └─────────┬──────────┘
                │ policy PDF (optional)              │ conf < threshold?                          │ severities
                │                                    └──────────────► Human Review Queue          │
                │                                                                                 ▼
@@ -142,7 +143,7 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 
 | **Layer** | **Technology** | **Version / Notes** |
 | --- | --- | --- |
-| Vision model | Ultralytics YOLO11m | Ultralytics >=8.3, PyTorch backend |
+| Vision model | Ultralytics YOLO11m-seg | Ultralytics >=8.3, PyTorch backend |
 | Orchestration | LangGraph wrapping planned | not implemented yet |
 | Embedding model | sentence-transformers `all-MiniLM-L6-v2` | 384-dim, 22.7M params |
 | Vector store | ChromaDB (persistent client) | HNSW cosine index |
@@ -162,11 +163,11 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 
 1. User uploads a vehicle damage photograph (required) and selects a policy from the catalog (required) and/or supplies an incident narrative (optional).
 2. The claim's shared state is initialised: `{image, detections: [], overall_severity: None, policy: {}, retrieved_clauses: {}, report: None, escalated: False}` (Section 6).
-3. **Damage Agent**: image → letterbox to 1280×1280 → YOLO11m inference → NMS → list of `{class_id, class_name, confidence, bbox_normalized, area_ratio}`.
+3. **Damage Agent**: image → letterbox to 1280×1280 → YOLO11m-seg inference → NMS → list of `{class_id, class_name, confidence, bbox_normalized, mask, area_ratio}`, where `area_ratio` is the pixel-precise mask area normalised by image area, not a bounding-box approximation.
 4. Minimum detection confidence is checked against the escalation threshold (0.50, Section 8.2) by the calling code (Section 4.5).
    - If below threshold, or zero detections → claim written to the human review queue; pipeline halts here.
    - Otherwise → continue.
-5. **Severity Agent**: for each detection, apply the per-class calibrated threshold table (Section 6.2) to the normalised bbox area, append `severity` to each detection.
+5. **Severity Agent**: for each detection, apply the per-class calibrated threshold table (Section 6.2) to the normalised mask area, append `severity` to each detection.
 6. **Stage 1 — Policy selection**: the claimant's selected policy (Section 5.3/6.3) resolves to a validated `doc_id`, scoping all retrieval that follows.
 7. **Stage 2 — Policy Agent**: for each distinct detected class, run a coverage query and a separate exclusion query, both scoped to `doc_id` → MiniLM embed + hybrid dense/sparse retrieval against the ChromaDB index → up to 5 ranked clauses per query, filtered by the minimum score floor (Section 6.3).
 8. **Report Agent**: assemble the context bundle (detections, severities, policy selection, retrieved clauses, incident narrative — Section 6.4) → call `llama-3.3-70b-versatile` and `openai/gpt-oss-20b` (Section 5.4) → parse the structured JSON response (verdict per damage class with citations, Section 6.4).
@@ -176,7 +177,7 @@ Data flows as a single, progressively-enriched **claim state object** (a Python 
 
 | **Module** | **Input** | **Output** |
 | --- | --- | --- |
-| Damage Agent | 1280×1280×3 RGB tensor | list of `{class_id, class_name, confidence, bbox_normalized, area_ratio}` |
+| Damage Agent | 1280×1280×3 RGB tensor | list of `{class_id, class_name, confidence, bbox_normalized, mask, area_ratio}` |
 | Severity Agent | detection list | detection list + `severity` field per instance |
 | Policy Agent | per detected class: a coverage query and an exclusion query, both scoped to the selected `doc_id` | per class: `{coverage: [...], exclusion_or_condition: [...], coverage_clause_found: bool}` |
 | Report Agent | full context bundle JSON (detections, severities, policy selection, retrieved clauses, incident narrative) | structured JSON: `{claim_id, policy_doc_id, items, overall_recommendation, escalate_to_human, escalation_reason}` |
@@ -230,7 +231,7 @@ Upload image (required) → optionally upload policy PDF → click "Assess" → 
 
 | **Module** | **Model selected** | **Pre-trained or custom** | **Role** |
 | --- | --- | --- | --- |
-| Damage Agent | YOLO11m (Ultralytics) | Pre-trained backbone, **fine-tuned** on VehiDE | Bounding-box detection of 6 damage classes |
+| Damage Agent | YOLO11m-seg (Ultralytics) | Pre-trained backbone, **fine-tuned** on VehiDE | Instance segmentation (bounding box + pixel mask) of 6 damage classes |
 | Severity Agent | Calibrated rule-based area-ratio proxy | Not a learned model, thresholds calibrated against the Car Damage Severity dataset | Minor/Moderate/Severe classification |
 | Policy Agent - embedding | `sentence-transformers/all-MiniLM-L6-v2` | Pre-trained, **used as-is** (no fine-tuning) | Dense query/chunk embedding |
 | Policy Agent - sparse | TF-IDF (`sklearn.TfidfVectorizer`) | Fit once on the 185-chunk corpus (not learned in the ML sense - vocabulary/IDF weights only) | Lexical retrieval fused with dense scores via weighted RRF |
@@ -240,13 +241,16 @@ Upload image (required) → optionally upload policy PDF → click "Assess" → 
 
 ### 4.1 Damage Agent Architecture
 
-YOLO11's architecture is a single-stage detector composed of three parts:
+YOLO11-seg's architecture is a single-stage instance-segmentation network composed of four parts:
 
 - **Backbone:** A CSP-style convolutional feature extractor (C3k2 blocks in YOLO11, replacing YOLOv8's C2f blocks) that produces multi-scale feature maps.
 - **Neck:** A PAN-FPN (Path Aggregation Network / Feature Pyramid Network) that fuses features across scales, plus YOLO11's C2PSA (partial self-attention) block added at the deepest stage to improve small-object context relevant here since many damage instances occupy a small fraction of the frame (median normalised bbox area 0.033).
-- **Head:** A decoupled detection head (separate classification and box-regression branches) producing per-instance bounding boxes and class confidence.
+- **Detection head:** A decoupled head (separate classification and box-regression branches) producing per-instance bounding boxes and class confidence.
+- **Segmentation (mask) head:** A prototype-mask branch that predicts a small set of shared prototype masks per image plus per-instance mask coefficients; combining the two at inference time produces a pixel-level mask for every detected instance, at the cost of the extra `seg_loss` term (Section 7) and somewhat heavier inference than the box-only variant.
 
-`m` (medium) is the selected scale: ~20M parameters, a middle point between the `n`/`s` variants (faster, lower accuracy) and `l`/`x` (higher accuracy, too slow/large for the CPU-basic HF Spaces inference target).
+The task is instance segmentation, not plain bounding-box detection, because the Severity Agent's area-ratio proxy (Section 6.2) is only as accurate as the area it is fed a bounding box overestimates the true damaged area for irregular or elongated damage (a diagonal crack or scratch), whereas a pixel mask does not. This is a deliberate, from-the-outset choice, not something added after evaluating plain detection.
+
+`m` (medium) is the selected scale: ~22.3M parameters (measured, Section 4.4), a middle point between the `n`/`s` variants (faster, lower accuracy) and `l`/`x` (higher accuracy, too slow/large for the CPU-basic HF Spaces inference target, and — per the Milestone 4 hardware findings, Section 4.4 note — too large to even train reliably on a 16GB T4 at this project's image size).
 
 ### 4.2 Policy Agent Architecture
 
@@ -260,7 +264,7 @@ YOLO11's architecture is a single-stage detector composed of three parts:
 
 | **Model** | **Parameters** | **Disk size (approx.)** | **Notes** |
 | --- | --- | --- | --- |
-| YOLO11m | 20.1M | ~40.7 MB (`.pt`) | Fine-tuned end-to-end |
+| YOLO11m-seg | 22.3M | ~45.2 MB (`.pt`) | Fine-tuned end-to-end |
 | all-MiniLM-L6-v2 | 22.7M | ~90 MB | Frozen, inference-only |
 | ChromaDB index (185 chunks) | N/A | <5 MB | Grows linearly with corpus size |
 | `llama-3.3-70b-versatile` | 70B (remote) | N/A (API) | Accessed via Groq API only |
@@ -276,17 +280,17 @@ Integration is achieved entirely through a shared state object and typed schemas
 ## 5. Justification of Model Choices
 
 
-### 5.1 Damage Agent: YOLO11m vs. Alternatives
+### 5.1 Damage Agent: YOLO11-seg vs. Alternatives
 
-This project's comparison of YOLO against Faster R-CNN, DETR, SSD, and end-to-end VLMs (Florence-2, Qwen2.5-VL, LLaVA, GPT-4V) was carried out in Milestone 1, Section 3.1/3.4, and is not repeated in full here. The conclusion is that a fine-tuned YOLO variant offers the best combination of measurable, ground-truth-comparable output, CPU-deployable inference, and training feasibility on a GPU within the project's compute budget and still holds and is the basis for this milestone's selection.
+This project's comparison of YOLO against Faster R-CNN, DETR, SSD, and end-to-end VLMs (Florence-2, Qwen2.5-VL, LLaVA, GPT-4V) was carried out in Milestone 1, Section 3.1/3.4, and is not repeated in full here. The conclusion is that a fine-tuned YOLO variant offers the best combination of measurable, ground-truth-comparable output, CPU-deployable inference, and training feasibility on a GPU within the project's compute budget and still holds and is the basis for this milestone's selection. Within the YOLO family, **instance segmentation (the `-seg` head) is selected over plain bounding-box detection** as the task itself: the Severity Agent's area-ratio proxy (Section 5.2/6.2) is only as good as the area measurement it consumes, and a bounding box necessarily includes undamaged background around irregular or elongated damage (a diagonal crack or scratch), inflating the estimated damaged area relative to a pixel mask. This bias is worth the extra mask-head training/inference cost given severity assessment is a core deliverable of this system, not a secondary output.
 
-**YOLO11 vs. YOLOv8 comparison:**
+**YOLO11 vs. YOLOv8 generation choice:**
 
-Rather than relying on published COCO benchmarks (which reflect a different dataset and task), both architectures were actually trained and measured on this project's data. A fixed 3,000-image training subsample (with a 500-image validation subsample), identical across both architectures, was trained progressively at **3, 5, and then 15 epochs** and each stage checked whether a clear winner had emerged before committing more GPU time to the next. At 15 epochs (the most informative run), both models remained far from converged (mAP@50 ≈ 0.03-0.04 on a 6-class task starting from a reinitialised detection head), but that is expected at this data/epoch scale and was not the point of the probe the point was the **relative** comparison between the two architectures under identical conditions.
+Rather than relying on published COCO benchmarks (which reflect a different dataset and task), the two most recent Ultralytics generations were compared on this project's own data before committing to the heavier, slower segmentation-head training. Because a full segmentation probe at this stage would have consumed a disproportionate share of the milestone's GPU budget, the **box-only heads of both generations** were used as a fast, lower-cost proxy for backbone/neck quality (the part of the architecture the `-seg` variants share) — a fixed 3,000-image training subsample (with a 500-image validation subsample), identical across both architectures, was trained progressively at **3, 5, and then 15 epochs**, with each stage checking whether a clear winner had emerged before committing more GPU time to the next. At 15 epochs (the most informative run), both models remained far from converged (mAP@50 ≈ 0.03-0.04 on a 6-class task starting from a reinitialised detection head), but that is expected at this data/epoch scale and was not the point of the probe — the point was the **relative** comparison between the two generations' backbones under identical conditions, as a proxy for which generation's `-seg` variant to commit full training compute to.
 
-| **Criterion** | **YOLO11m** | **YOLOv8m** |
+| **Criterion** | **YOLO11m (box-only proxy)** | **YOLOv8m (box-only proxy)** |
 | --- | --- | --- |
-| Parameters (measured) | 20.1M | 25.9M |
+| Parameters (box-only, measured) | 20.1M | 25.9M |
 | mAP@50 @ 15-epoch probe (3,000-image subsample) | 0.0305 | 0.0371 |
 | mAP@50-95 @ 15-epoch probe | 0.0046 | 0.0081 |
 | Training time / epoch (measured) | 1,370.8 s | 1,265.8 s |
@@ -295,17 +299,17 @@ Rather than relying on published COCO benchmarks (which reflect a different data
 | Architectural novelty relevant to this task | C3k2 blocks + C2PSA attention aid small-object detection | C2f blocks, no attention block |
 | Migration cost | None — drop-in replacement via the same `ultralytics` package and `damage.yaml` config | N/A (already the Milestone 1/2 assumption) |
 
-**No clear winner emerged from the probe.** The mAP@50 delta (0.0066) and mAP@50-95 delta (0.0035) between the two architectures are very much comparable and at this data scale (3,000 images, 15 epochs), the two architectures are statistically indistinguishable on accuracy; YOLOv8m's edge is noise-level, not a demonstrated advantage. YOLOv8m is marginally faster per epoch and at inference, and has more parameters; YOLO11m is marginally slower on both counts but smaller.
+**No clear winner emerged from the box-only probe.** The mAP@50 delta (0.0066) and mAP@50-95 delta (0.0035) between the two generations are very much comparable and at this data scale (3,000 images, 15 epochs), the two are statistically indistinguishable on accuracy; YOLOv8m's edge is noise-level, not a demonstrated advantage. YOLOv8m is marginally faster per epoch and at inference, and has more parameters; YOLO11m is marginally slower on both counts but smaller.
 
-**Decision: YOLO11m is selected**, on the tie-break criterion established before the probe was run: since accuracy was inconclusive, the decision falls to architectural reasoning - YOLO11's C3k2/C2PSA blocks are reported by Ultralytics to improve small-object detection, which is directly relevant given the Milestone 2 EDA's minimum normalised bbox area of 0.00002. YOLOv8m is retained as the Milestone 4 baseline comparison run (both trained under identical hyperparameters, Section 7, on the **full** training set) so that the Milestone 4 report can report an actual head-to-head result at full scale, rather than relying on this inconclusive subsample probe as the final word.
+**Decision: the YOLO11 generation, `-seg` (instance-segmentation) variant, `m` (medium) scale is selected** — i.e. **YOLO11m-seg**. The generation choice rests on the tie-break criterion established before the probe was run: since accuracy was inconclusive, the decision falls to architectural reasoning — YOLO11's C3k2/C2PSA blocks are reported by Ultralytics to improve small-object detection, which is directly relevant given the Milestone 2 EDA's minimum normalised bbox area of 0.00002. The task choice (segmentation over plain detection) rests on the Severity Agent's need for pixel-precise area, argued above. `m` (medium) is selected on the same size trade-off as Section 4.1: a middle point between `n`/`s` (faster, less accurate) and `l`/`x` (more accurate but too large for the CPU-basic HF Spaces inference target). YOLOv8-family checkpoints (including domain-pretrained `-seg` variants) are retained as a Milestone 4 comparative benchmark rather than the primary track, so that the Milestone 4 report can check this generation choice against an actual segmentation-level result, not just the box-only proxy above.
 
-**Advantages:** attention-augmented small-object detection, lightweight box-only inference (no segmentation head to carry), fast CPU/GPU inference, mature deployment tooling (ONNX/TensorRT export if later needed).
-**Disadvantages:** bounding-box area over-estimates true damaged area for irregular or elongated damage (e.g. a diagonal crack or scratch) relative to a pixel-precise mask, since the box necessarily includes undamaged background — a known bias in the Severity Agent's area-ratio proxy (Section 6.2), most pronounced for `crack`/`scratch` and smallest for roughly-rectangular classes like `shattered_glass`; like all single-stage detectors, more prone to missing small/heavily-occluded instances than two-stage detectors (Milestone 1, Section 10.8); the probe above found no measured accuracy advantage over YOLOv8m at this data scale, so the architectural rationale is a prior, not (yet) an empirical result.
+**Advantages:** attention-augmented small-object detection; pixel-precise mask output feeds the Severity Agent's area-ratio proxy directly, removing the background-overestimation bias a box-only output would carry; mature deployment tooling (ONNX/TensorRT export if later needed).
+**Disadvantages:** the mask head adds training cost (an extra `seg_loss` term, Section 7) and inference cost relative to a box-only model; like all single-stage detectors, more prone to missing small/heavily-occluded instances than two-stage detectors (Milestone 1, Section 10.8); the box-only probe above found no measured accuracy advantage for the YOLO11 generation over YOLOv8 at this data scale, so the generation-choice rationale is a prior, to be checked against real segmentation-level results in Milestone 4, not yet a demonstrated empirical result.
 
 
 ### 5.2 Severity Agent: Rule-Based Proxy vs. a Learned Classifier
 
-The calibrated bounding-box-area-ratio proxy is therefore the viable approach, not merely the preferred one. Severity is derived, not labelled: each detection's normalised bbox area is binned against fixed per-class thresholds into Minor/Moderate/Severe, following the same binning logic used in the Milestone 2 EDA (`scripts/eda_vehide.py`, `SEVERITY_BINS = [0.0, 0.02, 0.08, 1.0]`). The per-class threshold structure (rather than one global threshold) is justified by Milestone 2's EDA (Section 5.3), which found mean bbox area varies substantially by class — `shattered_glass` spans much larger areas than `flat_tyre` for comparable real-world severity, so a single global cutoff would systematically over-rate large-footprint classes and under-rate small-footprint ones. The specific threshold values are analyst-set from this bbox-area distribution, not empirically fitted against human severity judgments, since no such judgments exist in scope — this is recorded as a standing limitation in Section 14, not a temporary gap.
+The calibrated mask-area-ratio proxy is therefore the viable approach, not merely the preferred one. Severity is derived, not labelled: each detection's normalised mask pixel area (the pixel count of the predicted mask, divided by total image pixels) is binned against fixed per-class thresholds into Minor/Moderate/Severe, following the same binning logic used in the Milestone 2 EDA (`scripts/eda_vehide.py`, `SEVERITY_BINS = [0.0, 0.02, 0.08, 1.0]`), which was originally derived on bounding-box areas and is carried over as the starting point for the mask-based version pending recalibration against the mask-area distribution once full-scale segmentation training data is available (Milestone 4). The per-class threshold structure (rather than one global threshold) is justified by Milestone 2's EDA (Section 5.3), which found mean box area varies substantially by class — `shattered_glass` spans much larger areas than `flat_tyre` for comparable real-world severity, so a single global cutoff would systematically over-rate large-footprint classes and under-rate small-footprint ones; the same reasoning applies to mask area. The specific threshold values are analyst-set from the bbox-area distribution as an interim proxy, not empirically fitted against human severity judgments, since no such judgments exist in scope — this is recorded as a standing limitation in Section 14, not a temporary gap.
 
 
 ### 5.3 Policy Agent: MiniLM + ChromaDB + Hybrid Retrieval vs. Alternatives
@@ -340,11 +344,11 @@ Two open-weight models — `llama-3.3-70b-versatile` and `openai/gpt-oss-20b` �
 
 ### 5.5 Computational Considerations and Expected Performance
 
-Expected performance against each stage's Milestone 1, Section 4 target is not yet demonstrated at full scale — the **full baseline training run** (50 epochs, full training set) is Milestone 4. This milestone does include real training: the architecture-comparison probe (Section 5.1) trained both YOLO11m and YOLOv8m on a 3,000-image subsample up to 15 epochs, but that probe was explicitly sized to compare architectures relatively, not to reach production-level accuracy, and its measured mAP values (≈0.03-0.04) are far below the Milestone 1 targets by design, not by concern. This milestone's contribution toward the full targets is: confirming the selected models are computationally compatible with the stated hardware (Section 12), confirming the RAG side already exceeds its retrieval target empirically (Precision@3, Section 5.3), and confirming the report-generation side already passes its faithfulness checks on synthetic claims (Section 10) — leaving the vision side's full-scale accuracy as the one target still awaiting Milestone 4.
+Expected performance against each stage's Milestone 1, Section 4 target is not yet demonstrated at full scale — the **full baseline training run** (segmentation head, full training set) is Milestone 4. This milestone does include real training: the architecture-comparison probe (Section 5.1) trained the box-only heads of both YOLO11m and YOLOv8m on a 3,000-image subsample up to 15 epochs as a fast generation-choice proxy, but that probe was explicitly sized to compare generations relatively at low cost, not to reach production-level accuracy or to exercise the segmentation head at all, and its measured mAP values (≈0.03-0.04) are far below the Milestone 1 targets by design, not by concern. This milestone's contribution toward the full targets is: confirming the selected models are computationally compatible with the stated hardware (Section 12), confirming the RAG side already exceeds its retrieval target empirically (Precision@3, Section 5.3), and confirming the report-generation side already passes its faithfulness checks on synthetic claims (Section 10) — leaving the vision side's full-scale, segmentation-level accuracy as the one target still awaiting Milestone 4.
 
 ### 5.6 Suitability for the Dataset and Problem
 
-- YOLO11m's bounding-box output directly produces the `area_ratio` (normalised box area) the Severity Agent's proxy depends on (Section 6.2) — the Severity Agent consumes box area, not a segmentation mask, so plain detection is a direct architectural fit, not a reduced substitute.
+- YOLO11m-seg's pixel mask output directly produces the `area_ratio` (normalised mask area) the Severity Agent's proxy depends on (Section 6.2) — the Severity Agent consumes mask area, not a bounding-box approximation, so instance segmentation is a direct architectural fit for the severity task, not an over-engineered substitute for plain detection.
 - MiniLM + hybrid retrieval is well matched to a small (185-chunk), short-document corpus where a heavier/larger retriever would add latency without a proportional recall gain (Milestone 2, Section 6.2, Step 3).
 - `llama-3.3-70b-versatile` and `openai/gpt-oss-20b`'s structured-output adherence and grounding behaviour — both scored a full 1.0 composite on the mechanical faithfulness eval (Section 10.2), including zero citation-validity and zero currency-violation failures — are well matched to a task whose failure mode of concern is hallucinated coverage, not creative-writing quality; the eval also showed model choice is second-order to context quality (Section 10.4), so neither model's specific capability ceiling is the binding constraint on report correctness.
 ---
@@ -356,17 +360,17 @@ Expected performance against each stage's Milestone 1, Section 4 target is not y
 | | |
 | --- | --- |
 | **Input** | RGB image, letterboxed to 1280×1280×3, pixel values normalised to [0,1], NCHW tensor `[1, 3, 1280, 1280]` |
-| **Output** | Per instance: class id (0-5), normalised `[x_center, y_center, w, h]` bounding box, objectness/class confidence |
+| **Output** | Per instance: class id (0-5), normalised `[x_center, y_center, w, h]` bounding box, objectness/class confidence, pixel-level instance mask (from prototype-mask + coefficient combination, Section 4.1) |
 | **Preprocessing** | Letterbox resize (grey pad, fill=114) preserving aspect ratio (Milestone 2, Section 6.1, Step 4); no colour-space conversion beyond standard RGB |
-| **Postprocessing** | NMS (IoU threshold 0.45, default), confidence threshold filter, box coordinates rescaled to original resolution for display |
+| **Postprocessing** | NMS (IoU threshold 0.45, default), confidence threshold filter, box and mask coordinates rescaled to original resolution for display |
 
 ### 6.2 Severity Agent
 
 | | |
 | --- | --- |
-| **Input features** | `class_id`, normalised bbox area (`w * h`) |
+| **Input features** | `class_id`, normalised mask area (predicted mask pixel count / total image pixels) |
 | **Output** | Categorical label: Minor / Moderate / Severe |
-| **Feature representation** | A single scalar (area ratio) per instance, thresholded per class (Section 5.2) |
+| **Feature representation** | A single scalar (mask area ratio) per instance, thresholded per class (Section 5.2) |
 
 ### 6.3 Policy Agent
 
@@ -389,14 +393,14 @@ Expected performance against each stage's Milestone 1, Section 4 target is not y
 
 ## 7. Training Strategy
 
-Only the **Damage Agent (YOLO11m)** is trained in this project; the Severity Agent is rule-based, the Policy Agent's embedding model is used frozen, and the Report Agent's LLMs are accessed via API with no fine-tuning (Milestone 1, Section 1.3 places custom LLM/embedding training out of scope). The strategy below therefore applies to YOLO11m only, and reflects what was **actually run** in the Milestone 3 architecture-probe training (Section 5.1), not an unvalidated plan.
+Only the **Damage Agent (YOLO11m-seg)** is trained in this project; the Severity Agent is rule-based, the Policy Agent's embedding model is used frozen, and the Report Agent's LLMs are accessed via API with no fine-tuning (Milestone 1, Section 1.3 places custom LLM/embedding training out of scope). The strategy below therefore applies to YOLO11m-seg, and reflects what was **actually run** in the Milestone 3 box-only architecture-probe training (Section 5.1) as a proxy for backbone/neck behaviour; the segmentation head itself is trained at full scale starting in Milestone 4.
 
 | **Aspect** | **Decision** |
 | --- | --- |
-| Fine-tuning vs. feature extraction | Full fine-tuning (all layers trainable) from an Objects365/COCO-pretrained checkpoint — not frozen-backbone feature extraction, because the domain shift from COCO's everyday-object distribution to close-up vehicle-damage textures (scratches, cracks) is large enough that a frozen backbone would likely under-fit the domain-specific texture cues |
-| Transfer learning approach | Initialise from Ultralytics' official `yolo11m.pt` pretrained weights |
+| Fine-tuning vs. feature extraction | Full fine-tuning (all layers trainable) from a COCO-pretrained checkpoint — not frozen-backbone feature extraction, because the domain shift from COCO's everyday-object distribution to close-up vehicle-damage textures (scratches, cracks) is large enough that a frozen backbone would likely under-fit the domain-specific texture cues |
+| Transfer learning approach | Initialise from Ultralytics' official `yolo11m-seg.pt` pretrained weights (box-only `yolo11m.pt` was used only for the box-only architecture-probe proxy in Section 5.1, not for production training) |
 | Frozen vs. trainable layers | All layers trainable; a frozen-first-10-layers ablation is planned as a secondary comparison run only if the full fine-tune shows signs of overfitting on the minority classes |
-| Loss functions | YOLO11's composite detection loss: CIoU loss (box regression) + BCE (classification, gain `cls`) + DFL (distribution focal loss for box refinement) — no mask loss, since the plain detection head is used (Section 4.1) |
+| Loss functions | YOLO11's composite segmentation loss: CIoU loss (box regression) + BCE (classification, gain `cls`) + DFL (distribution focal loss for box refinement) + `seg_loss` (mask prototype/coefficient loss, since the `-seg` head is used, Section 4.1) |
 | Optimizer | AdamW |
 | Learning rate strategy | `lr0 = 0.001`, **linear** decay to `lrf = 0.01` of the initial rate (`cos_lr=False`, the Ultralytics default) — cosine decay is a separate, not-yet-run experiment variant planned for Milestone 4 (`scripts/train_yolo.py`, `cosine_lr` preset) |
 | Batch size | 4, as actually run in the Milestone 3 probe (Section 5.1) on a 14,912 MiB T4 at 1280px, `batch=8` has not yet been tested and may be attempted at full-scale Milestone 4 training if a larger-VRAM GPU is available |
@@ -422,16 +426,16 @@ Letterbox resize → 1280×1280×3, pad=114
 Normalise to [0,1], NCHW tensor
         │
         ▼
-YOLO11m forward pass
+YOLO11m-seg forward pass (box + mask heads)
         │
         ▼
 NMS + confidence filter (confidence ≥ escalation threshold check happens here)
         │
         ▼
-Per-instance: class_id, class_name, confidence, bbox_normalized
+Per-instance: class_id, class_name, confidence, bbox_normalized, mask
         │
         ▼
-Severity Agent: area_ratio = w*h → per-class threshold lookup → severity label
+Severity Agent: area_ratio = mask pixel area / image area → per-class threshold lookup → severity label
         │
         ▼
 Stage 1 — Policy selection: claimant selects policy from catalog (explicit
@@ -479,7 +483,7 @@ Both models scored a full **1.0 composite** across all 10 payloads on every hard
 
 **Headline finding:** the claim-09 episode is the clearest evidence that context quality, not model choice, gates report correctness — given the same flawed context, two different models produced opposite confident verdicts; given the same corrected context, both converged on the same correct answer, with no change to prompt, temperature, or model. This supports the Report Agent model selection in Section 5.4: retrieval and chunking quality matter more than model size or cost, since a stronger model cannot recover a clause that was never retrieved.
 
-**Scope of this verification:** the detections feeding these 10 payloads are hand-constructed per scenario (matching the confirmed detection schema, Section 6.1), not live Damage Agent inference output — no trained YOLO checkpoint exists yet to produce them (Milestone 4). The Severity Agent's per-class thresholds are applied within each payload's construction, not exercised as a standalone live stage. A full end-to-end run — real image in, real YOLO inference, through to a rendered report — has not yet been performed; this is planned work (Section 16.3), gated on the Milestone 4 baseline training run producing real detection output.
+**Scope of this verification:** the detections feeding these 10 payloads are hand-constructed per scenario (matching the confirmed detection schema, Section 6.1), not live Damage Agent inference output — no trained YOLO11m-seg checkpoint exists yet to produce them (Milestone 4). The Severity Agent's per-class thresholds are applied within each payload's construction, not exercised as a standalone live stage. A full end-to-end run — real image in, real YOLO11m-seg inference, through to a rendered report — has not yet been performed; this is planned work (Section 16.3), gated on the Milestone 4 baseline training run producing real detection+mask output.
 
 **Escalation threshold used in this evaluation:** claim 06 tests the escalation path at a detection confidence of 0.35, below the escalation threshold of 0.50 used throughout this pipeline (Section 3.1), pending calibration against real detection-confidence data from the Milestone 4 training run.
 
@@ -493,7 +497,7 @@ No model has been trained yet — that is Milestone 4 — so the table below con
 
 | **Component** | **Metric** | **Target** | **Status at end of Milestone 3** |
 | --- | --- | --- | --- |
-| Damage Agent | mAP@50 | ≥ 0.70 | Not yet measured at full scale — requires the Milestone 4 baseline training run; the Milestone 3 architecture probe (Section 5.1) measured 0.0305-0.0371 on a 15-epoch, 3,000-image subsample, well below target by design |
+| Damage Agent | mAP@50 (mask) | ≥ 0.70 | Not yet measured at full scale — requires the Milestone 4 baseline training run; the Milestone 3 box-only architecture probe (Section 5.1) measured 0.0305-0.0371 box mAP@50 on a 15-epoch, 3,000-image subsample as a generation-choice proxy, well below target by design and not a segmentation-level measurement |
 | Damage Agent | mAP@50-95 | ≥ 0.50 | Not yet measured at full scale |
 | Damage Agent | Per-class F1 (all 6 classes) | ≥ 0.65 | Not yet measured; `shattered_glass`/`flat_tyre` flagged as most at risk given the 6.68:1 class imbalance (Section 14) |
 | Policy Agent (retrieval) | Precision@3 | ≥ 0.80 | **Already exceeded**: 0.893 dense-only, 0.913 hybrid, measured empirically in Milestone 2, Section 6.2 Step 6; reproduced exactly after the Milestone 3 doc-scoping extension (Section 5.3) |
@@ -613,16 +617,16 @@ ChromaDB is queried read-only at inference time (`collection.query(...)`); no wr
 
 | **Phase** | **Hardware** | **Memory** | **Notes** |
 | --- | --- | --- | --- |
-| YOLO11m fine-tuning | Single NVIDIA T4 (Colab Pro / Kaggle, 16GB VRAM) | ~8.5-9.4GB VRAM at batch=4, imgsz=1280, as measured in the Milestone 3 probe (Section 5.1) | Milestone 3 probe: ~1,371s/epoch at 15 epochs on a 3,000-image subsample; the full 50-epoch Milestone 4 baseline run on the full training set has not yet been timed |
+| YOLO11m-seg fine-tuning | Single NVIDIA T4 (Colab Pro / Kaggle, 16GB VRAM) | ~8.5-9.4GB VRAM at batch=4, imgsz=1280, as measured in the Milestone 3 box-only probe (Section 5.1); the segmentation head is expected to add modest further VRAM overhead, to be confirmed in Milestone 4 | Milestone 3 box-only probe: ~1,371s/epoch at 15 epochs on a 3,000-image subsample; the full-scale segmentation baseline run (Milestone 4) has not yet been timed |
 | Embedding + retrieval | CPU only | <200MB (MiniLM + 185-chunk ChromaDB index + TF-IDF matrix) | Cold init (MiniLM load + TF-IDF fit) ~16.5s one-time per process; warm scoped query ~10ms median |
 | LLM inference | Remote API (Groq, no local compute) | N/A | ~0.7-0.9s per report round-trip (Section 8.2 evaluation) |
-| Deployed demo (HF Spaces) | CPU-basic (2 vCPU, 16GB RAM) | YOLO11m CPU inference + MiniLM CPU inference, both feasible at this scale | UI not yet built (Section 8.3, Section 15) |
+| Deployed demo (HF Spaces) | CPU-basic (2 vCPU, 16GB RAM) | YOLO11m-seg CPU inference + MiniLM CPU inference, both expected feasible at this scale, though segmentation inference is somewhat heavier than the box-only estimate this assumption was based on | UI not yet built (Section 8.3, Section 15) |
 
 **Expected inference latency (per claim, once deployed):**
 
 | **Stage** | **Latency** |
 | --- | --- |
-| Image letterbox + YOLO11m CPU inference (1280px) | ~150-400ms (estimated; not yet measured on CPU) |
+| Image letterbox + YOLO11m-seg CPU inference (1280px) | ~150-400ms box-only estimate, carried over from the Section 5.1 probe; not yet measured for the segmentation head on CPU and expected to be somewhat higher |
 | Severity Agent (pure arithmetic) | <5ms |
 | Policy Agent (per damage class, coverage + exclusion queries) | ~10-20ms per class (measured, Section 8.2 context) |
 | Report Agent (Groq API round-trip) | ~0.7-0.9s (measured, Section 8.2) |
@@ -630,7 +634,7 @@ ChromaDB is queried read-only at inference time (`collection.query(...)`); no wr
 
 Latency scales with the number of distinct damage classes detected in a claim, since retrieval runs a coverage and exclusion query per class, each additional class adds roughly 15-20ms of retrieval latency, a small increment relative to the ~0.7-0.9s Report Agent call that dominates total latency regardless of class count.
 
-**Storage requirements:** VehiDE processed dataset (13,655 images at 1280×1280 JPEG) — several GB, not stored in the Git repository itself; ChromaDB index and synthetic policy PDFs — a few MB; trained YOLO11m checkpoint — ~40.7MB (measured, Section 5.1 probe; the full-training-run checkpoint size is expected to be comparable).
+**Storage requirements:** VehiDE processed dataset (13,655 images at 1280×1280 JPEG) — several GB, not stored in the Git repository itself; ChromaDB index and synthetic policy PDFs — a few MB; trained YOLO11m-seg checkpoint — ~45.2MB (`.pt`, Section 4.4; the box-only probe checkpoint in Section 5.1 was ~40.7MB, slightly smaller since it carries no mask head).
 
 ---
 
@@ -638,8 +642,8 @@ Latency scales with the number of distinct damage classes detected in a claim, s
 
 | **Decision point** | **Chosen** | **Rejected alternative(s)** | **Reasoning** |
 | --- | --- | --- | --- |
-| Detector family | YOLO11 (plain detection) | Faster R-CNN, DETR, SSD, single VLM | Speed/accuracy/deployability trade-off (Milestone 1, §3.1/3.4) |
-| Detector scale | `m` | `n`/`s` (faster, less accurate), `l`/`x` (too slow for CPU deployment) | Balances accuracy against the CPU-basic HF Spaces inference target |
+| Detector family | YOLO11-seg (instance segmentation) | Faster R-CNN, DETR, SSD, single VLM, plain (box-only) YOLO11 | Speed/accuracy/deployability trade-off (Milestone 1, §3.1/3.4); segmentation over plain detection chosen so the Severity Agent gets pixel-precise area (§5.1) |
+| Detector scale | `m` | `n`/`s` (faster, less accurate), `l`/`x` (too slow for CPU deployment, and — confirmed in Milestone 4 — too large to train reliably on a 16GB T4 at this project's image size) | Balances accuracy against the CPU-basic HF Spaces inference target |
 | Input resolution | 1280px | 640px (Ultralytics default) | Matches the dataset's actual weighted-mean resolution (Milestone 2, §5.5); costs ~4x VRAM, reducing batch size from an assumed 16 to a measured 4 (Section 7) |
 | Vector store | ChromaDB | FAISS | FAISS ~50-60x faster in raw query latency but not operationally meaningful at 185-chunk scale; ChromaDB's metadata filtering (needed for doc-scoping, Section 5.3) and persistence wins |
 | Retrieval strategy | Hybrid dense+sparse, doc-scoped two-pass | Dense-only, single mixed top-k query | See Section 5.3/9 for full reasoning and evaluation numbers |
@@ -663,8 +667,8 @@ This section extends Milestone 1, Section 10 with what Milestone 2's empirical f
 
 | **Risk / Limitation** | **Status / detail** |
 | --- | --- |
-| Class imbalance (6.59:1 scratch:shattered_glass) | Confirmed in Milestone 2; a uniform class-loss gain (`cls=2.0`) was applied in the Milestone 3 probe runs, but Milestone 2's per-class inverse-frequency weight vector is not yet wired in (Section 7); per-class F1 for `shattered_glass`/`flat_tyre` remains the metric most at risk of missing the ≥0.65 target |
-| Severity is derived, not labelled, and permanently so | No severity ground truth exists anywhere in the VehiDE-only dataset scope (Section 5.2); the area-ratio proxy's known failure mode — a large shallow scratch vs. a small deep crack can be mis-ordered by area alone — cannot be corrected by acquiring more labelled data within this project's scope |
+| Class imbalance (6.59:1 scratch:shattered_glass) | Confirmed in Milestone 2; a uniform class-loss gain (`cls=2.0`) was applied in the Milestone 3 box-only probe runs, but Milestone 2's per-class inverse-frequency weight vector is not yet wired in (Section 7); per-class F1 for `shattered_glass`/`flat_tyre` remains the metric most at risk of missing the ≥0.65 target |
+| Severity is derived, not labelled, and permanently so | No severity ground truth exists anywhere in the VehiDE-only dataset scope (Section 5.2); the mask-area-ratio proxy's known failure mode — a large shallow scratch vs. a small deep crack can be mis-ordered by area alone even with a pixel-precise mask — cannot be corrected by acquiring more labelled data within this project's scope; segmentation removes the background-overestimation bias a bounding box would add, but does not by itself solve this depth-blindness limitation |
 | Domain shift (studio-quality training photos vs. real handheld claim photos) | Addressed partially via augmentation (motion blur raised to 0.3, JPEG quality set to 75, Milestone 2 §8.1); residual risk remains until stress-tested against real claim-style photographs |
 | RAG retrieval ceiling on realistic queries | 0.893-0.913 Precision@3 (Milestone 2/3), not 1.00 — a retriever-quality limit, not a wiring defect; the PDF table-garbling finding (Section 8.2) is a separate, corpus-level source of the same class of error |
 | LLM hallucination on edge cases | Mitigated via explicit non-inference instructions and clause-id citation checking, verified mechanically to score zero failures on all 10 evaluated payloads (Section 8.2), but not exhaustively — residual risk remains on claim types not covered by those 10 scenarios |
@@ -682,7 +686,7 @@ This section extends Milestone 1, Section 10 with what Milestone 2's empirical f
 | --- | --- | --- |
 | High-level architecture diagram | `diagrams/multiagent_architecture_staged.svg` | Four-agent architecture (carried forward from Milestone 1/2, referenced in Section 2.1) |
 | Sequence diagram | Section 3.3 (this report) | Textual sequence diagram of one claim's path through the pipeline |
-| Architecture probe notebook | `notebooks/architecture-probe-yolo11m-vs-yolov8m.ipynb` | YOLO11m vs. YOLOv8m head-to-head training run (3,000-image subsample, 15 epochs, identical hyperparameters) with measured mAP, parameter count, training time, and inference latency |
+| Architecture probe notebook | `notebooks/architecture-probe-yolo11m-vs-yolov8m.ipynb` | YOLO11m vs. YOLOv8m box-only head-to-head training run (3,000-image subsample, 15 epochs, identical hyperparameters), used as a fast generation-choice proxy ahead of full `-seg` training, with measured mAP, parameter count, training time, and inference latency |
 | Policy catalog (Stage 1) | `scripts/policy_catalog.py` | Claimant-facing policy selection menu; each option described (Section 8.1) |
 | Rejected auto-selection census | `scripts/policy_selector.py`, `data/rag_outputs/mile3/policy_selection_eval.json` | Exhaustive 315-case evaluation proving damage-based policy auto-selection is indistinguishable from chance (Section 5.3/8.1) |
 | Doc-scoped clause retriever | `scripts/hybrid_retrieval.py` (`doc_filter` extension), `scripts/report_context.py` | Two-pass coverage/exclusion retrieval per damage class, scoped to the selected policy (Section 9) |
@@ -702,17 +706,17 @@ This section extends Milestone 1, Section 10 with what Milestone 2's empirical f
 
 ### 16.1 Summary of Architecture Decisions
 
-The system's four agents are each assigned a specific, justified model: YOLO11m (fine-tuned, plain detection) for damage detection, a permanently rule-based proxy for severity, MiniLM + ChromaDB + doc-scoped hybrid dense/sparse retrieval for policy grounding, and two open-weight models via Groq (run and compared) for report generation. The pipeline currently runs as a fixed sequence of function calls, with an explicit human-escalation gate implemented in the calling code; wrapping this sequence as a LangGraph state machine is planned but not yet built (Section 11.3). The end-to-end workflow, state schema, error-handling paths, and prompt/guardrail design are specified in enough detail to begin implementation.
+The system's four agents are each assigned a specific, justified model: **YOLO11m-seg** (fine-tuned instance segmentation, medium scale) for damage detection and masking, a permanently rule-based mask-area-ratio proxy for severity, MiniLM + ChromaDB + doc-scoped hybrid dense/sparse retrieval for policy grounding, and two open-weight models via Groq (run and compared) for report generation. The pipeline currently runs as a fixed sequence of function calls, with an explicit human-escalation gate implemented in the calling code; wrapping this sequence as a LangGraph state machine is planned but not yet built (Section 11.3). The end-to-end workflow, state schema, error-handling paths, and prompt/guardrail design are specified in enough detail to begin implementation.
 
 ### 16.2 Readiness for Model Training (Milestone 4)
 
-- The YOLO11m vs. YOLOv8m baseline training runs (both under identical hyperparameters, Section 7) are ready to launch against the Milestone 2 training-ready dataset (`data/vehide_processed/`, `damage.yaml`) with no further data preparation required.
+- The YOLO11m-seg full-scale segmentation training run is ready to launch against the Milestone 2 training-ready dataset (`data/vehide_processed/`, converted to segmentation-format labels) with no further data preparation required; the YOLO11m-vs-YOLOv8m box-only probe (Section 5.1) has already de-risked the generation choice at low cost, and a segmentation-level comparison against domain-pretrained checkpoints is planned as a Milestone 4 comparative benchmark.
 - The doc-scoped hybrid retriever (Section 9) is implemented and already reproduces its Milestone 2 evaluation numbers exactly after the Milestone 3 extension.
 - The Report Agent's faithfulness has already been verified on synthetic claim scenarios (Section 8.2) with a full composite score, so Milestone 4 can focus on training the vision model and on the true end-to-end run with live detections, rather than on RAG-side pipeline debugging.
 
 ### 16.3 Planned Implementation Activities
 
-- Execute the full 50-epoch YOLO11m baseline training run (and the YOLOv8m comparison run) and report mAP@50, mAP@50-95, and per-class F1 against the Milestone 1 targets.
+- Execute the full YOLO11m-seg baseline segmentation training run (and comparative benchmark runs against domain-pretrained checkpoints) and report Box and Mask mAP@50, mAP@50-95, and per-class F1 against the Milestone 1 targets.
 - Wire the Milestone 2 per-class inverse-frequency class weights into training (Section 7), replacing the uniform `cls` gain used in the Milestone 3 probe.
 - Perform a true end-to-end run — real image in, real YOLO inference, through Severity, Policy, and Report Agents, to a rendered output — once a trained checkpoint exists.
 - Reconcile the escalation confidence threshold (currently 0.50, a placeholder, Section 8.2) against real detection-confidence calibration data from the trained model.
@@ -837,15 +841,15 @@ data/
 │   └── annotations/                   # Original per-image annotation files
 │
 ├── vehide_processed/
-│   └── damage.yaml                    # YOLO 6-class detection config (nc: 6)
+│   └── damage-seg.yaml                # YOLO 6-class instance-segmentation config (nc: 6)
 │
-├── vehide/                            # Training-ready, letterboxed 1280×1280 JPEGs + YOLO-format labels
+├── vehide/                            # Training-ready, letterboxed 1280×1280 JPEGs + YOLO-seg-format labels
 │   ├── images/
 │   │   ├── train/                     # 9,558 images  (70%, stratified on dominant damage class)
 │   │   ├── val/                       # 2,048 images  (15%)
 │   │   └── test/                      # 2,049 images  (15%)
 │   ├── labels/
-│   │   ├── train/                     # 9,558 .txt   — normalised [cls, x, y, w, h] per instance
+│   │   ├── train/                     # 9,558 .txt   — normalised [cls, x1, y1, x2, y2, ..., xn, yn] polygon per instance
 │   │   ├── val/                       # 2,048 .txt
 │   │   └── test/                      # 2,049 .txt
 │   └── escalation_test/               # ~100 images set aside for the low-confidence escalation
@@ -886,7 +890,8 @@ class Detection(TypedDict):
     class_name: str
     confidence: float
     bbox_normalized: List[float]   # [x_center, y_center, w, h]
-    area_ratio: float
+    mask: List[List[float]]        # polygon points of the predicted instance mask
+    area_ratio: float              # mask pixel area / image area, not bbox area (Section 5.1/6.2)
     severity: str                  # "minor" / "moderate" / "severe" — global bins, Section 5.2
 
 class RetrievedClause(TypedDict):
