@@ -56,15 +56,15 @@
 
 ### 1.1 Recap
 
-Milestone 3 selected **YOLO11m** (plain bounding-box detection, not the `-seg` variant) as the primary architecture for the Damage Agent, on a tie-break against YOLOv8m after a 15-epoch probe found the two statistically indistinguishable (mAP@50 delta 0.0066, below the 0.02 tie-break threshold). The tie-break favoured YOLO11m's newer C3k2/C2PSA backbone blocks, reported to aid small-object detection — directly relevant given Milestone 2's EDA found a minimum normalised bounding-box area of 0.00002 in the training data.
+Milestone 3 selected **YOLO11m-seg** (instance segmentation, `m`/medium scale, not plain bounding-box detection) as the primary architecture for the Damage Agent, so that the Severity Agent's area-ratio proxy could consume a pixel-precise mask rather than an overestimating bounding box. The YOLO11-vs-YOLOv8 generation choice was made via a fast box-only probe (mAP@50 delta 0.0066, statistically indistinguishable at that data scale), tie-broken in favour of YOLO11's newer C3k2/C2PSA backbone blocks, reported to aid small-object detection — directly relevant given Milestone 2's EDA found a minimum normalised bounding-box area of 0.00002 in the training data. That box-only probe was explicitly a low-cost proxy for the generation/backbone choice, not a claim that plain detection was the selected task.
 
 ### 1.2 Objectives of the Training Phase
 
-- Fine-tune the Milestone 3-selected YOLO11m detector on the full VehiDE training set and reach a stable, converged checkpoint.
-- Diagnose and correct the class-imbalance handling (`cls` loss weighting) that caused an early precision/recall collapse.
-- Evaluate whether a pretrained segmentation checkpoint, fine-tuned on the same VehiDE data, offers a viable supplementary or alternative path for the classes the detection model struggled with.
+- Fine-tune the Milestone 3-selected **YOLO11m-seg** (COCO-pretrained) on the full VehiDE segmentation training set and reach a stable, converged checkpoint — this is the milestone's **primary track**.
+- Run domain-pretrained segmentation checkpoints (CarDD-pretrained YOLOv8s-seg, YOLO11x-seg) in parallel as a **comparative benchmark track**, to understand how much domain-specific pretraining is worth relative to the medium-scale YOLO11 architecture selected in Milestone 3, and to inform the trade-off discussion even though a different backbone generation/size than the Milestone 3 selection is not the production candidate.
+- Diagnose and correct the class-imbalance handling (`cls` loss weighting) that caused an early precision/recall collapse in an initial sanity-check run.
 - Establish a robust, resumable multi-session training workflow given GPU compute constraints.
-- Select the best available checkpoint(s) and document the experiments which reached the completion.
+- Select the checkpoint to carry forward, consistent with the Milestone 3 architecture selection, and document the experiments that reached completion.
 
 ---
 
@@ -72,12 +72,12 @@ Milestone 3 selected **YOLO11m** (plain bounding-box detection, not the `-seg` v
 
 ### 2.1 Final Datasets Used
 
-Two label formats were used across the two experiment tracks, both derived from the same underlying VehiDE image dataset with stratified split, so results remain comparable across tracks:
+Both this milestone's tracks — the **primary track** (YOLO11m-seg, COCO-pretrained) and the **comparative benchmark track** (CarDD-pretrained YOLOv8s-seg / YOLO11x-seg) — are instance-segmentation runs, consistent with the task Milestone 3 selected. An early **box-only sanity-check run** (Section 5.3) was also attempted at the start of this milestone using the box-only proxy configuration from the Milestone 3 architecture probe, before committing full compute to segmentation training; it used bounding-box labels and is retained here for completeness (Section 9.1), but is not a production track.
 
-| | Detection track | Segmentation track |
+| | Primary / comparative tracks (segmentation) | Box-only sanity-check run |
 | --- | --- | --- |
-| Label format | YOLO bounding box (`class x_center y_center w h`) | YOLO instance segmentation polygon (`class x1 y1 x2 y2 ... xn yn`) |
-| Source of labels | bbox conversion of VehiDE VIA polygons | The same VehiDE VIA polygons, converted to YOLO-seg format |
+| Label format | YOLO instance segmentation polygon (`class x1 y1 x2 y2 ... xn yn`) | YOLO bounding box (`class x_center y_center w h`) |
+| Source of labels | VehiDE VIA polygons, converted to YOLO-seg format | bbox conversion of the same VehiDE VIA polygons |
 | Image preprocessing | Letterboxed to 1280×1280 | Letterboxed to 1280×1280 |
 
 ### 2.2 Train / Validation / Test Split
@@ -104,9 +104,10 @@ Total retained instances (bounding-box track): 32,672. Segmentation-track instan
 
 ### 2.3 Data Augmentation and Preprocessing
 
-- **Detection track:** Ultralytics' default augmentation stack (mosaic, HSV jitter, flip, scale/translate/erasing), `close_mosaic=10` (mosaic disabled for the final 10 of 50 epochs).
-- **Segmentation track, baseline runs:** default Ultralytics augmentation only.
-- **Segmentation track, continuation run:** default augmentation plus deliberately added `copy_paste=0.3`, raised `hsv_v`/`hsv_s`, `degrees=10`, `shear=5`, and increased `scale`, targeted specifically at the thin, low-contrast, boundary-ambiguous classes (`dent`, `scratch`, `crack`) that underperformed in the baseline run.
+- **Comparative — box-only sanity check:** Ultralytics' default augmentation stack (mosaic, HSV jitter, flip, scale/translate/erasing), `close_mosaic=10` (mosaic disabled for the final 10 of 50 epochs).
+- **Comparative benchmark track (YOLOv8s-seg, CarDD), baseline runs:** default Ultralytics augmentation only.
+- **Comparative benchmark track (YOLOv8s-seg, CarDD), continuation run:** default augmentation plus deliberately added `copy_paste=0.3`, raised `hsv_v`/`hsv_s`, `degrees=10`, `shear=5`, and increased `scale`, targeted specifically at the thin, low-contrast, boundary-ambiguous classes (`dent`, `scratch`, `crack`) that underperformed in the baseline run.
+- **Primary track (YOLO11m-seg, COCO)**: augmentation and preprocessing configuration is documented in Milestone 5, Section 7 alongside the Optuna search.
 
 ---
 
@@ -116,14 +117,17 @@ Total retained instances (bounding-box track): 32,672. Segmentation-track instan
 
 | Model | Track | Base checkpoint | Pretrained source |
 | --- | --- | --- | --- |
-| YOLO11m | Detection | `yolo11m.pt` | COCO/Objects365 (Ultralytics) |
-| YOLOv8s-seg | Segmentation | `abdullahg7/cardd-yolov8s` (v2.0) | CarDD dataset, via Hugging Face |
-| YOLO11x-seg | Segmentation | `harpreetsahota/car-dd-segmentation-yolov11` | CarDD dataset, via Hugging Face |
-| YOLO11s-seg | Segmentation (probed only, not trained to completion) | `yolo11s-seg.pt` | COCO (Ultralytics) |
+| **YOLO11m-seg** | **Primary** (Milestone 3 selection: YOLO11 generation, `-seg` task, `m` scale) | `yolo11m-seg.pt` | COCO (Ultralytics) |
+| YOLOv8s-seg | Comparative benchmark | `abdullahg7/cardd-yolov8s` (v2.0) | CarDD dataset, via Hugging Face |
+| YOLO11x-seg | Comparative benchmark | `harpreetsahota/car-dd-segmentation-yolov11` | CarDD dataset, via Hugging Face |
+| YOLO11s-seg | Comparative benchmark (probed only, not trained to completion) | `yolo11s-seg.pt` | COCO (Ultralytics) |
+| YOLO11m (box-only) | Box-only sanity-check run, not a production track | `yolo11m.pt` | COCO/Objects365 (Ultralytics) |
+
+The comparative benchmark checkpoints (YOLOv8s-seg, YOLO11x-seg, YOLO11s-seg) differ from the Milestone 3 selection either in backbone generation (YOLOv8 rather than YOLO11) or in scale (`x`/`s` rather than `m`); they are trained and evaluated here to measure how much domain-specific (CarDD) pretraining is worth, not as candidates to replace the Milestone 3 architecture decision.
 
 ### 3.2 Pretrained vs. Training from Scratch
 
-All models were fine-tuned from pretrained checkpoints; none were trained from random initialisation. For the detection track, `yolo11m.pt`'s detection head was reinitialised for this project's 6 classes. For the segmentation track, head transfer depended on class-name string matching between the checkpoint's own labels and this project's taxonomy:
+All models were fine-tuned from pretrained checkpoints; none were trained from random initialisation. For the **primary track**, `yolo11m-seg.pt`'s detection and mask heads were reinitialised for this project's 6 classes (standard Ultralytics transfer-learning behaviour when `nc` changes). For the box-only sanity-check run, `yolo11m.pt`'s detection head was likewise reinitialised. For the comparative-benchmark segmentation checkpoints, head transfer depended on class-name string matching between the checkpoint's own labels and this project's taxonomy:
 
 - `cardd-yolov8s`: all 6 classes matched, full head transfer.
 - `car-dd-segmentation-yolov11` (YOLO11x-seg): only 3 of 6 classes matched (`dent`, `scratch`, `crack`); `broken_lamp`, `shattered_glass`, `flat_tyre` heads were randomly reinitialised, confirmed directly in the training log (`"Remapped 3/6 cls head rows from pretrained weights by class name"`).
@@ -131,11 +135,13 @@ All models were fine-tuned from pretrained checkpoints; none were trained from r
 
 ### 3.3 Model-Specific Configuration
 
-| | YOLO11m (detection) | YOLOv8s-seg (final continuation) |
+| | YOLO11m-seg (primary, tuned) | YOLOv8s-seg (comparative, final continuation) |
 | --- | --- | --- |
-| Input size | 1280×1280 | 1280×1280 |
-| Task head | Detection only | Instance segmentation |
-| Parameters | ~20.1M (measured) | ~11.8M (measured) |
+| Input size | 640×640 | 1280×1280 |
+| Task head | Instance segmentation | Instance segmentation |
+| Parameters | ~22.3M (measured) | ~11.8M (measured) |
+
+The primary track was trained at 640px (Ultralytics' standard segmentation input size, on Google Colab) rather than the 1280px used elsewhere in this project; this resolution difference, alongside the different training environment, is one reason the primary and comparative tracks' numbers are not directly comparable (Milestone 5, Section 2).
 
 ---
 
@@ -143,8 +149,9 @@ All models were fine-tuned from pretrained checkpoints; none were trained from r
 
 ### 4.1 Hardware
 
-- Kaggle GPU sessions: **Tesla T4** (16 GB) used for all completed training runs.
-- **P100** was attempted for one segmentation experiment and found **incompatible** with the installed PyTorch build (`CUDA error: no kernel image is available for execution on the device` — P100's Pascal architecture, compute capability 6.0, has no compiled kernels in the `torch-2.10.0+cu128` build Kaggle provisioned). Not fixable via configuration; resolved by switching back to T4.
+- Kaggle GPU sessions: **Tesla T4** (16 GB) used for the comparative-benchmark track and the box-only sanity-check run.
+- **P100** was attempted for one comparative-benchmark segmentation experiment and found **incompatible** with the installed PyTorch build (`CUDA error: no kernel image is available for execution on the device` — P100's Pascal architecture, compute capability 6.0, has no compiled kernels in the `torch-2.10.0+cu128` build Kaggle provisioned). Not fixable via configuration; resolved by switching back to T4.
+- The **primary track** (YOLO11m-seg, COCO-pretrained) was run separately on **Google Colab**, also on a T4-class GPU, using its own dataset copy and its own hyperparameter-search process (Optuna-based; Section 6, detailed further in Milestone 5, Section 7). It is documented in this report as the milestone's primary track and evaluated in full in Milestone 5.
 
 ### 4.2 Software
 
@@ -181,11 +188,15 @@ All models were fine-tuned from pretrained checkpoints; none were trained from r
 
 | Run | Epochs |
 | --- | --- |
-| Detection (YOLO11m), `cls=2.0` | Abandoned after confirming a precision/recall collapse pattern across the completed epochs, not carried forward |
-| Detection (YOLO11m), `cls=0.5` + `cos_lr` | Interrupted by unplanned session terminations on more than one occasion, furthest progress was **25 completed epochs**, measured mAP@50 = 0.0248 at that point, which was far below the target value and hence was not resumed to completion |
-| Segmentation (YOLOv8s-seg), baseline | 30 |
-| Segmentation (YOLOv8s-seg), continuation (augmentation) | 20 additional (50 total) |
-| Segmentation (YOLOv8s-seg), DFL boundary-precision experiment | 30 (completed) |
+| **Primary — YOLO11m-seg (COCO), baseline** | 40, `optimizer="auto"` (later found to silently fix `lr0=0.001`, Milestone 5 Section 7.2) |
+| **Primary — YOLO11m-seg (COCO), Optuna-tuned** | 40, corrected `optimizer="AdamW"`, `lr0≈0.000105` (full search and results in Milestone 5, Section 7) |
+| Comparative — box-only sanity check (YOLO11m), `cls=2.0` | Abandoned after confirming a precision/recall collapse pattern across the completed epochs, not carried forward |
+| Comparative — box-only sanity check (YOLO11m), `cls=0.5` + `cos_lr` | Interrupted by unplanned session terminations on more than one occasion, furthest progress was **25 completed epochs**, measured mAP@50 = 0.0248 at that point, well below what the box-only probe in Milestone 3 already suggested was achievable relatively, and not resumed to completion — this run is not part of any production track |
+| Comparative benchmark — YOLOv8s-seg (CarDD), baseline | 30 |
+| Comparative benchmark — YOLOv8s-seg (CarDD), continuation (augmentation) | 20 additional (50 total) |
+| Comparative benchmark — YOLOv8s-seg (CarDD), DFL boundary-precision experiment | 30 (completed) |
+
+The Primary track's baseline → tuned structure differs from the CarDD comparative track's baseline → continuation → refinement pattern in its specific intervention (an Optuna-based hyperparameter search rather than augmentation/DFL-reweighting), since the two were run independently. Full primary-track results are in Milestone 5.
 
 ### 5.4 Loss Function
 
@@ -201,13 +212,15 @@ Ultralytics' composite YOLO loss: CIoU box-regression loss, BCE classification l
 
 | Experiment | `cls` | `dfl` | `lr0` | LR schedule | Result | Outcome |
 | --- | --- | --- | --- | --- | --- | --- |
-| Detection, attempt 1 | 2.0 | default (1.5) | 0.001 | linear | Precision collapsed to ~0.85–0.87 while recall collapsed toward 0 (model learned to predict almost nothing) | Rejected |
-| Detection, `cls=0.5` attempt | 0.5 | default | 0.001 | cosine (`lrf=0.001`) | mAP@50 climbing across all 25 completed epochs, reaching 0.0248 at epoch 25 (still well below the target) | Not promising and hence interrupted before completion |
-| Segmentation baseline (YOLOv8s-seg) | 0.5 | default | 0.0005 | cosine | Converged; overall mask mAP50 = 0.36 (val, epoch 30) | Completed |
-| Segmentation continuation (augmentation) | 0.5 | default | 0.0002 | cosine | Overall test mask mAP50 improved from 0.348 to 0.3534. `dent`/`scratch`/`crack` essentially flat (+0.001 to +0.011). `shattered_glass` slightly regressed (−0.014) | Completed |
-| Segmentation, DFL boundary-precision | 0.3 | 1.7 | 0.0002 | cosine | Overall test mask mAP50 0.3534 → 0.3549 (essentially flat). `dent`/`scratch` small gains (+0.005 to +0.014), `crack` flat (−0.001), `broken_lamp` gained (+0.041), `shattered_glass` regressed (−0.059) | Completed |
+| **Primary — YOLO11m-seg (COCO), baseline** | 0.5 | default | 0.001 (unintentionally fixed by `optimizer="auto"`) | linear | Val mask mAP50 ≈ 0.401 at 40 epochs | Completed; superseded by the tuned run below |
+| **Primary — YOLO11m-seg (COCO), Optuna-tuned** | 0.5 | default | ≈0.000105 (`AdamW`, found via a 12-trial Optuna search) | linear | Val mask mAP50 = 0.449 at 40 epochs, improving on every reported metric over the baseline with no regression | Completed and selected as the primary-track checkpoint (Section 10); full search and per-class results in Milestone 5, Sections 5-7 |
+| Comparative — box-only sanity check, attempt 1 | 2.0 | default (1.5) | 0.001 | linear | Precision collapsed to ~0.85–0.87 while recall collapsed toward 0 (model learned to predict almost nothing) | Rejected |
+| Comparative — box-only sanity check, `cls=0.5` attempt | 0.5 | default | 0.001 | cosine (`lrf=0.001`) | mAP@50 climbing across all 25 completed epochs, reaching 0.0248 at epoch 25 (still well below the target) | Not promising and hence interrupted before completion |
+| Comparative benchmark — YOLOv8s-seg (CarDD) baseline | 0.5 | default | 0.0005 | cosine | Converged; overall mask mAP50 = 0.36 (val, epoch 30) | Completed |
+| Comparative benchmark — YOLOv8s-seg (CarDD) continuation (augmentation) | 0.5 | default | 0.0002 | cosine | Overall test mask mAP50 improved from 0.348 to 0.3534. `dent`/`scratch`/`crack` essentially flat (+0.001 to +0.011). `shattered_glass` slightly regressed (−0.014) | Completed |
+| Comparative benchmark — YOLOv8s-seg (CarDD), DFL boundary-precision | 0.3 | 1.7 | 0.0002 | cosine | Overall test mask mAP50 0.3534 → 0.3549 (essentially flat). `dent`/`scratch` small gains (+0.005 to +0.014), `crack` flat (−0.001), `broken_lamp` gained (+0.041), `shattered_glass` regressed (−0.059) | Completed |
 
-**Justification for the segmentation track's final selected configuration**: the continuation run is the only segmentation checkpoint with a complete, held-out test-set evaluation at the time of writing. It is selected as the current best available checkpoint on that basis.
+**Justification for the primary track's selected configuration**: the Optuna-tuned run improves on every reported validation metric over the baseline with no regression (Milestone 5, Section 6) — this isolates the gain to the hyperparameter correction itself. It is selected as the checkpoint carried forward (Section 10), consistent with the Milestone 3 architecture choice. Within the comparative benchmark track, the DFL boundary-precision configuration is the strongest of the CarDD-pretrained checkpoints, and remains a useful point of comparison even though it is not the production candidate.
 
 Two model-scale experiments were also run as probes, not full training:
 
@@ -243,9 +256,10 @@ Two model-scale experiments were also run as probes, not full training:
 
 ### 9.1 Evidence of Convergence
 
-- **Segmentation baseline (30 epochs):** `box_loss`, `seg_loss`, `cls_loss`, and `dfl_loss` declined monotonically across all 30 epochs with no reversals, mask mAP50 rose from 0.157 (epoch 1) to 0.36 (epoch 30, val split), the majority of the gain concentrated in the final third of training.
-- **Segmentation continuation (20 further epochs):** overall mask mAP50 held roughly flat in a narrow band (0.317–0.339) through most of the run, then rose sharply at the `close_mosaic` transition (epoch 16, mosaic disabled), reaching 0.36 by epoch 16 and continuing to a final value of 0.362 (val) by epoch 20.
-- **Detection (`cls=0.5` attempt):** losses declined across all 25 completed epochs with no reversals observed; mAP@50 rose from near-zero to 0.0248 by epoch 25, well short of the target, and with each epoch requiring ~30 minutes, the run was discontinued due to poor preliminary results.
+- **Primary — YOLO11m-seg (COCO), baseline → Optuna-tuned (40 epochs each):** training losses (`box_loss`, `seg_loss`, `cls_loss`, `dfl_loss`) declined steadily with no reversals in both runs; validation mask mAP50 climbed with no plateau through the full 40-epoch budget in each case, `patience=15` did not trigger in either run. The tuned run improved on every reported metric over the baseline (Milestone 5, Sections 5-6).
+- **Comparative benchmark — YOLOv8s-seg (CarDD) baseline (30 epochs):** `box_loss`, `seg_loss`, `cls_loss`, and `dfl_loss` declined monotonically across all 30 epochs with no reversals, mask mAP50 rose from 0.157 (epoch 1) to 0.36 (epoch 30, val split), the majority of the gain concentrated in the final third of training.
+- **Comparative benchmark — YOLOv8s-seg (CarDD) continuation (20 further epochs):** overall mask mAP50 held roughly flat in a narrow band (0.317–0.339) through most of the run, then rose sharply at the `close_mosaic` transition (epoch 16, mosaic disabled), reaching 0.36 by epoch 16 and continuing to a final value of 0.362 (val) by epoch 20.
+- **Comparative — box-only sanity check (`cls=0.5` attempt):** losses declined across all 25 completed epochs with no reversals observed; mAP@50 rose from near-zero to 0.0248 by epoch 25, well short of the target, and with each epoch requiring ~30 minutes, the run was discontinued due to poor preliminary results. This run is a box-only sanity check, not part of any production track.
 
 ### 9.2 Underfitting Observations
 
@@ -261,31 +275,33 @@ No clear evidence of overfitting was observed in any completed run as the valida
 
 ### 10.1 Checkpoint Selected
 
-Two segmentation checkpoints now have complete, held-out test-set evaluations and are essentially tied on overall performance:
+Two checkpoint families were evaluated to completion this milestone:
 
-| Checkpoint | Total epochs | Overall test mask mAP50 |
-| --- | --- | --- |
-| Continuation (augmentation) | 50 (30 baseline + 20) | 0.3534 |
-| DFL boundary-precision | 80 (30 baseline + 20 augmentation + 30 DFL) | 0.3549 |
+| Checkpoint | Track | Total epochs | Overall evaluation |
+| --- | --- | --- | --- |
+| **YOLO11m-seg (COCO), Optuna-tuned** | **Primary** | 40 | Val mask mAP50 = 0.449, val mask mAP50-95 = 0.241 (full breakdown in Milestone 5) |
+| YOLOv8s-seg (CarDD), DFL boundary-precision | Comparative benchmark | 80 (30 baseline + 20 augmentation + 30 DFL) | Test mask mAP50 = 0.3549 |
+| YOLOv8s-seg (CarDD), continuation (augmentation) | Comparative benchmark | 50 (30 baseline + 20) | Test mask mAP50 = 0.3534 |
 
-The **DFL boundary-precision checkpoint** is selected as the current best available result, on the basis of the marginally higher overall score and its additional gains on `dent`, `scratch`, and `broken_lamp`. This selection is a close call, not a clear win: the continuation checkpoint remains preferable specifically on `shattered_glass` (0.6607 vs. 0.6021). Consequently, this selection should be regarded as provisional and may be revised following further experimentation and evaluation.
+**The YOLO11m-seg (COCO-pretrained, Optuna-tuned) checkpoint is selected as the Damage Agent checkpoint carried forward**, consistent with the architecture Milestone 3 selected (YOLO11 generation, `-seg` task, `m` scale). This is a **generation/scale consistency decision**, not a claim that this checkpoint's numbers are directly comparable to or better than the CarDD comparative benchmark's: the two tracks were evaluated on different splits (validation vs. held-out test) and different pretraining sources (COCO vs. CarDD, a domain-specific vehicle-damage dataset), so a apples-to-apples ranking between them is not yet available (Milestone 5, Section 2 discusses this gap and recommends a reconciliation experiment).
+
+The CarDD-pretrained comparative checkpoints remain valuable: Section 12.2's finding that domain-specific (CarDD) pretraining outperforms general-purpose COCO pretraining, at matched architecture, is a genuine result and is carried forward as a recommendation for future work (Milestone 5, Section 11) — specifically, applying CarDD-style domain pretraining to the YOLO11m-seg architecture the project has actually selected, rather than switching architectures to chase the CarDD checkpoints' benchmark numbers.
+
+The box-only sanity-check run's most promising configuration was not trained to completion due to poor results and was never a production track; it is not considered for checkpoint selection.
 
 ### 10.2 Why It Was Selected
 
-The **DFL boundary-precision checkpoint** was selected because it achieved the highest overall test-set mask mAP@50 among all completed experiments while maintaining competitive performance across most damage classes. It also incorporates an additional optimization stage through DFL loss reweighting, providing modest improvements on `dent`, `scratch`, and `broken_lamp` compared with the previous checkpoint.
+The **YOLO11m-seg (COCO), Optuna-tuned** checkpoint was selected primarily because it is the direct fine-tuning product of the architecture Milestone 3 selected (same generation, same task, same scale), and because — within its own track — it improved on every reported validation metric over its own untuned baseline with no regression, by a larger margin than 20 further epochs of unmodified training achieved (Milestone 5, Section 6). This isolates the improvement to the hyperparameter correction itself rather than to additional training time.
 
-Although the performance gain over the continuation checkpoint is marginal—and the continuation checkpoint performs better on `shattered_glass` (0.6607 vs. 0.6021)—the DFL checkpoint represents the strongest overall result obtained in this milestone. Accordingly, it is selected as the current best checkpoint, with the understanding that this decision remains provisional and may be revised based on future experiments.
-
-The detection track's most promising configuration was not trained to completion due to poor results hence, it was not be considered for final checkpoint selection.
-
+The **YOLOv8s-seg (CarDD) DFL boundary-precision checkpoint** achieved the highest raw test-set mask mAP@50 among all completed experiments this milestone, and is retained as the strongest comparative benchmark result — but it uses a different backbone generation (YOLOv8, not YOLO11) and a smaller scale (`s`, not `m`) than the Milestone 3 selection, so it is not carried forward as the production candidate. Its strong performance, attributable substantially to CarDD domain pretraining (Section 12.2), motivates future work applying the same domain-pretraining strategy to the selected YOLO11m-seg architecture.
 
 ### 10.3 Validation Metric Used
 
-Overall **mask mAP@50** on the held-out test split was used as the primary metric for comparing the completed segmentation experiments, improving incrementally from **0.348** to **0.3534** and finally **0.3549**. This metric served as the basis for selecting the best-performing checkpoint.
+**Mask mAP@50** was used as the primary metric for comparing experiments within each track. For the primary track, this was measured on the **validation** split (Milestone 5, Section 3.3 flags the pending test-split run as provisional); for the comparative benchmark track, on the held-out **test** split, improving incrementally from **0.348** to **0.3534** and finally **0.3549** across the CarDD-pretrained runs.
 
-To evaluate the effectiveness of each training intervention, **per-class mask mAP@50** was also examined, with particular emphasis on the underperforming classes `dent`, `scratch`, and `crack`. Two targeted interventions - enhanced data augmentation followed by DFL loss reweighting were introduced to improve performance on these classes. While both interventions produced small gains in overall mAP@50, neither resulted in a meaningful or consistent improvement for the targeted classes.
+To evaluate the effectiveness of each training intervention, **per-class mask mAP@50** was also examined, with particular emphasis on the underperforming classes `dent`, `scratch`, and `crack`. On the comparative benchmark track, two targeted interventions - enhanced data augmentation followed by DFL loss reweighting - produced only small overall gains and no meaningful, consistent improvement for these three classes. The primary track's Optuna-tuned run improved these same three classes' mask mAP50 as well, without closing the gap to `shattered_glass`/`broken_lamp`/`flat_tyre` (Milestone 5, Section 8) — the same qualitative pattern reproduces across both tracks, independently of pretraining source or architecture generation, strengthening the case that this is an intrinsic property of the damage types rather than an artifact of one track's setup.
 
-Consequently, the selected checkpoint should be regarded as the **best-performing model within the scope of the completed experiments**, rather than a definitive solution to the remaining performance limitations.
+Consequently, the selected checkpoint should be regarded as the **best-available, architecture-consistent model within the scope of the completed experiments**, rather than a definitive solution to the remaining per-class performance limitations.
 
 ---
 
@@ -326,15 +342,15 @@ The classification loss weight (`cls`) was found to have a significant impact on
 
 ## 12. Summary and Next Steps
 
-### 12.1 Best-Performing Training Configuration
+### 12.1 Selected Training Configuration
 
-Among the completed experiments, the **DFL boundary-precision** configuration achieved the highest overall performance. This model, based on **YOLOv8s-seg** pretrained on **CarDD**, was fine-tuned for a total of **80 epochs**, with the final 30 epochs using `cls=0.3` and `dfl=1.7`. It achieved a **test-set mask mAP@50 of 0.3549**, marginally outperforming the continuation checkpoint, which achieved **0.3534**.
+The checkpoint carried forward as the Damage Agent, consistent with the Milestone 3 architecture selection, is **YOLO11m-seg (COCO-pretrained)**, fine-tuned for 40 epochs with Optuna-selected hyperparameters (`optimizer="AdamW"`, `lr0≈0.000105`, `weight_decay≈0.00029`, `degrees≈5.5`). This run improved on every reported validation metric over its own untuned 40-epoch baseline with no regression (Milestone 5, Sections 6-7).
 
-Although the DFL boundary-precision checkpoint is selected as the best-performing model for this milestone, the performance difference between the two checkpoints is minimal. Consequently, this selection should be regarded as **provisional**, and may be revisited as additional experiments and evaluations are conducted.
+Among the comparative-benchmark experiments, the **DFL boundary-precision** configuration achieved the highest overall performance within that track. This model, based on **YOLOv8s-seg** pretrained on **CarDD**, was fine-tuned for a total of **80 epochs**, with the final 30 epochs using `cls=0.3` and `dfl=1.7`. It achieved a **test-set mask mAP@50 of 0.3549**, marginally outperforming the continuation checkpoint, which achieved **0.3534**. This is a strong result, and is discussed further in Section 12.2, but it uses a different backbone generation and scale than the Milestone 3 selection, so it is retained as a benchmark rather than the production candidate (Section 10).
 
 ### 12.2 Key Observations
 
-- Fine-tuning models pretrained on a **domain-specific dataset (CarDD)** consistently produced better results than fine-tuning a **general-purpose COCO-pretrained YOLO11s-seg** model. This highlights the value of domain-specific pretraining for vehicle damage assessment, where pretrained features are more closely aligned with the target task.
+- Within the comparative-benchmark track, fine-tuning models pretrained on a **domain-specific dataset (CarDD)** consistently produced better raw scores than the general-purpose **COCO-pretrained YOLO11s-seg** probe. This highlights the value of domain-specific pretraining for vehicle damage assessment, where pretrained features are more closely aligned with the target task — though the comparison is confounded by architecture/scale differences (YOLOv8s vs. YOLO11s) and is not a controlled, single-variable test of pretraining source alone. It motivates future work applying CarDD-style domain pretraining to the project's selected YOLO11m-seg architecture specifically (Section 10.1), rather than a change of architecture.
 
 - Two targeted interventions—enhanced data augmentation followed by **DFL loss reweighting**—produced only marginal improvements in overall performance (mask mAP@50 increased from **0.348 → 0.3534 → 0.3549**). Neither approach yielded a meaningful or consistent improvement for the most challenging classes (`dent`, `scratch`, and `crack`), suggesting that these categories remain intrinsically difficult for the current model architecture.
 
@@ -342,9 +358,9 @@ Although the DFL boundary-precision checkpoint is selected as the best-performin
 
 ### 12.3 Readiness for Milestone 5
 
-Substantial groundwork has been completed in preparation for **Milestone 5**. The segmentation track now includes three fully trained and evaluated checkpoints representing distinct fine-tuning strategies, together with a validated multi-session training workflow capable of recovering from Kaggle session interruptions. In addition, the project now has an external benchmark against which future improvements can be assessed, rather than relying solely on comparisons between internal experiments.
+Substantial groundwork has been completed in preparation for **Milestone 5**. The **primary track's YOLO11m-seg (COCO-pretrained, Optuna-tuned) checkpoint** — the one carried forward per Section 10 — is ready for detailed error analysis, robustness testing, and the pending test-split evaluation; Milestone 5 covers this in full. The comparative-benchmark track additionally provides three fully trained and evaluated CarDD-pretrained checkpoints representing distinct fine-tuning strategies, together with a validated multi-session training workflow capable of recovering from Kaggle session interruptions and an external published benchmark (CarDD) against which results can be assessed, rather than relying solely on comparisons between internal experiments.
 
-According to the original **CarDD** paper (Wang, Li, & Wu, *IEEE Transactions on Intelligent Transportation Systems*, 2023), per-class Average Precision (AP) values are reported only for the `dent`, `scratch`, and `crack` categories. A comparison with the best-performing checkpoints from this project is shown below.
+According to the original **CarDD** paper (Wang, Li, & Wu, *IEEE Transactions on Intelligent Transportation Systems*, 2023), per-class Average Precision (AP) values are reported only for the `dent`, `scratch`, and `crack` categories. A comparison with the best-performing checkpoints from this project's **comparative-benchmark track** (CarDD-pretrained YOLOv8s-seg) is shown below; the primary track (YOLO11m-seg, COCO-pretrained) is not included here since it is evaluated separately in Milestone 5 and is not directly comparable given the different pretraining source and split (Section 10.1).
 
 | Class | CarDD Baseline | CarDD DCN+ (SOTA) | This Project Baseline (30 epochs) | This Project Continuation (50 epochs) | This Project DFL Boundary (80 epochs) |
 | :--- | ---: | ---: | ---: | ---: | ---: |
@@ -360,8 +376,8 @@ According to the original **CarDD** paper (Wang, Li, & Wu, *IEEE Transactions on
 
 **Prepared for Milestone 5**
 
-- The two best-performing segmentation checkpoints are ready for detailed error analysis and qualitative evaluation.
-- The persistent gap between this project's results and the CarDD DCN+ benchmark for `dent` and `scratch` provides a clear direction for future work, including investigating alternative architectures, loss functions, or feature extraction methods better suited to these challenging damage categories.
+- The **YOLO11m-seg (COCO-pretrained, Optuna-tuned) primary-track checkpoint** is ready for detailed error analysis and qualitative evaluation — this is the checkpoint Milestone 5 evaluates in full, consistent with the Milestone 3 architecture selection.
+- The comparative-benchmark track's two best-performing CarDD-pretrained checkpoints remain available as a reference point, and the persistent gap between the CarDD comparative track and the published CarDD DCN+ benchmark for `dent` and `scratch` provides a clear direction for future work — most usefully, applying CarDD-style domain pretraining to the selected YOLO11m-seg architecture rather than adopting a different backbone.
 - With the training infrastructure, evaluation pipeline, and external benchmark now established, Milestone 5 can focus on targeted model improvements rather than further experimentation with training infrastructure.
 
 ---
