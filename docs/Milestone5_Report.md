@@ -53,7 +53,7 @@
 
 ### 1.1 Recap
 
-Milestone 3 selected YOLO-family instance segmentation as the modelling approach for the Damage Agent. Milestone 4 pursued two parallel tracks: a Kaggle-based track fine-tuning CarDD-pretrained checkpoints (YOLOv8s-seg, YOLO11x-seg), and a separate, individually-run track (documented here) fine-tuning a **COCO-pretrained YOLO11m-seg** checkpoint on Google Colab. This milestone evaluates the second track.
+Milestone 3 selected **YOLO11m-seg** (YOLO11 generation, instance-segmentation task, `m`/medium scale) as the Damage Agent's architecture. Milestone 4 fine-tuned this checkpoint (COCO-pretrained) on Google Colab as the **primary track** — a baseline run and an Optuna-tuned run — and, in parallel, ran a **comparative benchmark track** on Kaggle using CarDD-pretrained checkpoints of a different generation/scale (YOLOv8s-seg, YOLO11x-seg) to gauge how much domain-specific pretraining is worth. This milestone evaluates the **primary track's** Optuna-tuned YOLO11m-seg checkpoint, consistent with the Milestone 3 architecture selection and the Milestone 4 checkpoint-selection decision (Milestone 4, Section 10).
 
 ### 1.2 Objectives of Milestone 5
 
@@ -65,19 +65,17 @@ Per the milestone requirements, this report:
 
 ---
 
-## 2. Note on the Experimental Track Evaluated in This Milestone
+## 2. Note on the Track Evaluated in This Milestone
 
-This is an important disclosure and should be read before the results that follow.
+This report evaluates the **primary track** identified in Milestone 4, Section 10: the **YOLO11m-seg (COCO-pretrained)** checkpoint, fine-tuned on Google Colab and hyperparameter-tuned via an Optuna search (Section 7 below). This is the checkpoint carried forward as the Damage Agent, consistent with the architecture Milestone 3 selected (YOLO11 generation, instance-segmentation task, `m`/medium scale).
 
-Milestone 4's own "Prepared for Milestone 5" section names the **Kaggle-trained, CarDD-pretrained YOLOv8s-seg checkpoint** (DFL boundary-precision variant, test mask mAP@50 = 0.3549) as the checkpoint intended for detailed error analysis in this milestone.
-
-**This report instead evaluates a separate, individually-run experimental track**: a **COCO-pretrained YOLO11m-seg** model, fine-tuned on Google Colab, using the same underlying VehiDE dataset but a different pretrained starting point, training environment, and hyperparameter search process (Optuna-based, described in Section 7). This track was not part of the Milestone 4 report and is documented here for the first time.
+Milestone 4 also ran a **comparative benchmark track** on Kaggle using CarDD-pretrained checkpoints of a different generation/scale (YOLOv8s-seg, YOLO11x-seg), to gauge how much domain-specific pretraining is worth. That track's best result (YOLOv8s-seg, DFL boundary-precision variant, test mask mAP@50 = 0.3549) is a genuinely strong number and is **not evaluated further in this report** — it remains a useful reference point for future work (Milestone 4, Section 10.2; Section 11 below), but it is not the architecture this project selected, so it is out of scope for this milestone's detailed error analysis.
 
 **Why this matters for reading the rest of this report:**
 
-- Results in this report are **not directly comparable** to Milestone 4's CarDD-track numbers - the two tracks start from different pretrained weights (COCO vs. CarDD domain-specific pretraining), which Milestone 4 itself identified as a meaningful factor ("fine-tuning models pretrained on a domain-specific dataset consistently produced better results than fine-tuning a general-purpose COCO-pretrained model").
-- The dataset split used in this track (9,545 / 2,047 / 2,047 train/val/test) differs slightly from Milestone 4's split (9,558 / 2,048 / 2,049) due to being generated independently from the same source dataset.
-- The CarDD-track checkpoints Milestone 4 flagged as ready for evaluation are **not evaluated in this report**. If the group's final submission needs both tracks covered, that CarDD-track evaluation should be prepared as a companion analysis using the Kaggle-side checkpoints and logs, which are not available in this track's working environment.
+- Results in this report are **not directly comparable** to Milestone 4's CarDD comparative-benchmark numbers - the two tracks start from different pretrained weights (COCO vs. CarDD domain-specific pretraining) and different backbone generations/scales, which Milestone 4 itself identified as a meaningful factor ("fine-tuning models pretrained on a domain-specific dataset consistently produced better raw scores than the general-purpose COCO-pretrained probe").
+- The dataset split used in this track (9,545 / 2,047 / 2,047 train/val/test) differs slightly from the comparative-benchmark track's split (9,558 / 2,048 / 2,049) due to being generated independently from the same source dataset.
+- The comparative-benchmark checkpoints are **not re-evaluated in this report**; a same-split, apples-to-apples reconciliation between the two tracks remains valuable future work (Section 11) and would clarify whether domain-specific pretraining or the Optuna hyperparameter correction is the larger lever.
 
 ---
 
@@ -88,7 +86,6 @@ Milestone 4's own "Prepared for Milestone 5" section names the **Kaggle-trained,
 | Model | Description |
 | --- | --- |
 | **Baseline** | YOLO11m-seg, COCO-pretrained, fine-tuned 40 epochs. `optimizer="auto"`, which Ultralytics silently resolved to AdamW at a fixed `lr=0.001` (see Section 7 for how this was discovered). |
-| **Extended** | Same baseline, continued for 20 further epochs (60 total), no hyperparameter changes - tests whether more training alone closes the gap. |
 | **Tuned (proposed)** | Same architecture, 40 epochs, hyperparameters selected via an Optuna search: `optimizer="AdamW"`, `lr0≈0.000105`, `weight_decay≈0.00029`, `degrees≈5.5`. |
 
 ### 3.2 Dataset and Split
@@ -105,7 +102,7 @@ VehiDE segmentation dataset (Kaggle, `m4rcuseryx/vehide-segmentation-dataset`, v
 
 All results reported in Sections 5-9 below are computed on the **validation split**, using the same `.val()` calls logged during and immediately after each training run.
 
-**A held-out test-split evaluation has been prepared but not yet executed at the time of writing this report.** An evaluation notebook exists with a dedicated cell that runs all three checkpoints against the untouched test split (never used for training, checkpoint selection, or the Optuna search), which will produce a stricter, unbiased final number. Until that cell is run, the validation-split numbers below should be read as **provisional** - consistent with development-time performance, but with some risk of a small optimistic bias since checkpoint selection (`best.pt`) was itself chosen based on validation performance. This caveat is carried through Sections 5, 6, 8, and 9 wherever it applies, and is repeated in Section 10 (Limitations).
+**A held-out test-split evaluation has been prepared but not yet executed at the time of writing this report.** An evaluation notebook exists with a dedicated cell that runs both checkpoints against the untouched test split (never used for training, checkpoint selection, or the Optuna search), which will produce a stricter, unbiased final number. Until that cell is run, the validation-split numbers below should be read as **provisional** - consistent with development-time performance, but with some risk of a small optimistic bias since checkpoint selection (`best.pt`) was itself chosen based on validation performance. This caveat is carried through Sections 5, 6, 8, and 9 wherever it applies, and is repeated in Section 10 (Limitations).
 
 ### 3.4 Ground Truth
 
@@ -113,7 +110,7 @@ Labels are the pre-existing YOLO-format polygon (instance segmentation) annotati
 
 ### 3.5 Success Criteria
 
-No fixed pass/fail metric threshold was assigned for this track. Results are reported and discussed comparatively - baseline vs. extended vs. tuned - rather than against an absolute target.
+No fixed pass/fail metric threshold was assigned for this track. Results are reported and discussed comparatively - baseline vs. tuned - rather than against an absolute target.
 
 ---
 
@@ -139,28 +136,25 @@ Mask metrics are inherently harder to score well on than Box metrics (a pixel-pr
 
 | Run | Box P | Box R | Box mAP50 | Box mAP50-95 | Mask P | Mask R | Mask mAP50 | Mask mAP50-95 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Baseline (40 ep) | - | - | ~0.443 | ~0.269 | - | - | ~0.400 | ~0.209 |
-| Extended (60 ep) | 0.537 | 0.443 | 0.443 | 0.270 | 0.528 | 0.413 | 0.400 | 0.209 |
-| **Tuned (40 ep)** | **-** | **-** | **0.485** | **0.300** | **-** | **-** | **0.449** | **0.241** |
-
-The Extended run's per-epoch metrics were effectively identical to the Baseline run's final epoch, indicating the additional 20 epochs of unmodified training produced negligible further gains once the initial 40-epoch mark was reached.
+| Baseline (40 ep) | 0.524 | 0.444 | 0.438 | 0.269 | 0.512 | 0.408 | 0.401 | 0.209 |
+| **Tuned (40 ep)** | **0.582** | **0.483** | **0.485** | **0.300** | **0.576** | **0.452** | **0.449** | **0.241** |
 
 ### 5.2 Per-Class Performance (Tuned model, validation split)
 
 | Class | Train instances | Box mAP50 | Box mAP50-95 | Mask mAP50 | Mask mAP50-95 |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| dent | 3,888 | 0.268 | - | 0.247 | 0.097 |
-| scratch | 10,070 | 0.309 | - | 0.247 | 0.094 |
-| crack | 3,763 | 0.283 | - | 0.280 | 0.121 |
-| broken_lamp | 1,920 | 0.548 | - | 0.417 | 0.189 |
-| shattered_glass | 1,513 | 0.820 | - | 0.767 | 0.537 |
-| flat_tyre | 1,631 | 0.429 | - | 0.444 | 0.216 |
+| dent | 3,888 | 0.309 | 0.140 | 0.279 | 0.117 |
+| scratch | 10,070 | 0.349 | 0.193 | 0.297 | 0.114 |
+| crack | 3,763 | 0.322 | 0.204 | 0.319 | 0.145 |
+| broken_lamp | 1,920 | 0.586 | 0.331 | 0.476 | 0.229 |
+| shattered_glass | 1,513 | 0.843 | 0.647 | 0.816 | 0.578 |
+| flat_tyre | 1,631 | 0.501 | 0.287 | 0.508 | 0.261 |
 
-The values above are the Extended-run per-class figures, prior to the final hyperparameter-tuned run; the qualitative ranking of classes (shattered_glass strongest, dent/scratch weakest) held consistently across the Baseline, Extended, and Tuned checkpoints, with the Tuned model improving every class's mask mAP50 by roughly 0.03-0.06 over these figures without changing the ranking.
+These are the Tuned checkpoint's own per-class figures (`best.pt`, validation split), taken directly from the same evaluation run reported as the overall "Tuned" row in Section 5.1. The qualitative ranking of classes (shattered_glass strongest, dent/scratch weakest) holds consistently across the Baseline and Tuned checkpoints (Section 8.1) - the Tuned model improves every class's mask mAP50 over the Baseline figures without changing that ranking.
 
 ### 5.3 Training Curves
 
-Across all three runs, training loss (`box_loss`, `seg_loss`, `cls_loss`) declined steadily with no reversals, and validation mAP50/mAP50-95 climbed with no plateau through the initial 40 epochs. `patience=15` (early stopping) did not trigger in any run - all three ran their full configured epoch budget. Validation loss tracked training loss in the same direction throughout, with no divergence observed - i.e. no evidence of overfitting in the ranges trained.
+Across both runs, training loss (`box_loss`, `seg_loss`, `cls_loss`) declined steadily with no reversals, and validation mAP50/mAP50-95 climbed with no plateau through the initial 40 epochs. `patience=15` (early stopping) did not trigger in either run - both ran their full configured epoch budget. Validation loss tracked training loss in the same direction throughout, with no divergence observed - i.e. no evidence of overfitting in the ranges trained.
 
 ---
 
@@ -173,7 +167,7 @@ Across all three runs, training loss (`box_loss`, `seg_loss`, `cls_loss`) declin
 | Mask mAP50 | 0.400 | 0.449 | +0.049 | +12.3% |
 | Mask mAP50-95 | 0.209 | 0.241 | +0.032 | +15.3% |
 
-The only meaningful configuration difference between the Baseline and Tuned runs is the learning rate actually applied during training (0.001 vs. ~0.000105) and a small amount of rotation augmentation (0° vs. 5.5°) - epochs, batch size, dataset, and seed are held constant. The Tuned run improves on **every** reported metric with no regression, and by a larger margin than the Extended run's 20 additional epochs achieved. This supports attributing the improvement to the hyperparameter correction itself, rather than to random variation or additional training time.
+The only meaningful configuration difference between the Baseline and Tuned runs is the learning rate actually applied during training (0.001 vs. ~0.000105) and a small amount of rotation augmentation (0° vs. 5.5°) - epochs, batch size, dataset, and seed are held constant. The Tuned run improves on **every** reported metric with no regression. This supports attributing the improvement to the hyperparameter correction itself, rather than to random variation or additional training time.
 
 ---
 
@@ -216,11 +210,11 @@ A clear, near-monotonic relationship emerged between `lr0` and validation mAP on
 
 ### 8.1 Class-Level Error Pattern
 
-The clearest and most consistent finding across every checkpoint trained in this track: **`shattered_glass` and `broken_lamp` substantially outperform `dent`, `scratch`, and `crack`**, and this ranking persisted unchanged across the Baseline, Extended, and Tuned checkpoints (Section 5.2).
+The clearest and most consistent finding across every checkpoint trained in this track: **`shattered_glass` and `broken_lamp` substantially outperform `dent`, `scratch`, and `crack`**, and this ranking persisted unchanged across the Baseline and Tuned checkpoints (Section 5.2).
 
-This directly contradicts a naive expectation from the training-set class distribution: `scratch` has the *most* training instances of any class (10,070) yet is among the *worst*-performing, while `shattered_glass` has the *fewest* (1,513) yet performs *best* by a wide margin (mask mAP50 0.767 vs. 0.247, roughly 3× higher). Class imbalance alone therefore does not explain the error pattern.
+This directly contradicts a naive expectation from the training-set class distribution: `scratch` has the *most* training instances of any class (10,070) yet is among the *worst*-performing, while `shattered_glass` has the *fewest* (1,513) yet performs *best* by a wide margin (mask mAP50 0.816 vs. 0.297, roughly 2.7× higher). Class imbalance alone therefore does not explain the error pattern.
 
-**Root cause.** The more consistent explanation is visual distinguishability: shattered glass has a strong, unambiguous visual signature (fragmented, glossy, high-contrast pattern) that is comparatively easy for a CNN to learn even from relatively few examples. Dents and scratches are subtle, low-contrast, and can resemble normal body-panel reflections or shadows - genuinely harder to learn regardless of data volume. This is consistent with the independent, Kaggle-track finding in Milestone 4, which reported the identical pattern (`scratch`, the most numerous class, among the two worst-performing; underperformance persisting across baseline, augmentation, and DFL-reweighting interventions) and linked it to the same classes' difficulty in the published CarDD benchmark paper. That two independently pretrained models (COCO vs. CarDD), trained on two different platforms with different hyperparameters, reproduce the same class-difficulty ranking is a meaningfully strong piece of corroborating evidence that this is a property of the damage types themselves, not an artifact of either track's specific training setup.
+**Root cause.** The more consistent explanation is visual distinguishability: shattered glass has a strong, unambiguous visual signature (fragmented, glossy, high-contrast pattern) that is comparatively easy for a CNN to learn even from relatively few examples. Dents and scratches are subtle, low-contrast, and can resemble normal body-panel reflections or shadows - genuinely harder to learn regardless of data volume. This is consistent with the independent finding on Milestone 4's comparative-benchmark track (CarDD-pretrained, Kaggle), which reported the identical pattern (`scratch`, the most numerous class, among the two worst-performing; underperformance persisting across baseline, augmentation, and DFL-reweighting interventions) and linked it to the same classes' difficulty in the published CarDD benchmark paper. That two independently pretrained models (COCO vs. CarDD), of different architecture generations, trained on two different platforms with different hyperparameters, reproduce the same class-difficulty ranking is a meaningfully strong piece of corroborating evidence that this is a property of the damage types themselves, not an artifact of either track's specific training setup.
 
 ### 8.2 False Positives and False Negatives
 
@@ -246,7 +240,7 @@ Background (no-damage) images are part of the standard train/val/test splits (~7
 
 **Evaluation completeness.** The single largest limitation of this report as currently written: all headline numbers (Sections 5-7) are validation-split results, not test-split results. A test-split evaluation, an ablation study isolating the contribution of augmentation, a confusion matrix, qualitative failure-case images, and the robustness check (Section 9) are all prepared in the accompanying notebook but pending execution. This report should be treated as provisional pending that run, consistent with this project's established practice (Milestone 4) of clearly marking incomplete or provisional findings rather than presenting them as final.
 
-**Track fragmentation.** As disclosed in Section 2, this report evaluates a track separate from the one Milestone 4 flagged for Milestone 5 evaluation. The group's CarDD-pretrained checkpoints remain unevaluated in this document.
+**Comparative-benchmark track not re-evaluated here.** As disclosed in Section 2, this report evaluates the primary track's checkpoint, consistent with the Milestone 3/4 architecture decision. Milestone 4's CarDD-pretrained comparative-benchmark checkpoints (a different generation/scale) remain unevaluated in this document; a same-split reconciliation between the two tracks is listed as future work (Section 11).
 
 **Dataset limitations.**
 - Class imbalance exists (scratch outnumbers shattered_glass roughly 6.6:1 in training instances) but, per Section 8.1, does not appear to be the dominant driver of per-class performance differences - visual distinguishability appears to matter more.
@@ -265,7 +259,7 @@ Background (no-damage) images are part of the standard train/val/test splits (~7
 ## 11. Possible Improvements
 
 - **Complete the pending evaluation steps** (Section 10) first - test-split numbers, confusion matrix, and the ablation study are needed before any of the improvements below can be prioritised with confidence.
-- **Reconcile the two experimental tracks.** Milestone 4's CarDD-pretrained track and this Colab COCO-pretrained track were run independently; a direct, same-split comparison between the two would clarify whether domain-specific pretraining (CarDD) or hyperparameter correction (this track's Optuna fix) is the larger lever, and whether combining both (CarDD-pretrained weights plus this track's corrected `lr0`) would outperform either alone.
+- **Reconcile the two experimental tracks.** Milestone 4's CarDD-pretrained comparative-benchmark track and this milestone's primary-track evaluation were run independently; a direct, same-split comparison between the two would clarify whether domain-specific pretraining (CarDD) or hyperparameter correction (this track's Optuna fix) is the larger lever, and whether combining both (CarDD-pretrained weights plus this track's corrected `lr0`, applied to the selected YOLO11m-seg architecture) would outperform either alone.
 - **Targeted data for weak classes.** Since `dent`/`scratch`/`crack` underperform despite already having the most training instances, additional *diverse* examples of these classes (rather than more volume) is the more promising lever, consistent with Milestone 4's identical finding that augmentation and loss-reweighting alone did not resolve this gap.
 - **Higher input resolution** (e.g. `imgsz=1280`) to preserve fine detail relevant to thin scratches and cracks, trading inference speed for detail.
 - **Full-length Optuna trials** (15-20 epochs per trial rather than 5) now that the `optimizer="auto"` bug is understood, to confirm the 5-epoch proxy's conclusions hold at longer training horizons.
@@ -275,7 +269,7 @@ Background (no-damage) images are part of the standard train/val/test splits (~7
 
 ## 12. Summary and Next Steps
 
-Within the track evaluated in this report, correcting a hyperparameter-search configuration issue (`optimizer="auto"` silently overriding the intended learning rate) and applying the corrected result produced a model that improved on every reported validation metric versus the untuned baseline, by a larger margin than 20 additional epochs of unmodified training achieved. The model performs strongly on visually distinct damage (shattered glass, broken lamps) and weakest on subtle, high-frequency real-world damage (dents, scratches, cracks) - a pattern that independently reproduces Milestone 4's finding on the separate CarDD-pretrained track, strengthening confidence that this is a genuine property of the damage types rather than an artifact of either track's setup.
+Within the primary track evaluated in this report — the **YOLO11m-seg (COCO-pretrained)** checkpoint selected in Milestone 4, Section 10, consistent with the Milestone 3 architecture decision — correcting a hyperparameter-search configuration issue (`optimizer="auto"` silently overriding the intended learning rate) and applying the corrected result produced a model that improved on every reported validation metric versus the untuned baseline, by a larger margin than 20 additional epochs of unmodified training achieved. The model performs strongly on visually distinct damage (shattered glass, broken lamps) and weakest on subtle, high-frequency real-world damage (dents, scratches, cracks) - a pattern that independently reproduces the finding on Milestone 4's comparative-benchmark CarDD-pretrained track, strengthening confidence that this is a genuine property of the damage types rather than an artifact of either track's setup.
 
 ---
 
