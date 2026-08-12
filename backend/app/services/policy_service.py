@@ -29,9 +29,9 @@ SEED_POLICIES = [
         "policy_number": "POL-003",
         "policy_holder_name": "Tanmay Mal",
         "coverage_type": "Comprehensive",
-        "status": "active",
+        "status": "inactive",
         "effective_date": date(2025, 3, 1),
-        "expiry_date": date(2028, 3, 1),
+        "expiry_date": date(2026, 3, 1),
         "policy_limit": Decimal("4000.00"),
     },
     {
@@ -40,7 +40,7 @@ SEED_POLICIES = [
         "coverage_type": "Comprehensive Premium",
         "status": "active",
         "effective_date": date(2025, 2, 1),
-        "expiry_date": date(2028, 2, 1),
+        "expiry_date": date(2025, 9, 1),
         "policy_limit": Decimal("6000.00"),
     },
     {
