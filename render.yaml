@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ds-ai-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: DATABASE_URL
+        value: sqlite:////data/claims.db
+      - key: UPLOAD_DIR
+        value: /data/uploads
+      - key: MODEL_DIR
+        value: /data/models
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: data-disk
+      mountPath: /data
+      sizeGB: 1
