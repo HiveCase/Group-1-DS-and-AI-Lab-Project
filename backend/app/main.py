@@ -18,7 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import get_settings
 from app.db.database import SessionLocal, init_db
 from app.routes.analytics import router as analytics_router
-from app.routes.claims import router as claims_router
+from app.routes.claims import init_orchestrator, router as claims_router
 from app.routes.policies import router as policies_router
 from app.services.policy_clause_service import PolicyClauseService
 from app.services.policy_service import PolicyService
@@ -107,6 +107,11 @@ def _init_slow_data():
         logger.info("Successfully ingested policies and downloaded models.")
     except Exception:
         logger.exception("Failed to ingest policies in background")
+    # Load the YOLO + Sentence Transformer models after the port is already bound.
+    try:
+        init_orchestrator()
+    except Exception:
+        logger.exception("Failed to initialize ClaimAnalysisOrchestrator in background")
 
 
 def _fail_orphaned_pending_analyses(db) -> None:

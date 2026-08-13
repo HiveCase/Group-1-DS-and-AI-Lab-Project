@@ -19,14 +19,27 @@ from app.services.investigation_service import InvestigationService
 router = APIRouter(prefix='/claims', tags=['claims'])
 logger = logging.getLogger("claims_portal.claims")
 
-# Built lazily so the YOLO model and sentence-transformer embeddings don't
-# block FastAPI from binding to the port during startup (preventing Render timeouts).
-_orchestrator = None
+# Initialized in a background thread at startup (via main.py lifespan) so that
+# the heavy YOLO + Sentence Transformer model loading does not block FastAPI from
+# binding to the port — which causes Render to time out the deploy.
+_orchestrator: ClaimAnalysisOrchestrator | None = None
+
+
+def init_orchestrator() -> None:
+    """Called once from the startup background thread in main.py."""
+    global _orchestrator
+    _orchestrator = ClaimAnalysisOrchestrator()
+    logger.info("ClaimAnalysisOrchestrator ready.")
+
 
 def get_orchestrator() -> ClaimAnalysisOrchestrator:
-    global _orchestrator
-    if _orchestrator is None:
-        _orchestrator = ClaimAnalysisOrchestrator()
+    """Returns the shared orchestrator, blocking briefly if it is still loading."""
+    import time as _time
+    deadline = _time.monotonic() + 120  # wait up to 2 min on first request
+    while _orchestrator is None:
+        if _time.monotonic() > deadline:
+            raise RuntimeError("ClaimAnalysisOrchestrator failed to initialize within 2 minutes.")
+        _time.sleep(0.5)
     return _orchestrator
 
 
