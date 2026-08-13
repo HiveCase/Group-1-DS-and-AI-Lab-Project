@@ -265,7 +265,7 @@ erDiagram
     }
 ```
 
-Notes on real, non-obvious design decisions (verified in `models.py`, not idealized):
+Notes on real, non-obvious design decisions :
 
 - **`policy_clauses` is uniquely keyed on `(claim_id, clause_id)`, not `clause_id` alone** (`UniqueConstraint`). The same retrieved clause is routinely cited by many different claims against the same policy over time, so one row per **citation** is correct; the table's own docstring in the source explains this was a deliberate fix — a bare `clause_id` unique key would silently drop or overwrite every claim's citation after the first. `claim_id`/`policy_id` are both nullable to accommodate the two seed rows (`CL-AUTO-001`/`CL-AUTO-002`) that aren't tied to any specific claim.
 - **Foreign keys are declared but not enforced.** Nothing in `database.py` sets `PRAGMA foreign_keys = ON` (SQLite's own default is off), so the `FK` columns above are structural/documentation only — the database will not reject an orphaned row.
