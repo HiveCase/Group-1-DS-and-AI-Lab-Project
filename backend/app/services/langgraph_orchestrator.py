@@ -8,7 +8,7 @@ from typing import Any, TypedDict
 from langgraph.graph import END, StateGraph
 
 from app.services.langfuse_observability import LangfuseObserver
-from app.services.mcp_tools import build_toolkit
+from app.services.agent_toolkit import build_toolkit
 
 logger = logging.getLogger("claims_portal.langgraph_orchestrator")
 
