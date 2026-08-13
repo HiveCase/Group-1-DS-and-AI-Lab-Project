@@ -58,7 +58,7 @@
 
 An AI-assisted motor insurance claim portal with four role-based interfaces: **Claimant** (submit a claim with photos), **Adjuster** (review AI findings and decide), **SIU** (investigate high-fraud-score claims), and **Supervisor** (portfolio analytics). Every submitted claim runs through a 5-agent AI pipeline — real object detection, real retrieval-augmented policy-clause lookup, and a real LLM call — not a mock.
 
-Source: `specs/001-claims-portal/spec.md` ("Build a minimal AI-assisted car damage insurance claim portal with Claimant and Adjuster portals, and expand it to include SIU and Supervisor portals as part of the same cohesive experience.")
+Source: ("Build a minimal AI-assisted car damage insurance claim portal with Claimant and Adjuster portals, and expand it to include SIU and Supervisor portals as part of the same cohesive experience.")
 
 ### Key features
 
