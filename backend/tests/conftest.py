@@ -2,6 +2,8 @@ import os
 import shutil
 from pathlib import Path
 
+import pytest
+
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
 _TEST_DB_PATH = _BACKEND_DIR / "data" / "ci_claims.db"
 _TEST_UPLOAD_DIR = _BACKEND_DIR / "uploads-ci"
@@ -20,3 +22,19 @@ if _TEST_UPLOAD_DIR.exists():
 # had no database of their own).
 os.environ["DATABASE_URL"] = f"sqlite:///{_TEST_DB_PATH.as_posix()}"
 os.environ["UPLOAD_DIR"] = str(_TEST_UPLOAD_DIR)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def initialize_test_application():
+    """Run the FastAPI lifespan once so every test client sees seeded tables.
+
+    Several test modules use a module-level TestClient. Without a shared
+    lifespan context, those clients bypass startup and attempt to query an
+    empty isolated SQLite database.
+    """
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    with TestClient(app):
+        yield

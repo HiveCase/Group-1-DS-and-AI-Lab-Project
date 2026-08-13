@@ -32,9 +32,10 @@ def get_db():
 
 
 def init_db():
-    from app.db.models import Policy, Claim, ClaimPhoto, AnalysisResult, DecisionRecord, InvestigationCase, PolicyClause  # noqa: F401
+    from app.db.models import Policy, Claim, ClaimPhoto, AnalysisResult, DecisionRecord, InvestigationCase, PolicyClause, User  # noqa: F401
 
     _rename_legacy_policy_clauses_table()
+    _remove_legacy_users_role_column()
     Base.metadata.create_all(bind=engine)
     _restore_legacy_policy_clauses_rows()
     sync_sqlite_schema()
@@ -60,6 +61,24 @@ def _rename_legacy_policy_clauses_table() -> None:
             return  # table doesn't exist yet, or already migrated
         connection.exec_driver_sql('DROP TABLE IF EXISTS "policy_clauses_legacy"')
         connection.exec_driver_sql('ALTER TABLE "policy_clauses" RENAME TO "policy_clauses_legacy"')
+
+
+def _remove_legacy_users_role_column() -> None:
+    """Keep the persisted user schema aligned with the signup UI.
+
+    Roles are represented by portal views, not by an account field: the UI
+    only collects username, email, password, and full name. Older local
+    databases added a required ``users.role`` column, which made signup fail
+    when the form did not supply it.
+    """
+    if not settings.database_url.startswith("sqlite"):
+        return
+    with engine.begin() as connection:
+        columns = {
+            row[1] for row in connection.exec_driver_sql('PRAGMA table_info("users")')
+        }
+        if "role" in columns:
+            connection.exec_driver_sql('ALTER TABLE "users" DROP COLUMN "role"')
 
 
 def _restore_legacy_policy_clauses_rows() -> None:

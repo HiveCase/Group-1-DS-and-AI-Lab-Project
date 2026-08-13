@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import get_settings
 from app.db.database import SessionLocal, init_db
 from app.routes.analytics import router as analytics_router
+from app.routes.auth import router as auth_router
 from app.routes.claims import init_orchestrator, router as claims_router
 from app.routes.policies import router as policies_router
 from app.services.policy_clause_service import PolicyClauseService
@@ -61,6 +62,7 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
+app.include_router(auth_router)
 app.include_router(claims_router)
 app.include_router(policies_router)
 app.include_router(analytics_router)

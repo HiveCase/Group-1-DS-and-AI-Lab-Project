@@ -86,7 +86,7 @@ def test_annotated_photo_endpoint_returns_image_with_detections(tmp_path, monkey
     assert photos[0]['annotated_path']
 
 
-def test_claim_submission_syncs_retrieved_clauses_into_policy_clauses_table():
+def test_claim_submission_syncs_retrieved_clauses_into_policy_clauses_table(monkeypatch):
     """policy_clauses should end up populated with the real clauses a
     claim's RAG retrieval actually surfaced -- not just the two generic
     seed rows -- once analysis for a claim with a recognizable damage
@@ -97,6 +97,23 @@ def test_claim_submission_syncs_retrieved_clauses_into_policy_clauses_table():
     uniqueness key."""
     from app.db.database import SessionLocal
     from app.db.models import Claim, PolicyClause
+    from app.services.policy_clause_service import PolicyClauseService
+
+    # This test covers SQL persistence and claim-level traceability, not the
+    # sentence-transformer/Chroma retrieval stack. Keep it deterministic so
+    # the standard test suite can run without downloading an embedding model.
+    monkeypatch.setattr(
+        PolicyClauseService,
+        "retrieve_clauses",
+        lambda *_args, **_kwargs: [{
+            "clause_id": "POL-001-DENT-COVERAGE",
+            "text": "Dent and scratch damage is covered subject to the policy limit.",
+            "source_citation": "Section 4",
+            "clause_type": "coverage",
+            "damage_class": "dent",
+            "score": 0.95,
+        }],
+    )
 
     payload = {
         'policy_number': 'POL-001',

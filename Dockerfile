@@ -17,11 +17,11 @@ WORKDIR /app
 
 RUN addgroup --system app && adduser --system --ingroup app app
 
-COPY requirements.txt ./requirements.txt
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app ./app
-COPY data ./data
+COPY backend/app ./app
+COPY backend/data ./data
 COPY --from=frontend-builder /frontend/dist ./frontend/dist
 
 RUN mkdir -p /data/uploads /app/models && chown -R app:app /app /data
