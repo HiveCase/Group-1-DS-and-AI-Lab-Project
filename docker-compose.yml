@@ -1,20 +1,38 @@
-version: '3.9'
 services:
   backend:
     image: python:3.12-slim
     working_dir: /app
     volumes:
       - ./backend:/app
+      # Persists pip's downloaded wheels across `docker compose up`/`down`
+      # cycles -- without this, every single startup re-downloads all ~600MB
+      # of dependencies (torch, opencv, scipy...) from scratch over the
+      # network, since this service installs via an inline command rather
+      # than at image-build time. First run is still slow; every run after
+      # that reuses the cache and skips straight to "already satisfied".
+      - pip-cache:/root/.cache/pip
     environment:
       # Pulled from a .env file next to this compose file (docker compose
       # auto-loads it for ${...} substitution) -- unset vars just come
-      # through empty, so this works even without a .env present.
+      # through empty, which is fine here: an empty GROQ_API_KEY/Langfuse
+      # key is already treated as "feature disabled" by the app. GROQ_MODEL
+      # and LANGFUSE_BASE_URL are deliberately NOT listed here -- unlike the
+      # keys, those have real non-empty defaults in app/core/config.py, and
+      # passing an explicitly-empty env var would override those defaults
+      # with "" instead of leaving them alone.
       - GROQ_API_KEY=${GROQ_API_KEY}
-      - GROQ_MODEL=${GROQ_MODEL}
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
-      - LANGFUSE_BASE_URL=${LANGFUSE_BASE_URL}
-    command: sh -c "apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 >/dev/null && pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    # --trusted-host works around corporate TLS-inspecting proxies that
+    # break pip's certificate verification -- fine for a local-dev-only
+    # compose file (never used by CI/CD, which builds via the Dockerfile
+    # directly on GitHub's runners). Remove if your network doesn't need it.
+    # torch is installed separately first, from PyTorch's CPU-only wheel
+    # index, before requirements.txt -- otherwise pip resolves the default
+    # PyPI torch wheel while satisfying ultralytics/sentence-transformers,
+    # which bundles ~1.5-2GB of unused CUDA/cuDNN libraries (this app is
+    # CPU-only inference, no GPU).
+    command: sh -c "apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 >/dev/null && pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host download.pytorch.org torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu && pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     healthcheck:
@@ -28,6 +46,39 @@ services:
     working_dir: /app
     volumes:
       - ./frontend:/app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+      # Anonymous volume shadows the host's node_modules inside the
+      # container instead of reusing it -- node_modules built on Windows
+      # (via the bind mount above) has Windows-native binaries; rollup in
+      # particular fails outright when it finds those instead of the
+      # linux-musl build it needs (npm/cli#4828). This forces npm install
+      # to populate node_modules fresh, inside the container, every time.
+      - /app/node_modules
+      # Same idea as backend's pip-cache above: persists npm's package cache
+      # across restarts so `npm ci` doesn't re-fetch every package over the
+      # network each time.
+      - npm-cache:/root/.npm
+    environment:
+      # A flaky/proxied network can trip npm's own "Exit handler never
+      # called!" bug mid-install (npm/cli#issues, not TLS-specific like
+      # pip's) -- more retries with longer backoff gives it room to recover
+      # instead of silently leaving devDependencies like vite half-installed.
+      - NPM_CONFIG_FETCH_RETRIES=5
+      - NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=20000
+      - NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=120000
+      # 127.0.0.1 (vite.config.js's bare-metal-dev default) doesn't reach
+      # another container -- backend is this service's actual hostname on
+      # the Compose network.
+      - VITE_BACKEND_PROXY_TARGET=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    # npm ci (not install): always installs from a clean slate matching
+    # package-lock.json exactly -- more deterministic and less prone to
+    # partial-install corruption than `npm install` in a container.
+    command: sh -c "npm ci --no-audit --no-fund && npm run dev -- --host 0.0.0.0 --port 5173"
     ports:
       - "5173:5173"
+
+volumes:
+  pip-cache:
+  npm-cache:

@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     groq_model: str = os.getenv("MODEL_NAME") or "llama-3.3-70b-versatile"
     groq_base_url: str = os.getenv("GROQ_BASE_URL") or "https://api.groq.com/openai/v1"
 
+    jwt_secret_key: str = "change-me-in-production"
+    jwt_access_token_expire_minutes: int = 15
+    jwt_refresh_token_expire_days: int = 7
+
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).resolve().parents[3] / ".env"),
         extra="ignore",

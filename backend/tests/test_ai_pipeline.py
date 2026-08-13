@@ -239,8 +239,7 @@ def test_claim_analysis_orchestrator_exposes_langgraph_workflow():
     assert hasattr(orchestrator.graph, "invoke")
 
     graph_nodes = set(getattr(orchestrator.graph, "nodes", {}).keys())
-    assert {"coordinator", "tool_execution"}.issubset(graph_nodes)
-    assert {"damage_detection", "severity_scoring", "policy_clause_retrieval", "report_synthesis", "flag_human_review", "finalize_claim"}.issubset(graph_nodes)
+    assert {"coordinator", "damage_detection", "severity_scoring", "policy_clause_retrieval", "report_synthesis", "fraud_assessment", "flag_human_review", "finalize_claim"}.issubset(graph_nodes)
 
 
 def test_claim_analysis_orchestrator_handles_empty_detections_without_recursing():

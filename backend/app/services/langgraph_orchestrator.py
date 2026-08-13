@@ -70,12 +70,11 @@ class LangGraphClaimOrchestrator:
         workflow = StateGraph(ClaimAnalysisState)
 
         workflow.add_node("coordinator", self._coordinate)
-        workflow.add_node("tool_execution", self._execute_tool)
-        workflow.add_node("damage_detection", self._detect_damage)
-        workflow.add_node("severity_scoring", self._score_severity)
-        workflow.add_node("policy_clause_retrieval", self._retrieve_policy)
-        workflow.add_node("report_synthesis", self._synthesize_report)
-        workflow.add_node("fraud_assessment", self._assess_fraud)
+        workflow.add_node("damage_detection", self._wrap_agent(self._detect_damage, "detect_damage"))
+        workflow.add_node("severity_scoring", self._wrap_agent(self._score_severity, "score_severity"))
+        workflow.add_node("policy_clause_retrieval", self._wrap_agent(self._retrieve_policy, "retrieve_policy"))
+        workflow.add_node("report_synthesis", self._wrap_agent(self._synthesize_report, "synthesize_report"))
+        workflow.add_node("fraud_assessment", self._wrap_agent(self._assess_fraud, "assess_fraud"))
         workflow.add_node("flag_human_review", self._flag_human_review)
         workflow.add_node("finalize_claim", self._finalize_claim)
 
@@ -84,12 +83,20 @@ class LangGraphClaimOrchestrator:
             "coordinator",
             self._route_from_coordinator,
             {
-                "tool_execution": "tool_execution",
+                "detect_damage": "damage_detection",
+                "score_severity": "severity_scoring",
+                "retrieve_policy": "policy_clause_retrieval",
+                "synthesize_report": "report_synthesis",
+                "assess_fraud": "fraud_assessment",
                 "flag_human_review": "flag_human_review",
                 "finalize_claim": "finalize_claim",
             },
         )
-        workflow.add_edge("tool_execution", "coordinator")
+        workflow.add_edge("damage_detection", "coordinator")
+        workflow.add_edge("severity_scoring", "coordinator")
+        workflow.add_edge("policy_clause_retrieval", "coordinator")
+        workflow.add_edge("report_synthesis", "coordinator")
+        workflow.add_edge("fraud_assessment", "coordinator")
         workflow.add_edge("flag_human_review", END)
         workflow.add_edge("finalize_claim", END)
 
@@ -221,28 +228,20 @@ class LangGraphClaimOrchestrator:
         }
 
     def _route_from_coordinator(self, state: ClaimAnalysisState) -> str:
-        action = state.get("planned_action") or ""
-        if action in {"flag_human_review", "finalize_claim"}:
-            return action
-        return "tool_execution"
+        return state.get("planned_action") or "finalize_claim"
 
-    def _execute_tool(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
-        action = state.get("planned_action") or ""
-        if action == "detect_damage":
-            self._detect_damage(state)
-        elif action == "score_severity":
-            self._score_severity(state)
-        elif action == "retrieve_policy":
-            self._retrieve_policy(state)
-        elif action == "synthesize_report":
-            self._synthesize_report(state)
-        elif action == "assess_fraud":
-            self._assess_fraud(state)
-        completed_actions = state.get("completed_actions") or []
-        if action not in completed_actions:
-            completed_actions.append(action)
-        state["completed_actions"] = completed_actions
-        return state
+    def _wrap_agent(self, method: Any, action: str) -> Any:
+        """Runs an agent method as its own graph node, then records it in
+        completed_actions -- the bookkeeping that used to live in the single
+        tool_execution dispatcher now travels with each node."""
+        def node(state: ClaimAnalysisState) -> ClaimAnalysisState:
+            method(state)
+            completed_actions = state.get("completed_actions") or []
+            if action not in completed_actions:
+                completed_actions.append(action)
+            state["completed_actions"] = completed_actions
+            return state
+        return node
 
     def _detect_damage(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
         claim = state.get("claim")

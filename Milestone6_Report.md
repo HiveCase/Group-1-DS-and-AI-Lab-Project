@@ -1,4 +1,34 @@
+<div align="center">
 
+
+<b>***Data Science & AI Lab May 2026***</b>
+<br>
+
+<img src="https://github.com/HiveCase/Group-1-DS-and-AI-Lab-Project/blob/main/data/images/IITM_logo.png" width="520">
+
+
+<h1 style="font-size:26em;">Multimodal Damage Assessment for Insurance Claims</h1>
+
+<h2>Milestone 6: Deployment & Reproducibility</h2>
+
+<h3>Group 1</h3>
+
+<br>
+
+  ***Prepared by:***
+
+  
+| **Name** | **Email ID** | **GitHub Profile** |
+| --- | --- | --- |
+| SATYAJEET KUMAR | 23f1003132@ds.study.iitm.ac.in | [HiveCase](https://github.com/HiveCase) |
+| ANUJ GAUTAM | 21f1002407@ds.study.iitm.ac.in | [anujgautam1](https://github.com/anujgautam1) |
+| PRANAB KUMAR MANNA | 22f1000887@ds.study.iitm.ac.in | [pranab92](https://github.com/pranab92) |
+| VENKATA SIVA KAMAL GUDDANTI | 22f2000094@ds.study.iitm.ac.in | [22f2000094](https://github.com/22f2000094) |
+| HARSH PAL | 21f1002562@ds.study.iitm.ac.in | [HarshPalaps1](https://github.com/HarshPalaps1) |
+
+</div>
+
+---
 
 
 # Car Damage Insurance Claim Portal
@@ -15,7 +45,6 @@
    - [High-level architecture](#high-level-architecture)
    - [Low-level architecture](#low-level-architecture)
    - [Database schema (SQLite)](#database-schema-sqlite)
-   - [Users table (signup/login)](#users-table-signuplogin)
 2. [Environment Setup](#2-environment-setup)
 3. [Configuration & Secrets](#3-configuration--secrets)
 4. [Data & Inputs](#4-data--inputs)
@@ -511,7 +540,7 @@ Open `http://localhost:8000`.
 ### Known limitations
 
 - **`replicas: 1` only** (`k8s/deployment.yaml`, deliberate) — the app persists to a single SQLite file and a local-disk ChromaDB index, neither safe to share across pods. Scaling out needs Postgres + a shared/hosted vector store first.
-- No LangGraph checkpointer (`SqliteSaver`) is wired in — if the process restarts mid-analysis, the claim stays in `pending` (recovered automatically to `failed` on next startup by `_fail_orphaned_pending_analyses`, not resumed) and must be resubmitted (per `specs/001-claims-portal/tasks.md`, task T037).
+- No LangGraph checkpointer (`SqliteSaver`) is wired in — if the process restarts mid-analysis, the claim stays in `pending` (recovered automatically to `failed` on next startup by `_fail_orphaned_pending_analyses`, not resumed) and must be resubmitted.
 - The RAG ChromaDB index rebuilds inside the container's own filesystem on every restart (not on the mounted PVC), adding a few seconds of startup latency each time.
 
 ---
@@ -587,10 +616,9 @@ Issues below were actually encountered and diagnosed during this project's devel
 
 ## 13. Future Improvements / Limitations
 
-Sourced from `specs/001-claims-portal/tasks.md` and gaps identified during development:
+Gaps identified during development:
 
-- **No LangGraph checkpointing** (task T037) — analysis state doesn't survive a process restart mid-run.
-- **No automated end-to-end / manual validation script** covering all four portals (task T081) — the backend/frontend test suites cover units and key flows, but there's no scripted full walkthrough.
+- **No automated end-to-end / manual validation script** covering all four portals  — the backend/frontend test suites cover units and key flows, but there's no scripted full walkthrough.
 - **Signup/login exist (`/auth/signup`, `/auth/login`), but nothing enforces them yet** — no route requires the issued JWT, there's no `get_current_user` dependency applied anywhere, and the frontend has no login page, token storage, or route guards. All four portals remain reachable by anyone; role-based access control (using the `role` already captured at signup) is the natural next step but is not built.
 - **No database migration tooling** — schema evolution goes through a homegrown `sync_sqlite_schema()` (`ADD COLUMN`-only) helper in `backend/app/db/database.py`, not Alembic; it cannot handle column removals, type changes, or renames, and destructive schema changes (e.g. removing a `UNIQUE` constraint) require a manual one-off migration function (see `_rename_legacy_policy_clauses_table`/`_restore_legacy_policy_clauses_rows` in the same file for a precedent).
 - **SQLite + local-disk ChromaDB** cap the deployment at a single replica; horizontal scaling needs a Postgres migration and a shared/hosted vector store first (see `k8s/deployment.yaml` comments).

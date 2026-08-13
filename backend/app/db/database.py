@@ -32,7 +32,7 @@ def get_db():
 
 
 def init_db():
-    from app.db.models import Policy, Claim, ClaimPhoto, AnalysisResult, DecisionRecord, InvestigationCase, PolicyClause  # noqa: F401
+    from app.db.models import Policy, Claim, ClaimPhoto, AnalysisResult, DecisionRecord, InvestigationCase, PolicyClause, User  # noqa: F401
 
     _rename_legacy_policy_clauses_table()
     Base.metadata.create_all(bind=engine)
