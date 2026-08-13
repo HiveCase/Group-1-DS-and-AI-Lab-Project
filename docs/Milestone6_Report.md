@@ -9,7 +9,7 @@
 
 <h1 style="font-size:26em;">Multimodal Damage Assessment for Insurance Claims</h1>
 
-<h2>Milestone 5: Model Evaluation</h2>
+<h2>Milestone 6: Deployment & Reproducibility</h2>
 
 <h3>Group 1</h3>
 
