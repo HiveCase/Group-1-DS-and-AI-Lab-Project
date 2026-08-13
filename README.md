@@ -18,7 +18,7 @@ Manual vehicle damage assessment can be slow, inconsistent, and difficult to doc
 
 ## Architecture Diagram
 
-Add the project architecture diagram in `docs/Architecture_Diagram.png`.
+![Architecture](docs/multimodal_damage_assessment_architecture.svg)
 
 ## Dataset Details
 
