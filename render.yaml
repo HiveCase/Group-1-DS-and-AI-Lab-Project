@@ -13,17 +13,6 @@ services:
       # Update this after your first Vercel deploy with the actual URL
       - key: ALLOWED_ORIGINS
         value: "https://your-frontend.vercel.app"
-      # ── Database & storage ──
-      - key: DATABASE_URL
-        value: "sqlite:////data/claims.db"
-      - key: UPLOAD_DIR
-        value: "/data/uploads"
-      - key: MODEL_DIR
-        value: "/data/models"
-      - key: DATA_DIR
-        value: "/data/data"
-      - key: CHROMA_PERSIST_DIR
-        value: "/data/chroma"
       # ── Secrets (set these in Render dashboard, not here) ──
       - key: JWT_SECRET_KEY
         generateValue: true
@@ -33,7 +22,3 @@ services:
         sync: false
       - key: LANGFUSE_PUBLIC_KEY
         sync: false
-    disk:
-      name: ds-ai-data
-      mountPath: /data
-      sizeGB: 1
