@@ -415,3 +415,20 @@ Sourced from `specs/001-claims-portal/tasks.md` and gaps identified during devel
 - **No database migration tooling** — schema evolution goes through a homegrown `sync_sqlite_schema()` (`ADD COLUMN`-only) helper in `backend/app/db/database.py`, not Alembic; it cannot handle column removals, type changes, or renames, and destructive schema changes (e.g. removing a `UNIQUE` constraint) require a manual one-off migration function (see `_rename_legacy_policy_clauses_table`/`_restore_legacy_policy_clauses_rows` in the same file for a precedent).
 - **SQLite + local-disk ChromaDB** cap the deployment at a single replica; horizontal scaling needs a Postgres migration and a shared/hosted vector store first (see `k8s/deployment.yaml` comments).
 - **No HPA (Horizontal Pod Autoscaler)** configured, for the same reason.
+
+
+---
+
+***Declaration:***
+
+I have read and reviewed this submission in its entirety and confirm that it accurately represents the work of our group. By entering my initials and the date below, I acknowledge my approval of this submission.
+
+| Name | Date of Review | Sign |
+|---|---|---|
+| Satyajeet Kumar | 7th Aug'26 | S.K. |
+| Pranab Kumar Manna |07-08-2026 | PK Manna |
+| Venkata Siva Kamal Guddanti | | |
+| Anuj Gautam | 07-08-2026 | Anuj |
+| Harsh Pal |07-08--2026 | harshpal|
+
+---
