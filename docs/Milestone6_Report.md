@@ -28,7 +28,23 @@
 
 </div>
 
+---
+## Table of Contents
 
+1. [Project Overview](#1-project-overview)
+2. [Environment Setup](#2-environment-setup)
+3. [Configuration & Secrets](#3-configuration--secrets)
+4. [Data & Inputs](#4-data--inputs)
+5. [Running the Application](#5-running-the-application)
+6. [Model / Pipeline Execution](#6-model--pipeline-execution)
+7. [End-to-End Reproducibility](#7-end-to-end-reproducibility)
+8. [Deployment Details](#8-deployment-details)
+9. [Evaluation & Results](#9-evaluation--results)
+10. [Repository Structure](#10-repository-structure)
+11. [Troubleshooting](#11-troubleshooting)
+12. [Contribution Summary](#12-contribution-summary)
+13. [Future Improvements / Limitations](#13-future-improvements--limitations)
+---
 
 # Car Damage Insurance Claim Portal
 
