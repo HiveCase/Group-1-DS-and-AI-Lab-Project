@@ -12,7 +12,6 @@ from app.db.models import Claim, DecisionRecord, Policy, PolicyClause
 from app.schemas.adjuster_schema import AdjusterDashboardResponse, AdjusterDashboardSummary, DecisionRead, DecisionRequest
 from app.schemas.claim_schema import ClaimListResponse, ClaimRead
 from app.services.analytics_service import AnalyticsService
-from app.services.claim_analysis_graph import ClaimAnalysisOrchestrator
 from app.services.claim_service import ClaimService
 from app.services.investigation_service import InvestigationService
 
@@ -20,19 +19,21 @@ router = APIRouter(prefix='/claims', tags=['claims'])
 logger = logging.getLogger("claims_portal.claims")
 
 # Initialized in a background thread at startup (via main.py lifespan) so that
-# the heavy YOLO + Sentence Transformer model loading does not block FastAPI from
-# binding to the port — which causes Render to time out the deploy.
-_orchestrator: ClaimAnalysisOrchestrator | None = None
+# the heavy import chain (langgraph -> langchain-core, etc.) and ML model loading
+# (YOLO, Sentence Transformers) do not block FastAPI from binding to the port —
+# which causes Render's free tier to time out the deploy.
+_orchestrator = None
 
 
 def init_orchestrator() -> None:
     """Called once from the startup background thread in main.py."""
     global _orchestrator
+    from app.services.claim_analysis_graph import ClaimAnalysisOrchestrator
     _orchestrator = ClaimAnalysisOrchestrator()
     logger.info("ClaimAnalysisOrchestrator ready.")
 
 
-def get_orchestrator() -> ClaimAnalysisOrchestrator:
+def get_orchestrator():
     """Returns the shared orchestrator, blocking briefly if it is still loading."""
     import time as _time
     deadline = _time.monotonic() + 120  # wait up to 2 min on first request
