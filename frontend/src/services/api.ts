@@ -70,3 +70,13 @@ export async function getSupervisorAnalytics() {
   const response = await client.get('/analytics/summary');
   return response.data;
 }
+
+export async function signup(payload: { email: string; password: string; role: string }) {
+  const response = await client.post('/auth/signup', payload);
+  return response.data;
+}
+
+export async function login(payload: { email: string; password: string }) {
+  const response = await client.post('/auth/login', payload);
+  return response.data;
+}

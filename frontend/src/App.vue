@@ -1,5 +1,8 @@
 <template>
-  <div class="app-shell" :style="{ '--accent': accentColor }">
+  <div v-if="route.meta.public" class="auth-shell">
+    <router-view />
+  </div>
+  <div v-else class="app-shell" :style="{ '--accent': accentColor }">
     <aside class="sidebar">
       <div class="brand">
         <span class="pi pi-shield" />
@@ -16,6 +19,10 @@
     <div class="shell-body">
       <header class="topbar">
         <span class="topbar-label">{{ portalLabel }}</span>
+        <div class="topbar-auth">
+          <span class="topbar-user">{{ currentUser?.email }} ({{ currentUser?.role }})</span>
+          <button class="link-button" @click="handleLogout">Log out</button>
+        </div>
       </header>
       <main class="main-content">
         <router-view />
@@ -26,9 +33,11 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { currentUser, logout } from './services/auth';
 
 const route = useRoute();
+const router = useRouter();
 
 const accentMap = {
   claimant: 'var(--portal-claimant)',
@@ -39,4 +48,9 @@ const accentMap = {
 
 const accentColor = computed(() => accentMap[route.meta.accent] || 'var(--portal-claimant)');
 const portalLabel = computed(() => route.meta.label || 'Claims Portal');
+
+const handleLogout = () => {
+  logout();
+  router.push('/login');
+};
 </script>

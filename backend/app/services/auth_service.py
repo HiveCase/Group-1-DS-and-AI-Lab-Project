@@ -10,6 +10,9 @@ from app.core.config import get_settings
 from app.db.models import User
 from app.schemas.auth_schema import VALID_ROLES
 
+DEFAULT_ADMIN_EMAIL = "admin@gmail.com"
+DEFAULT_ADMIN_PASSWORD = "admin"
+
 
 class AuthService:
     def __init__(self, db: Session):
@@ -40,6 +43,11 @@ class AuthService:
 
     def get_by_email(self, email: str) -> User | None:
         return self.db.query(User).filter(User.email == email).first()
+
+    def seed_default_admin(self) -> None:
+        if self.get_by_email(DEFAULT_ADMIN_EMAIL):
+            return
+        self.signup(DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD, "admin")
 
     def create_access_token(self, user: User) -> str:
         expire = datetime.utcnow() + timedelta(minutes=self.settings.jwt_access_token_expire_minutes)

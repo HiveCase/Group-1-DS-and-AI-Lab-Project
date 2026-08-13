@@ -21,6 +21,7 @@ from app.routes.analytics import router as analytics_router
 from app.routes.auth import router as auth_router
 from app.routes.claims import router as claims_router
 from app.routes.policies import router as policies_router
+from app.services.auth_service import AuthService
 from app.services.policy_clause_service import PolicyClauseService
 from app.services.policy_service import PolicyService
 
@@ -93,6 +94,7 @@ def initialize_app_data():
     db = SessionLocal()
     try:
         PolicyService(db).seed_defaults()
+        AuthService(db).seed_default_admin()
         _fail_orphaned_pending_analyses(db)
     finally:
         db.close()
