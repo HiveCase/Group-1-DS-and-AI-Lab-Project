@@ -44,7 +44,6 @@
    - [High-level architecture](#high-level-architecture)
    - [Low-level architecture](#low-level-architecture)
    - [Database schema (SQLite)](#database-schema-sqlite)
-   - [Users table (signup/login)](#users-table-signuplogin)
 2. [Environment Setup](#2-environment-setup)
 3. [Configuration & Secrets](#3-configuration--secrets)
 4. [Data & Inputs](#4-data--inputs)
