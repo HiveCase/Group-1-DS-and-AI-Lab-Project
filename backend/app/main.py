@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -54,9 +55,10 @@ app = FastAPI(title='Claims Portal API', lifespan=lifespan)
 logger = logging.getLogger("claims_portal")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 
+_allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
