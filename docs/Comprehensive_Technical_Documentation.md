@@ -128,7 +128,7 @@ This section covers the system **as actually implemented** (verified directly ag
 | Python | 3.12 | `.github/workflows/deploy-gke.yml`, `Dockerfile` |
 | Node.js | 20 | `.github/workflows/deploy-gke.yml`, `Dockerfile` (`node:20-alpine`) |
 | Hardware (inference) | CPU-only (small YOLO model, no GPU code path) | `damage_detection_service.py` uses plain `ultralytics.YOLO`, no `.cuda()`/device selection |
-| Hardware (training, historical) | Tesla T4, 15.6GB VRAM, Google Colab free tier | [`notebook/Yolov11m_Training&HyperparameterTuning.ipynb`](notebook/Yolov11m_Training&HyperparameterTuning.ipynb), [`Milestone4_Report.md`](Milestone4_Report.md) §4.1 — the training notebook is checked into this repo, but the raw VehiDE dataset itself is not (downloaded fresh via `kagglehub` at notebook run time; see §B2) |
+| Hardware (training, historical) | Tesla T4, 15.6GB VRAM, Google Colab free tier | [`notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`](Yolov11m_Training&HyperparameterTuning.ipynb), [`Milestone4_Report.md`](Milestone4_Report.md) §4.1 — the training notebook is checked into this repo, but the raw VehiDE dataset itself is not (downloaded fresh via `kagglehub` at notebook run time; see §B2) |
 
 **Backend:**
 ```bash
@@ -158,7 +158,7 @@ Preprocessing pipeline (`scripts/preprocess_vehide.py`, `scripts/preprocess_imag
 
 **Class imbalance**: 6.59:1 (`scratch` at 44.0% of instances vs. `shattered_glass` at 6.7%) — a significant, unresolved factor in per-class model performance (§B5 below and the Final Project Report §7).
 
-**The training notebook ships in this repository** ([`notebook/Yolov11m_Training&HyperparameterTuning.ipynb`](notebook/Yolov11m_Training&HyperparameterTuning.ipynb)), though the raw VehiDE dataset itself does not — it's downloaded fresh via `kagglehub` when the notebook runs. `backend/models/model.pt` is the resulting fine-tuned checkpoint, used as a pre-trained artifact at inference time; an unused `model_old.pt` also sits alongside it.
+**The training notebook ships in this repository** ([`notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`](notebooks/Yolov11m_Training&HyperparameterTuning.ipynb)), though the raw VehiDE dataset itself does not — it's downloaded fresh via `kagglehub` when the notebook runs. `backend/models/model.pt` is the resulting fine-tuned checkpoint, used as a pre-trained artifact at inference time; an unused `model_old.pt` also sits alongside it.
 
 ### Policy document corpus (RAG)
 
@@ -203,7 +203,7 @@ flowchart LR
 
 ## B4. Training Summary
 
-**⚠️ Provisional.** All headline training/validation numbers below are cross-verified against the actual executed training notebook, [`notebook/Yolov11m_Training&HyperparameterTuning.ipynb`](notebook/Yolov11m_Training&HyperparameterTuning.ipynb), and against [`Milestone4_Report.md`](Milestone4_Report.md) and [`Milestone5_Report.md`](Milestone5_Report.md). Milestone 5 explicitly flags its own numbers as **validation-split results, not test-split results** — a held-out test-split evaluation, confusion matrix, and robustness check were prepared but not executed at the time that report was written ([`Milestone5_Report.md`](Milestone5_Report.md) §10). This document carries that same caveat forward rather than presenting the numbers as final.
+**⚠️ Provisional.** All headline training/validation numbers below are cross-verified against the actual executed training notebook, [`notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`](notebooks/Yolov11m_Training&HyperparameterTuning.ipynb), and against [`Milestone4_Report.md`](Milestone4_Report.md) and [`Milestone5_Report.md`](Milestone5_Report.md). Milestone 5 explicitly flags its own numbers as **validation-split results, not test-split results** — a held-out test-split evaluation, confusion matrix, and robustness check were prepared but not executed at the time that report was written ([`Milestone5_Report.md`](Milestone5_Report.md) §10). This document carries that same caveat forward rather than presenting the numbers as final.
 
 **Selected checkpoint**: YOLO11m-seg, COCO-pretrained, **Optuna-tuned** — hyperparameters, epoch/batch settings, and the final validation metrics below are read directly from the notebook's own executed cell output (`engine/trainer:` config line and the final `val()` summary row), not just cited from the milestone report.
 
@@ -342,7 +342,7 @@ docker run --rm -p 8000:8000 -v ${PWD}/.local-data:/data claims-portal
 - **Dataset checksums**: SHA-256 hashes of raw downloaded dataset archives recorded in `data/checksums.txt` (training-side, historical — not part of this repository's runtime).
 - **Config files**: a single `configs/pipeline_config.yaml` (historical, training-side) stores split ratios, seed, chunk size/overlap, and embedding model name for the data-preparation pipeline; `.env` (this repository, runtime) holds all app configuration.
 - **Application reproducibility** (this repository, verified end-to-end): clone → `cp .env.example .env` (set `GROQ_API_KEY`) → backend `pip install -r requirements.txt` + `uvicorn app.main:app --reload` → frontend `npm install` + `npm run dev` → submit a claim against seed policy `POL-001`. Full step-by-step with exact commands: root [`README.md`](README.md) §7. Verify with `cd backend && python -m pytest -q` and `cd frontend && npm test`.
-- **Model checkpoint**: `backend/models/model.pt` is committed directly. The notebook that trained it, [`notebook/Yolov11m_Training&HyperparameterTuning.ipynb`](notebook/Yolov11m_Training&HyperparameterTuning.ipynb), is also checked in and re-runnable end-to-end (downloads its own dataset copy via `kagglehub`, same seed 42) — see §F below.
+- **Model checkpoint**: `backend/models/model.pt` is committed directly. The notebook that trained it, [`notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`](notebooks/Yolov11m_Training&HyperparameterTuning.ipynb), is also checked in and re-runnable end-to-end (downloads its own dataset copy via `kagglehub`, same seed 42) — see §F below.
 
 ---
 
@@ -821,7 +821,7 @@ Transcribed directly from `backend/requirements.txt` and `frontend/package.json`
 - All 5 policy documents are synthetic specimens explicitly marked "not a valid insurance contract"; the fraud-scoring model is a hand-written rule engine, not a trained classifier.
 - Ultralytics YOLO's AGPL-3.0 license has real implications for any commercial/production use of this system — see §E above.
 
-**Retraining the model**: the actual training/hyperparameter-tuning notebook is checked into this repository at [`notebook/Yolov11m_Training&HyperparameterTuning.ipynb`](notebook/Yolov11m_Training&HyperparameterTuning.ipynb) — it downloads its own dataset copy (`kagglehub`, `m4rcuseryx/vehide-segmentation-dataset`) and reruns end-to-end on a Colab T4, including the 12-trial Optuna search. Retraining means running this notebook and replacing `backend/models/model.pt` with the resulting `best.pt`. It does not, however, reproduce the broader from-scratch VIA-annotation preprocessing pipeline (dedup, PII scan, letterboxing) narrated in `Milestone2_Report.md` — that pipeline's own scripts are not present in this repository, only its output described in that report.
+**Retraining the model**: the actual training/hyperparameter-tuning notebook is checked into this repository at [`notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`](notebooks/Yolov11m_Training&HyperparameterTuning.ipynb) — it downloads its own dataset copy (`kagglehub`, `m4rcuseryx/vehide-segmentation-dataset`) and reruns end-to-end on a Colab T4, including the 12-trial Optuna search. Retraining means running this notebook and replacing `backend/models/model.pt` with the resulting `best.pt`. It does not, however, reproduce the broader from-scratch VIA-annotation preprocessing pipeline (dedup, PII scan, letterboxing) narrated in `Milestone2_Report.md` — that pipeline's own scripts are not present in this repository, only its output described in that report.
 
 **Contacts / maintainers** (Group 1, DS & AI Lab):
 
