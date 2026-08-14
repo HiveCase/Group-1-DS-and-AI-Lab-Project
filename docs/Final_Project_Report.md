@@ -371,4 +371,4 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 | Harsh Pal | | |
 
 ---
-**Demo Video :** [https://drive.google.com/file/d/1GixhfgLSFee5t9_m8pY_c1VvJ23hkR1j/view?usp=drive_link](url)
+**Demo Video :** [Click here to watch the video on Google Drive](https://drive.google.com/file/d/1GixhfgLSFee5t9_m8pY_c1VvJ23hkR1j/view?usp=sharing)
