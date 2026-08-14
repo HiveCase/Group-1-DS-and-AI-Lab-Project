@@ -31,9 +31,6 @@
 
 # Comprehensive Technical Documentation
 
-**Multimodal Damage Assessment for Insurance Claims — Milestone 6**
-Group 1, Data Science & AI Lab, May 2026
-
 This is the single-file "how it works, what's inside, how to reproduce" reference for the system, covering the six required areas: Overview, Technical Documentation, User Documentation, API Documentation, Licensing & Dataset References, and Future Work / Maintenance. For the project's narrative — abstract, literature review, dataset/methodology, training, and evaluation results — see [`Final_Project_Report.md`](Final_Project_Report.md). For the six per-milestone source reports this document synthesizes and cites, see [`Milestone1_Report.md`](Milestone1_Report.md) through [`Milestone5_Report.md`](Milestone5_Report.md) and [`RAG_Component.md`](RAG_Component.md).
 
 ---
