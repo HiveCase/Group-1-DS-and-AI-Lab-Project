@@ -1,0 +1,213 @@
+name: CI/CD to GKE
+
+on:
+  push:
+    branches:
+      - car-damage-claim-fulstack-developement
+  pull_request:
+    branches:
+      - car-damage-claim-fulstack-developement
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: claims-portal
+  K8S_NAMESPACE: claims-portal
+
+# Prevents two pushes in quick succession from racing each other through
+# kubectl apply/rollout against the same single-replica deployment.
+concurrency:
+  group: gke-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test (CI)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run backend tests
+        working-directory: backend
+        # `python -m pytest` (not bare `pytest`) so the current directory
+        # (backend/, containing the app/ package) is added to sys.path
+        # automatically -- the repo's own pytest.ini also sets this via
+        # `pythonpath = backend`, but that file is gitignored and never
+        # reaches a fresh CI checkout, so this can't depend on it.
+        # DATABASE_URL/UPLOAD_DIR are forced to backend/data/ci_claims.db and
+        # backend/uploads-ci by tests/conftest.py before any app module
+        # loads, regardless of this runner's environment -- CI never touches
+        # a real database.
+        run: python -m pytest -q
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+  build-and-push:
+    name: Build, scan, and push image
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_uri: ${{ steps.image.outputs.uri }}
+
+    env:
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GAR_LOCATION: ${{ secrets.GAR_LOCATION }}
+      GAR_REPOSITORY: ${{ secrets.GAR_REPOSITORY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${GAR_LOCATION}-docker.pkg.dev" --quiet
+
+      - name: Set image URI
+        id: image
+        run: echo "uri=${GAR_LOCATION}-docker.pkg.dev/${GCP_PROJECT_ID}/${GAR_REPOSITORY}/${IMAGE_NAME}:${GITHUB_SHA}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build Docker image
+        run: docker build -t "${{ steps.image.outputs.uri }}" .
+
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ steps.image.outputs.uri }}
+          format: table
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Push Docker image
+        run: docker push "${{ steps.image.outputs.uri }}"
+
+  deploy:
+    name: Deploy to GKE
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    # If your repo has GitHub Environments configured, this lets you attach
+    # required-reviewer approval to production deploys (Settings >
+    # Environments > production). With none configured it's a no-op.
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
+      GKE_LOCATION: ${{ secrets.GKE_LOCATION }}
+      IMAGE_URI: ${{ needs.build-and-push.outputs.image_uri }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_LOCATION }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Apply namespace and storage
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/pvc.yaml
+          kubectl apply -f k8s/service.yaml
+
+      - name: Sync app secrets
+        # Created/updated imperatively from GitHub Actions secrets rather
+        # than a committed manifest, so no key material ever lives in git.
+        # Empty values are fine: the app treats a missing GROQ_API_KEY /
+        # Langfuse keys as "feature disabled" and degrades gracefully
+        # (deterministic fallback report / observability off) rather than
+        # failing to start.
+        run: |
+          kubectl create secret generic claims-portal-secrets \
+            -n "${K8S_NAMESPACE}" \
+            --from-literal=GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
+            --from-literal=LANGFUSE_PUBLIC_KEY="${{ secrets.LANGFUSE_PUBLIC_KEY }}" \
+            --from-literal=LANGFUSE_SECRET_KEY="${{ secrets.LANGFUSE_SECRET_KEY }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy
+        run: |
+          kubectl set image -f k8s/deployment.yaml claims-portal="${IMAGE_URI}" --local -o yaml | kubectl apply -f -
+          kubectl rollout status deployment/claims-portal -n "${K8S_NAMESPACE}" --timeout=300s
+
+      - name: Smoke test
+        id: smoke
+        run: |
+          kubectl port-forward -n "${K8S_NAMESPACE}" svc/claims-portal 8080:80 &
+          PF_PID=$!
+          sleep 5
+          for i in $(seq 1 10); do
+            if curl -sf http://localhost:8080/health; then
+              echo "Smoke test passed"
+              kill "${PF_PID}" 2>/dev/null || true
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Smoke test failed: /health never became reachable"
+          kill "${PF_PID}" 2>/dev/null || true
+          exit 1
+
+      - name: Roll back on failed smoke test
+        if: failure() && steps.smoke.outcome == 'failure'
+        run: |
+          echo "Deployment failed its smoke test -- rolling back."
+          kubectl rollout undo deployment/claims-portal -n "${K8S_NAMESPACE}"
+          kubectl rollout status deployment/claims-portal -n "${K8S_NAMESPACE}" --timeout=180s
