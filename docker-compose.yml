@@ -11,18 +11,16 @@ services:
       # than at image-build time. First run is still slow; every run after
       # that reuses the cache and skips straight to "already satisfied".
       - pip-cache:/root/.cache/pip
-    environment:
-      # Pulled from a .env file next to this compose file (docker compose
-      # auto-loads it for ${...} substitution) -- unset vars just come
-      # through empty, which is fine here: an empty GROQ_API_KEY/Langfuse
-      # key is already treated as "feature disabled" by the app. GROQ_MODEL
-      # and LANGFUSE_BASE_URL are deliberately NOT listed here -- unlike the
-      # keys, those have real non-empty defaults in app/core/config.py, and
-      # passing an explicitly-empty env var would override those defaults
-      # with "" instead of leaving them alone.
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
-      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+    # Loads the whole .env next to this compose file straight into the
+    # container's OS environment -- matches what happens when the app is
+    # run locally (Settings.model_config.env_file points at this same
+    # .env). Without this, Settings' own env_file lookup resolves to
+    # /.env *inside the container* (since only ./backend is mounted, at
+    # /app, there is no repo root to find a .env in), which silently
+    # doesn't exist -- so every value in .env beyond what's hardcoded as a
+    # Settings default would be ignored in Docker even though it takes
+    # effect locally (e.g. MODEL_NAME, JWT_SECRET_KEY, USE_LANGGRAPH).
+    env_file: .env
     # --trusted-host works around corporate TLS-inspecting proxies that
     # break pip's certificate verification -- fine for a local-dev-only
     # compose file (never used by CI/CD, which builds via the Dockerfile
@@ -39,7 +37,11 @@ services:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 5s
-      start_period: 60s
+      # 5min: covers a cold first run, where installing ~600MB of deps
+      # (torch, opencv, transformers...) via the inline pip install above
+      # can take 2-3 minutes before uvicorn is even up. Once pip-cache is
+      # warm, startup is much faster and this just means a quicker pass.
+      start_period: 300s
       retries: 3
   frontend:
     image: node:20-alpine

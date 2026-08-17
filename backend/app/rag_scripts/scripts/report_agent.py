@@ -24,7 +24,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
-
+import os
 load_dotenv()
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -32,7 +32,7 @@ PAYLOADS_PATH = ROOT / "data" / "rag_outputs" / "mile3" / "payloads_all.json"
 OUT_DIR = ROOT / "data" / "rag_outputs" / "mile3" / "reports"
 
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-MODELS = ["llama-3.3-70b-versatile", "openai/gpt-oss-20b"]
+MODELS = [os.getenv("MODEL_NAME") or "openai/gpt-oss-120b", "llama-3.3-70b-versatile", "openai/gpt-oss-20b"]
 
 SYSTEM_PROMPT = """You are a preliminary motor-insurance claims assessment assistant.
 

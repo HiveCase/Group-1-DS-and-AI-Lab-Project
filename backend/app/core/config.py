@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     )
 
     groq_api_key: str | None = None
-    groq_model: str = os.getenv("MODEL_NAME") or "llama-3.3-70b-versatile"
+    groq_model: str = os.getenv("MODEL_NAME") or "openai/gpt-oss-120b"
     groq_base_url: str = os.getenv("GROQ_BASE_URL") or "https://api.groq.com/openai/v1"
 
     jwt_secret_key: str = "change-me-in-production"
