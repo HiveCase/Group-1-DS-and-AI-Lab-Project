@@ -93,13 +93,19 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.TOKEN }}
 
       - name: Build Docker image
         run: docker build -t "${{ steps.image.outputs.uri }}" -t "${{ steps.image.outputs.latest }}" .
 
       - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.24.0
+        # Pinned by commit SHA, not a mutable tag: this action had a
+        # credential-stealer injected via tag hijacking in March 2026,
+        # affecting every tag from 0.0.1 through 0.34.2 (that includes the
+        # 0.24.0 this workflow used to reference). SHA pin = v0.36.0,
+        # the current release as of this writing -- confirm no newer
+        # advisory exists before bumping.
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ steps.image.outputs.uri }}
           format: table
