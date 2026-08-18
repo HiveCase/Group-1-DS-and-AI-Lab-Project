@@ -34,7 +34,7 @@
 # Table of Contents
 
 - [1. Introduction](#1-introduction)
-- [2. Note on the Experimental Track Evaluated in This Milestone](#2-note-on-the-experimental-track-evaluated-in-this-milestone)
+- [2. Note on the Track Evaluated in This Milestone](#2-note-on-the-track-evaluated-in-this-milestone)
 - [3. Evaluation Methodology](#3-evaluation-methodology)
 - [4. Performance Metrics](#4-performance-metrics)
 - [5. Experimental Results](#5-experimental-results)
@@ -139,7 +139,7 @@ Mask metrics are inherently harder to score well on than Box metrics (a pixel-pr
 | Baseline (40 ep) | 0.524 | 0.444 | 0.438 | 0.269 | 0.512 | 0.408 | 0.401 | 0.209 |
 | **Tuned (40 ep)** | **0.582** | **0.483** | **0.485** | **0.300** | **0.576** | **0.452** | **0.449** | **0.241** |
 
-### 5.2 Per-Class Performance (Tuned model, validation split)
+### 5.2 Per-Class Performance (validation split)
 
 | Class | Train instances | Box mAP50 | Box mAP50-95 | Mask mAP50 | Mask mAP50-95 |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -152,7 +152,18 @@ Mask metrics are inherently harder to score well on than Box metrics (a pixel-pr
 
 These are the Tuned checkpoint's own per-class figures (`best.pt`, validation split), taken directly from the same evaluation run reported as the overall "Tuned" row in Section 5.1. The qualitative ranking of classes (shattered_glass strongest, dent/scratch weakest) holds consistently across the Baseline and Tuned checkpoints (Section 8.1) - the Tuned model improves every class's mask mAP50 over the Baseline figures without changing that ranking.
 
-### 5.3 Training Curves
+### 5.3 Per-Class Performance (test split)
+
+| Class | Test instances | Box mAP50 | Box mAP50-95 | Mask mAP50 | Mask mAP50-95 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| dent | 825 | 0.290 | 0.140 | 0.290 | 0.121 |
+| scratch | 2,174 | 0.344 | 0.200 | 0.288 | 0.114 |
+| crack | 765 | 0.340 | 0.211 | 0.328 | 0.135 |
+| broken_lamp | 392 | 0.640 | 0.357 | 0.476 | 0.223 |
+| shattered_glass | 325 | 0.819 | 0.622 | 0.775 | 0.553 |
+| flat_tyre | 365 | 0.550 | 0.341 | 0.529 | 0.302 |
+
+### 5.4 Training Curves
 
 Across both runs, training loss (`box_loss`, `seg_loss`, `cls_loss`) declined steadily with no reversals, and validation mAP50/mAP50-95 climbed with no plateau through the initial 40 epochs. `patience=15` (early stopping) did not trigger in either run - both ran their full configured epoch budget. Validation loss tracked training loss in the same direction throughout, with no divergence observed - i.e. no evidence of overfitting in the ranges trained.
 
@@ -216,12 +227,33 @@ This directly contradicts a naive expectation from the training-set class distri
 
 **Root cause.** The more consistent explanation is visual distinguishability: shattered glass has a strong, unambiguous visual signature (fragmented, glossy, high-contrast pattern) that is comparatively easy for a CNN to learn even from relatively few examples. Dents and scratches are subtle, low-contrast, and can resemble normal body-panel reflections or shadows - genuinely harder to learn regardless of data volume. This is consistent with the independent finding on Milestone 4's comparative-benchmark track (CarDD-pretrained, Kaggle), which reported the identical pattern (`scratch`, the most numerous class, among the two worst-performing; underperformance persisting across baseline, augmentation, and DFL-reweighting interventions) and linked it to the same classes' difficulty in the published CarDD benchmark paper. That two independently pretrained models (COCO vs. CarDD), of different architecture generations, trained on two different platforms with different hyperparameters, reproduce the same class-difficulty ranking is a meaningfully strong piece of corroborating evidence that this is a property of the damage types themselves, not an artifact of either track's specific training setup.
 
-### 8.2 False Positives and False Negatives
+### 8.2 Confusion Matrix and Error Patterns
 
-- **False positives** (predicted damage with no matching ground truth): expected to be concentrated in the classes with lower Box precision - `dent`, `scratch`, `crack` - and plausibly include cases where shadows or reflections on a vehicle surface are mistaken for a subtle dent or scratch.
-- **False negatives** (missed ground-truth damage): expected to concentrate on smaller or thinner damage instances - fine cracks, small scratches - given the model's demonstrated weaker performance on exactly these classes, and given the dataset's own minimum annotated damage area is very small relative to full image size.
-- A full confusion matrix and a qualitative sample of flagged failure cases (predicted-instance-count vs. ground-truth-count mismatches) have been prepared in the accompanying evaluation notebook but not yet executed; this section should be updated with specific visual examples and confusion-matrix values once that step is run.
+The normalized confusion matrix provides a class-level view of the model's detection errors. The matrix is **column-normalized**, with the columns representing the true class and the rows representing the predicted class. Therefore, the diagonal values represent the proportion of correctly detected instances for each class, while the `background` row captures missed detections (false negatives) and the `background` column captures false-positive predictions.
 
+| Predicted \ True | dent | scratch | crack | broken_lamp | shattered_glass | flat_tyre | background |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| dent | 0.63 | 0.12 | 0.06 | 0.03 | 0.02 | 0.03 | 0.20 |
+| scratch | 0.14 | 0.62 | 0.14 | 0.08 | 0.02 | 0.12 | 0.53 |
+| crack | 0.04 | 0.07 | 0.49 | 0.05 | 0.01 | 0.23 | 0.15 |
+| broken_lamp | 0.02 | 0.02 | 0.05 | 0.59 | 0.08 | 0.05 | 0.07 |
+| shattered_glass | 0.01 | 0.01 | 0.01 | 0.09 | 0.80 | 0.02 | 0.02 |
+| flat_tyre | 0.01 | 0.03 | 0.11 | 0.06 | 0.01 | 0.45 | 0.04 |
+| background | 0.14 | 0.12 | 0.13 | 0.09 | 0.05 | 0.10 | — |
+
+**Figure 8.1. Normalized confusion matrix on the test split.**
+
+The matrix reinforces the class-level performance trends observed in Section 5.2. `shattered_glass` has the strongest diagonal value at **0.80**, followed by `dent` (**0.63**), `scratch` (**0.62**), `broken_lamp` (**0.59**), `crack` (**0.49**), and `flat_tyre` (**0.45**). Thus, `shattered_glass` is the most consistently recognised damage type, while `flat_tyre` and `crack` show substantially greater confusion.
+
+Several important error patterns are visible:
+
+- **Scratch–dent confusion:** 14% of true scratches are predicted as dents, while 12% of true dents are predicted as scratches. This is consistent with the visual similarity between surface scratches and dent-like regions.
+- **Crack–flat_tyre confusion:** 23% of true flat-tyre instances are predicted as cracks, while 11% of true cracks are predicted as flat tyres. This represents one of the stronger cross-class confusions in the matrix.
+- **Broken-lamp–shattered-glass confusion:** 9% of true broken-lamp instances are predicted as shattered glass, while 8% of true shattered-glass instances are predicted as broken lamps. This likely reflects the physical co-occurrence and visual similarity of broken lamps and shattered glass in damaged vehicles.
+- **Missed detections:** The `background` row indicates that approximately 14% of dents, 12% of scratches, 13% of cracks, 9% of broken-lamp instances, 5% of shattered-glass instances, and 10% of flat-tyre instances are missed by the detector. The relatively low missed-detection rate for `shattered_glass` is consistent with its strong overall performance.
+- **False positives:** The `background` column shows that the model produces false-positive predictions, particularly for `scratch` (**0.53**) and `dent` (**0.20**). This suggests that the model frequently interprets visually ambiguous regions of otherwise undamaged images as scratches or dents.
+
+Overall, the confusion matrix supports the conclusion that the main challenge is not simply class imbalance but **visual ambiguity between damage types and between subtle damage and normal vehicle appearance**. In particular, the high false-positive rate for `scratch` and the relatively high confusion between `dent`, `scratch`, and `crack` indicate that these classes remain the principal sources of detection error.
 ### 8.3 Generalisation Check
 
 A validation-vs-test performance gap check has been prepared (Section 3.3) to detect whether the model, or the Optuna search itself, overfit to the validation split used throughout development. This is not yet available and is flagged as an open item in Section 10.
