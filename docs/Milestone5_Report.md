@@ -215,6 +215,9 @@ A clear, near-monotonic relationship emerged between `lr0` and validation mAP on
 
 ### 7.4 Final Selection
 
+![Hyperparameter](https://github.com/HiveCase/Group-1-DS-and-AI-Lab-Project/blob/main/data/images/hpt.png)
+
+
 `lr0=0.0001047`, `weight_decay=0.000292`, `degrees=5.5` - the best 5-epoch trial - trained for a full 40 epochs, producing the Tuned model reported in Sections 5-6. The 5-epoch proxy result (0.351) generalised sensibly to full training (0.449 at 40 epochs), indicating the short-trial search was not simply overfitting to the 5-epoch budget.
 
 ---
