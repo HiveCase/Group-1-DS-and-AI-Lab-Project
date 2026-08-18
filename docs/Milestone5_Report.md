@@ -163,6 +163,8 @@ These are the Tuned checkpoint's own per-class figures (`best.pt`, validation sp
 | shattered_glass | 325 | 0.819 | 0.622 | 0.775 | 0.553 |
 | flat_tyre | 365 | 0.550 | 0.341 | 0.529 | 0.302 |
 
+![Classwise distribution](https://github.com/HiveCase/Group-1-DS-and-AI-Lab-Project/blob/main/data/images/graph.png)
+
 ### 5.4 Training Curves
 
 Across both runs, training loss (`box_loss`, `seg_loss`, `cls_loss`) declined steadily with no reversals, and validation mAP50/mAP50-95 climbed with no plateau through the initial 40 epochs. `patience=15` (early stopping) did not trigger in either run - both ran their full configured epoch budget. Validation loss tracked training loss in the same direction throughout, with no divergence observed - i.e. no evidence of overfitting in the ranges trained.
