@@ -637,6 +637,6 @@ I have read and reviewed this submission in its entirety and confirm that it acc
 | Pranab Kumar Manna |13-08-2026 | PK Manna |
 | Venkata Siva Kamal Guddanti | 13-08-2026 | Kamal G |
 | Anuj Gautam | 13-08-2026 | Anuj Gautam |
-| Harsh Pal | | |
+| Harsh Pal |13-08-2026 |harshpal |
 
 ---
