@@ -661,11 +661,15 @@ Issues below were actually encountered and diagnosed during this project's devel
 
 ## 12. Contribution Summary
 
-> TODO: fill in manually — team members, add your contributions below.
+Full ownership/remarks breakdown: [`CONTRIBUTING.md`](CONTRIBUTING.md#contribution-table).
 
 | Name | Area(s) | Summary |
 | --- | --- | --- |
-| TODO | TODO | TODO |
+| Satyajeet Kumar | Data & Vision Pipeline | Problem-statement definition and requirement gathering; VehiDE dataset preprocessing (deduplication, PII scan, class remapping, letterboxing); YOLO11m-seg model training including the Optuna hyperparameter search across baseline/extended/tuned runs; milestone presentations and technical report authoring. Primary owner of the data/vision track end-to-end. |
+| Pranab Kumar Manna | Architecture, Backend, Orchestration, Deployment, Frontend | Problem-statement definition and requirement gathering; UI/UX wireframing; relational schema design; system architecture and project planning; LangGraph multi-agent orchestration; agent observability/monitoring; containerized/Kubernetes deployment; Vue 3 SPA implementation; pytest test suite; API design; CI/CD pipeline; and other backend/frontend code as committed. Primary architect and full-stack owner across the system. |
+| Venkata Siva Kamal Guddanti | RAG Retrieval | RAG retrieval pipeline implementation and evaluation (hybrid dense+sparse retrieval). Scope limited to RAG. |
+| Anuj Gautam | YOLO Fine-tuning | YOLO damage-detection model fine-tuning. Scope limited to YOLO fine-tuning. |
+| Harsh Pal | Frontend Exploration, Documentation, Testing | Frontend framework exploration (Vue 3 prototyping); technical report authoring; documentation; testing. Scope limited to frontend exploration. |
 
 ---
 
