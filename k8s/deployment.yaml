@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claims-portal
+  namespace: claims-portal
+  labels:
+    app: claims-portal
+spec:
+  # Kept at 1 on purpose: the app persists to a single SQLite file and a
+  # local-disk ChromaDB index (see PVC below), neither of which is safe to
+  # share across replicas. Scaling this out needs Postgres + a shared/hosted
+  # vector store first -- do not raise this without that migration.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: claims-portal
+  template:
+    metadata:
+      labels:
+        app: claims-portal
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: claims-portal
+          image: claims-portal:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: sqlite:////data/claims.db
+            - name: UPLOAD_DIR
+              value: /data/uploads
+            - name: MODEL_DIR
+              value: /app/models
+            - name: DATA_DIR
+              value: /data
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: claims-portal-secrets
+                  key: GROQ_API_KEY
+                  optional: true
+            - name: LANGFUSE_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: claims-portal-secrets
+                  key: LANGFUSE_PUBLIC_KEY
+                  optional: true
+            - name: LANGFUSE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: claims-portal-secrets
+                  key: LANGFUSE_SECRET_KEY
+                  optional: true
+          # YOLO + sentence-transformers + a per-policy RAG ingestion pass
+          # all run in-process at startup (see app/main.py's
+          # initialize_app_data), which is slow relative to a typical web
+          # app's boot time -- a startupProbe gives it room to finish
+          # without the readiness/liveness probes killing the pod mid-boot.
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1.5Gi
+            limits:
+              cpu: "2"
+              memory: 3Gi
+          volumeMounts:
+            - name: app-data
+              mountPath: /data
+      volumes:
+        - name: app-data
+          persistentVolumeClaim:
+            claimName: claims-portal-data

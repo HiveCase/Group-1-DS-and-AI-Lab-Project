@@ -1,0 +1,364 @@
+{
+  "results": {
+    "llama-3.3-70b-versatile": {
+      "n_claims": 10,
+      "schema_valid_rate": 1.0,
+      "class_coverage_complete_rate": 1.0,
+      "citation_validity_rate": 1.0,
+      "verdict_evidence_consistency_rate": 1.0,
+      "escalation_consistency_rate": 1.0,
+      "currency_violation_count": 0,
+      "multi_class_chunk_citation_flags": 13,
+      "negative_verdict_on_coverage_only_flags": 4,
+      "composite_score": 1.0,
+      "per_claim": {
+        "CLAIM_01_dent_minor_clean": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 1,
+          "valid_citations": 1,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00004"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_02_glass_severe_stone": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 2,
+          "valid_citations": 2,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00121",
+            "chunk_00122"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_03_flat_tyre_alone_no_body_damage": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 1,
+          "valid_citations": 1,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [],
+          "negative_verdict_on_coverage_only": [
+            {
+              "damage_class": "flat_tyre",
+              "verdict": "excluded"
+            }
+          ],
+          "issues": []
+        },
+        "CLAIM_04_multi_pileup_severe": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 5,
+          "valid_citations": 5,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00101",
+            "chunk_00102"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_05_scratch_vandalism_keyed": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 3,
+          "valid_citations": 3,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00048",
+            "chunk_00066"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_06_low_confidence_dent": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 1,
+          "valid_citations": 1,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00004"
+          ],
+          "negative_verdict_on_coverage_only": [
+            {
+              "damage_class": "dent",
+              "verdict": "conditional"
+            }
+          ],
+          "issues": []
+        },
+        "CLAIM_07_glass_vandalism_window": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 1,
+          "valid_citations": 1,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00057"
+          ],
+          "negative_verdict_on_coverage_only": [
+            {
+              "damage_class": "shattered_glass",
+              "verdict": "conditional"
+            }
+          ],
+          "issues": []
+        },
+        "CLAIM_08_crack_lamp_rearend": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 2,
+          "valid_citations": 2,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00121"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_09_multi_instance_hail_dents": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 1,
+          "valid_citations": 1,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00004"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_10_tyre_scratch_flood_debris": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 3,
+          "valid_citations": 3,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00149",
+            "chunk_00150"
+          ],
+          "negative_verdict_on_coverage_only": [
+            {
+              "damage_class": "flat_tyre",
+              "verdict": "conditional"
+            }
+          ],
+          "issues": []
+        }
+      }
+    },
+    "openai/gpt-oss-20b": {
+      "n_claims": 10,
+      "schema_valid_rate": 1.0,
+      "class_coverage_complete_rate": 1.0,
+      "citation_validity_rate": 1.0,
+      "verdict_evidence_consistency_rate": 1.0,
+      "escalation_consistency_rate": 1.0,
+      "currency_violation_count": 0,
+      "multi_class_chunk_citation_flags": 11,
+      "negative_verdict_on_coverage_only_flags": 2,
+      "composite_score": 1.0,
+      "per_claim": {
+        "CLAIM_01_dent_minor_clean": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 2,
+          "valid_citations": 2,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00004"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_02_glass_severe_stone": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 2,
+          "valid_citations": 2,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00121",
+            "chunk_00122"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_03_flat_tyre_alone_no_body_damage": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 1,
+          "valid_citations": 1,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [],
+          "negative_verdict_on_coverage_only": [
+            {
+              "damage_class": "flat_tyre",
+              "verdict": "conditional"
+            }
+          ],
+          "issues": []
+        },
+        "CLAIM_04_multi_pileup_severe": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 3,
+          "valid_citations": 3,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_05_scratch_vandalism_keyed": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 1,
+          "valid_citations": 1,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00048"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_06_low_confidence_dent": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 2,
+          "valid_citations": 2,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00004"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_07_glass_vandalism_window": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 2,
+          "valid_citations": 2,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00050"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_08_crack_lamp_rearend": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 2,
+          "valid_citations": 2,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00121"
+          ],
+          "negative_verdict_on_coverage_only": [
+            {
+              "damage_class": "crack",
+              "verdict": "excluded"
+            }
+          ],
+          "issues": []
+        },
+        "CLAIM_09_multi_instance_hail_dents": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 2,
+          "valid_citations": 2,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00004"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        },
+        "CLAIM_10_tyre_scratch_flood_debris": {
+          "schema_valid": true,
+          "class_coverage_complete": true,
+          "total_citations": 4,
+          "valid_citations": 4,
+          "citation_validity_rate": 1.0,
+          "verdict_evidence_consistent": true,
+          "escalation_consistent": true,
+          "currency_violations": [],
+          "multi_class_chunk_citations": [
+            "chunk_00149",
+            "chunk_00150",
+            "chunk_00155"
+          ],
+          "negative_verdict_on_coverage_only": [],
+          "issues": []
+        }
+      }
+    }
+  },
+  "best_model": "llama-3.3-70b-versatile"
+}

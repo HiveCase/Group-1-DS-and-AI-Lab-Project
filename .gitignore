@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+<<<<<<< HEAD
 
 # Secrets
 .env
@@ -12,6 +13,24 @@ venv/
 .agent
 .gitkeep
 
+=======
+specs-1/*
+specs/*
+.pytest_cache
+pytest.ini
+.specify
+.agents
+# Secrets
+.env
+!.env.example
+env/
+.agent
+.gitkeep
+
+
+__pycache__/
+frontend/node_modules/*
+>>>>>>> car-damage-claim-fulstack-developement
 # Jupyter
 .ipynb_checkpoints/
 
@@ -20,6 +39,15 @@ data/raw/*
 data/processed/*
 models/checkpoints/*
 outputs/*
+<<<<<<< HEAD
+=======
+data/ci_claims.db
+uploads-ci/
+backend/data/*
+backend/uploads-ci/
+backend/uploads/*
+.local-data/
+>>>>>>> car-damage-claim-fulstack-developement
 
 # Per-user runtime state. Never commit these: policies/ holds the documents
 # people upload (their own contracts) plus the vector index built from them,
@@ -31,4 +59,7 @@ data/user_policies/
 .gitkeep
 # Keep folder placeholders
 
+<<<<<<< HEAD
 !README.md
+=======
+>>>>>>> car-damage-claim-fulstack-developement

@@ -1,0 +1,158 @@
+{
+  "dent": {
+    "query": "Is dent damage covered under accidental external means?",
+    "top3": [
+      {
+        "chunk_id": "[Your vehicle is covered for loss or damage caused by:] (cid",
+        "clause_type": "coverage",
+        "damage_classes": "dent,scratch",
+        "distance": 0.3661,
+        "text_preview": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Accidental collision or impact - loss or damage caused"
+      },
+      {
+        "chunk_id": "[SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED] (cid:1",
+        "clause_type": "definition",
+        "damage_classes": "dent,scratch,crack,broken_lamp",
+        "distance": 0.3684,
+        "text_preview": "[SECTION I. LOSS OF OR DAMAGE TO THE VEHICLE INSURED] (cid:127) By accidental external means, including collision, impac"
+      },
+      {
+        "chunk_id": "[The Company shall not be liable to make any payment in resp",
+        "clause_type": "exclusion",
+        "damage_classes": "dent,scratch",
+        "distance": 0.3726,
+        "text_preview": "[The Company shall not be liable to make any payment in respect of:] 2. Dents, scratches, or panel damage arising solely"
+      }
+    ]
+  },
+  "scratch": {
+    "query": "Does the policy cover scratches and surface paint damage?",
+    "top3": [
+      {
+        "chunk_id": "[The following are excluded from this policy:] 3. Scratch da",
+        "clause_type": "exclusion",
+        "damage_classes": "scratch",
+        "distance": 0.2843,
+        "text_preview": "[The following are excluded from this policy:] 3. Scratch damage resulting from routine washing and cleaning activities "
+      },
+      {
+        "chunk_id": "[B. Exclusions Relating to Scratch and Paint Damage] insured",
+        "clause_type": "exclusion",
+        "damage_classes": "scratch",
+        "distance": 0.3294,
+        "text_preview": "[B. Exclusions Relating to Scratch and Paint Damage] insured event.\nB4. Scratches on internally fitted surfaces, door si"
+      },
+      {
+        "chunk_id": "[3.3 Scratch and paint exclusions] (cid:127) Scratch damage ",
+        "clause_type": "exclusion",
+        "damage_classes": "scratch",
+        "distance": 0.3364,
+        "text_preview": "[3.3 Scratch and paint exclusions] (cid:127) Scratch damage to the interior of the vehicle including seats, dashboard, a"
+      }
+    ]
+  },
+  "crack": {
+    "query": "Is cracking of bumper or body panels covered?",
+    "top3": [
+      {
+        "chunk_id": "[Your vehicle is covered for loss or damage caused by:] iden",
+        "clause_type": "coverage",
+        "damage_classes": "dent,crack",
+        "distance": 0.3475,
+        "text_preview": "[Your vehicle is covered for loss or damage caused by:] identifiable accidental or malicious event.\n(cid:127) Cracking o"
+      },
+      {
+        "chunk_id": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface d",
+        "clause_type": "coverage",
+        "damage_classes": "dent,scratch,crack,broken_lamp,shattered_glass",
+        "distance": 0.4038,
+        "text_preview": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface damage vandalism Exterior surfaces\nPanel fractures Cracks to "
+      },
+      {
+        "chunk_id": "[3.4 Crack exclusions] the policy period.\n(cid:127) Cracks i",
+        "clause_type": "exclusion",
+        "damage_classes": "crack",
+        "distance": 0.4129,
+        "text_preview": "[3.4 Crack exclusions] the policy period.\n(cid:127) Cracks in aftermarket accessories or non-standard body additions.\n(c"
+      }
+    ]
+  },
+  "broken_lamp": {
+    "query": "Are broken headlamps and tail lights covered?",
+    "top3": [
+      {
+        "chunk_id": "[D. Exclusions Relating to Lamp Damage] vehicle's regulatory",
+        "clause_type": "exclusion",
+        "damage_classes": "dent,broken_lamp",
+        "distance": 0.385,
+        "text_preview": "[D. Exclusions Relating to Lamp Damage] vehicle's regulatory lighting.\nD4. Discolouration, cloudiness, or UV hazing of p"
+      },
+      {
+        "chunk_id": "[Your vehicle is covered for loss or damage caused by:] (cid",
+        "clause_type": "coverage",
+        "damage_classes": "dent,broken_lamp,shattered_glass",
+        "distance": 0.4596,
+        "text_preview": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Breakage of headlight, taillight, or indicator units b"
+      },
+      {
+        "chunk_id": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface d",
+        "clause_type": "coverage",
+        "damage_classes": "dent,scratch,crack,broken_lamp,shattered_glass",
+        "distance": 0.461,
+        "text_preview": "[CHAPTER 1. COVERED EVENTS - OWN DAMAGE] Paint and surface damage vandalism Exterior surfaces\nPanel fractures Cracks to "
+      }
+    ]
+  },
+  "shattered_glass": {
+    "query": "Is windscreen and window glass damage covered?",
+    "top3": [
+      {
+        "chunk_id": "[The Company shall not be liable to make any payment in resp",
+        "clause_type": "exclusion",
+        "damage_classes": "scratch,crack,shattered_glass",
+        "distance": 0.3044,
+        "text_preview": "[The Company shall not be liable to make any payment in respect of:] 7. Windscreen scratches or minor surface marks on g"
+      },
+      {
+        "chunk_id": "[Your vehicle is covered for loss or damage caused by:] (cid",
+        "clause_type": "coverage",
+        "damage_classes": "dent,broken_lamp,shattered_glass",
+        "distance": 0.3331,
+        "text_preview": "[Your vehicle is covered for loss or damage caused by:] (cid:127) Breakage of headlight, taillight, or indicator units b"
+      },
+      {
+        "chunk_id": "[3.5 Glass Exclusions] (cid:127) Laminated windscreen separa",
+        "clause_type": "exclusion",
+        "damage_classes": "scratch,shattered_glass",
+        "distance": 0.3555,
+        "text_preview": "[3.5 Glass Exclusions] (cid:127) Laminated windscreen separation or delamination from age or manufacturing defect, recov"
+      }
+    ]
+  },
+  "flat_tyre": {
+    "query": "Is a flat tyre or tyre blowout covered under the policy?",
+    "top3": [
+      {
+        "chunk_id": "[The following are excluded from this policy:] 9. Any claim ",
+        "clause_type": "exclusion",
+        "damage_classes": "flat_tyre",
+        "distance": 0.3015,
+        "text_preview": "[The following are excluded from this policy:] 9. Any claim where the vehicle was driven with a tyre already known to be"
+      },
+      {
+        "chunk_id": "[3.7 Tyre exclusions] 9. GENERAL EXCEPTIONS\nThis policy does",
+        "clause_type": "exclusion",
+        "damage_classes": "flat_tyre",
+        "distance": 0.3899,
+        "text_preview": "[3.7 Tyre exclusions] 9. GENERAL EXCEPTIONS\nThis policy does not cover any claim arising from war, nuclear risk, use of "
+      },
+      {
+        "chunk_id": "[The following are excluded from this policy:] 8. Damage to ",
+        "clause_type": "exclusion",
+        "damage_classes": "flat_tyre",
+        "distance": 0.3918,
+        "text_preview": "[The following are excluded from this policy:] 8. Damage to tyres used beyond their rated load index or speed rating as "
+      }
+    ]
+  }
+}

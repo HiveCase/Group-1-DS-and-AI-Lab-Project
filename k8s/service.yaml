@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: claims-portal
+  namespace: claims-portal
+spec:
+  type: LoadBalancer
+  selector:
+    app: claims-portal
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000

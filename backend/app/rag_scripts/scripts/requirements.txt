@@ -1,0 +1,51 @@
+# Vision / EDA
+numpy==1.26.4
+pandas==2.3.3
+matplotlib==3.10.3
+seaborn
+Pillow==11.3.0
+
+# Policy PDF preprocessing (scripts/preprocess_policy_pdfs.py)
+pdfplumber==0.11.10
+langchain==1.2.7
+langchain-text-splitters==1.0.0
+tqdm==4.67.1
+
+# RAG retrieval (scripts/hybrid_retrieval.py, scripts/ingest_user_policy.py, scripts/report_context.py)
+sentence-transformers==5.0.0
+chromadb==1.0.12
+scikit-learn==1.7.1
+# Pin: transformers>=4.52 calls torch.get_default_device(), added in torch
+# 2.3. Newer transformers resolved without a matching torch bump breaks
+# SentenceTransformer.__init__ with "module 'torch' has no attribute
+# 'get_default_device'". Pinned back to a version that predates that call.
+transformers==4.46.3
+
+# Report Agent (scripts/report_agent.py) -- Groq Cloud via the OpenAI-compatible SDK
+openai==2.31.0
+python-dotenv==1.2.1
+
+# Claim pipeline (src/) -- LangGraph orchestration with checkpointed state
+langgraph==0.6.6
+# Pin: langgraph 0.6.6 requires langgraph-checkpoint<3.0.0. The current
+# langgraph-checkpoint-sqlite (3.x) pulls checkpoint 4.x and breaks that
+# constraint, so this stays on the 2.x line until langgraph itself moves.
+langgraph-checkpoint-sqlite==2.0.11
+
+# YOLO inference (src/inference/yolo_detector.py)
+ultralytics==8.4.115
+
+# RAGAs evaluation (scripts/ragas_eval.py) -- LLM-judge metrics layered on top
+# of the deterministic checks above (context_precision/recall, faithfulness,
+# answer_relevancy, answer_correctness). Judge/embeddings run through Groq via
+# the LangChain integration.
+ragas==0.3.9
+langchain-groq==0.3.2
+langchain-huggingface==0.3.0
+# Judge LLM for scripts/ragas_eval.py: gemini-2.5-flash, a third-party judge
+# independent of both report-generation models (Groq's llama-3.3-70b-versatile
+# and openai/gpt-oss-20b, see scripts/report_agent.py). Needs GOOGLE_API_KEY.
+langchain-google-genai==4.2.1
+
+# Tests
+pytest==9.1.1
