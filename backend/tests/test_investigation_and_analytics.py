@@ -5,8 +5,10 @@ from app.main import app
 from app.services.analytics_service import AnalyticsService
 from app.services.claim_service import ClaimService
 from app.services.investigation_service import InvestigationService
+from _auth_helpers import admin_auth_headers
 
 client = TestClient(app)
+client.headers.update(admin_auth_headers(client))
 
 
 def _submit_claim(policy_number='POL-001', claimed_amount=1200):

@@ -271,7 +271,7 @@ No evidence of overfitting was observed in any completed run (validation loss tr
 
 ## B5. Evaluation Summary
 
-**Per-class performance** (tuned checkpoint, validation split — [`Milestone5_Report.md`](Milestone5_Report.md) §5.2):
+**Per-class performance** (tuned checkpoint, **validation** split — [`notebooks/Milestone5_Report.ipynb`](Milestone5_Report.ipynb) cell 43's own `model.val()` output on the val set; not `Milestone5_Report.md` §5.2, which is the **test**-split table with slightly different figures — dent 0.290/scratch 0.288/crack 0.328 — see that report's §8.6 for how close the two splits are):
 
 | Class | Train instances | Mask mAP50 | Mask mAP50-95 |
 | --- | ---: | ---: | ---: |
@@ -281,6 +281,8 @@ No evidence of overfitting was observed in any completed run (validation loss tr
 | crack | 3,763 | 0.319 | 0.145 |
 | dent | 3,888 | 0.279 | 0.117 |
 | scratch | 10,070 | 0.297 | 0.114 |
+
+**Aggregate Mask mAP50 (0.449 above) overstates readiness for this application's most-needed classes.** `dent`, `scratch`, and `crack` — the most common, most claim-relevant damage types — score 0.279/0.297/0.319 here, well below the 0.449 aggregate; only `shattered_glass` and the mid-table classes pull the mean up. The same pattern holds on the test split (dent 0.290/scratch 0.288/crack 0.328 vs. a 0.447 aggregate — `Milestone5_Report.md` §5.2/§8.6). Treat per-class figures, not the aggregate, as the readiness signal for dent/scratch/crack specifically.
 
 **Key finding**: class-instance count does **not** predict per-class performance. `scratch` has the most training instances of any class (10,070) yet is among the worst-performing; `shattered_glass` has the fewest (1,513) yet performs best by a wide margin (2.7× `scratch`'s mask mAP50). The consistent explanation across both the primary (COCO) and comparative (CarDD) tracks — trained on different platforms, different hyperparameters, different pretraining sources, yet reproducing the identical class-difficulty ranking — is visual distinguishability: shattered glass has a strong, unambiguous visual signature; dents and scratches are subtle, low-contrast, and can resemble ordinary panel reflections or shadows. Full error analysis: [`Milestone5_Report.md`](Milestone5_Report.md) §8.
 
@@ -354,7 +356,7 @@ docker run --rm -p 8000:8000 -v ${PWD}/.local-data:/data claims-portal
 - **RAG is per-user, not a shared catalog.** An earlier design tried to infer which of a fixed set of catalog policies applied to a claim from the damage profile alone — a 315-case census measured only **20% top-1 accuracy**, so the catalog approach was dropped entirely: the claimant's own policy PDF is ingested into a private, per-policy ChromaDB collection instead of trying to solve policy identification ([`RAG_Component.md`](RAG_Component.md) §1).
 - **SQLite + local-disk ChromaDB caps the deployment at a single replica.** Scaling out needs a Postgres migration and a shared/hosted vector store first. The ChromaDB index also rebuilds inside the container's own filesystem on every restart (not on the mounted PVC), adding a few seconds of startup latency each time.
 - **`@tool`-wrapped services are an in-process registry, not real MCP.** `agent_toolkit.py`'s `@tool` decorators give each service function a name/schema (used to build the tool-calling options Groq sees during coordinator planning) but execution is a direct Python function call (`_call_tool`) — no client/server protocol boundary is crossed. See §A's comparison table.
-- **Two-tier auth (`user`/`admin`), not yet gating anything.** Signup/login (`POST /auth/signup`, `POST /auth/login`, bcrypt + JWT) exist and are enforced by the frontend router (unauthenticated visits redirect to `/login`), but no backend route currently requires the issued token — `/claims/*`, `/policies/*`, and `/analytics/*` remain open at the API layer regardless of login state. The `role` captured at signup is not yet tied to which of the four portals an account can reach.
+- **Two-tier auth (`user`/`admin`), enforced server-side.** Signup/login (`POST /auth/signup`, `POST /auth/login`, bcrypt + JWT) are enforced both by the frontend router (unauthenticated visits redirect to `/login`) and, since this was a real gap flagged in review, by the API itself: every `/claims/*`, `/policies/*`, and `/analytics/*` route depends on `get_current_user` or `require_admin` (`backend/app/core/security.py`), so a request bypassing the frontend entirely still gets `401`/`403`. `admin` gates the Adjuster/SIU/Supervisor routes specifically; public self-signup can only ever create `user` (the `role` field was removed from `SignupRequest` for exactly this reason — see `backend/app/routes/auth.py`). The seeded default admin (`admin@gmail.com`/`admin`) must be rotated before any real deployment. Per-user claim *ownership* is still not modeled — any logged-in `user` can look up any claim by ID.
 - **No LangGraph checkpointer wired in.** If the process restarts mid-analysis, the claim stays `pending`; `_fail_orphaned_pending_analyses` (`main.py`) marks it `failed` on the next startup rather than resuming it.
 
 ## B9. Error Handling & Monitoring
@@ -484,7 +486,7 @@ Start it with `cd backend && uvicorn app.main:app --reload --host 127.0.0.1 --po
 
 ## Authentication
 
-`POST /auth/signup` and `POST /auth/login` issue a JWT access token, but **no endpoint below currently requires it** — there is no `get_current_user` dependency applied to any route in this backend. Login/signup gates the *frontend's* routes (unauthenticated visits redirect to `/login`), not the API itself. See §B8.
+`POST /auth/signup` and `POST /auth/login` issue a JWT access token, and **every endpoint below except `/auth/*`, `/health`, and the annotated-photo route requires it** — `get_current_user`/`require_admin` (`backend/app/core/security.py`) reject a missing/invalid/expired token with `401` regardless of what the frontend does. See §B8.
 
 ## Endpoint reference
 

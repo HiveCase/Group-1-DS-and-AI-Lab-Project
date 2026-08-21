@@ -21,7 +21,7 @@ from app.routes.analytics import router as analytics_router
 from app.routes.auth import router as auth_router
 from app.routes.claims import router as claims_router
 from app.routes.policies import router as policies_router
-from app.services.auth_service import AuthService
+from app.services.auth_service import DEFAULT_ADMIN_EMAIL, AuthService
 from app.services.policy_clause_service import PolicyClauseService
 from app.services.policy_service import PolicyService
 
@@ -95,6 +95,12 @@ def initialize_app_data():
     try:
         PolicyService(db).seed_defaults()
         AuthService(db).seed_default_admin()
+        logger.warning(
+            "Seeded default admin account (%s / well-known demo password) -- this account can "
+            "reach every Adjuster/SIU/Supervisor endpoint. Rotate or delete it before any "
+            "deployment beyond local development.",
+            DEFAULT_ADMIN_EMAIL,
+        )
         _fail_orphaned_pending_analyses(db)
     finally:
         db.close()

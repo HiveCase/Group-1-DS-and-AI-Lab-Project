@@ -3,8 +3,10 @@ from fastapi.testclient import TestClient
 
 from app.db.database import engine
 from app.main import app
+from _auth_helpers import admin_auth_headers
 
 client = TestClient(app)
+client.headers.update(admin_auth_headers(client))
 
 
 def test_health_endpoint():

@@ -1,8 +1,0 @@
-{
-  "user_id": "POL-004",
-  "doc_id": "user_POL-004",
-  "source_pdf": "policy_4_autoguard_premium.pdf",
-  "n_chunks": 29,
-  "ingested_at": "2026-08-11T23:54:14",
-  "embedding_model": "all-MiniLM-L6-v2"
-}

@@ -11,9 +11,11 @@
       <nav>
         <router-link to="/" class="nav-link"><span class="pi pi-home" /> Home</router-link>
         <router-link to="/claimant" class="nav-link"><span class="pi pi-file" /> Claimant</router-link>
-        <router-link to="/adjuster" class="nav-link"><span class="pi pi-verified" /> Adjuster</router-link>
-        <router-link to="/siu" class="nav-link"><span class="pi pi-search" /> SIU</router-link>
-        <router-link to="/supervisor" class="nav-link"><span class="pi pi-chart-bar" /> Supervisor</router-link>
+        <template v-if="isAdmin">
+          <router-link to="/adjuster" class="nav-link"><span class="pi pi-verified" /> Adjuster</router-link>
+          <router-link to="/siu" class="nav-link"><span class="pi pi-search" /> SIU</router-link>
+          <router-link to="/supervisor" class="nav-link"><span class="pi pi-chart-bar" /> Supervisor</router-link>
+        </template>
       </nav>
     </aside>
     <div class="shell-body">
@@ -34,7 +36,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { currentUser, logout } from './services/auth';
+import { currentUser, isAdmin, logout } from './services/auth';
 
 const route = useRoute();
 const router = useRouter();

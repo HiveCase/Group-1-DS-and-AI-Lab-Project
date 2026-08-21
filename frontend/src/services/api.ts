@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { accessToken, logout } from './auth';
 
 const defaultBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? '/api' : '');
 
@@ -6,6 +7,31 @@ const client = axios.create({
   baseURL: defaultBaseUrl,
   timeout: 10000,
 });
+
+// Every route except /auth/*, /health, and the annotated-photo image now
+// requires a bearer token server-side -- attach it here rather than at
+// each call site, so it can never be forgotten on a new endpoint.
+client.interceptors.request.use((config) => {
+  if (accessToken.value) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${accessToken.value}`;
+  }
+  return config;
+});
+
+// A 401 means the token is missing/expired/invalid -- the stored session
+// is no longer good for anything, so clear it and send the user back to
+// log in rather than leaving them stuck on a page that will 401 forever.
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && window.location.pathname !== '/login') {
+      logout();
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  },
+);
 
 export async function lookupPolicy(policyNumber: string) {
   const response = await client.post('/policies/lookup', { policy_number: policyNumber });

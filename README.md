@@ -19,8 +19,12 @@
 2. [Environment Setup](#2-environment-setup)
 3. [Configuration & Secrets](#3-configuration--secrets)
 4. [Data & Inputs](#4-data--inputs)
+   - [Data already in this repository](#41-data-already-in-this-repository-no-download-needed)
+   - [Data you must download yourself](#42-data-you-must-download-yourself)
 5. [Running the Application](#5-running-the-application)
 6. [Model / Pipeline Execution](#6-model--pipeline-execution)
+   - [Retraining the damage-detection model](#64-retraining-the-damage-detection-model)
+   - [How the fraud score is computed](#65-how-the-fraud-score-is-computed)
 7. [End-to-End Reproducibility](#7-end-to-end-reproducibility)
 8. [Deployment Details](#8-deployment-details)
 9. [Evaluation & Results](#9-evaluation--results)
@@ -41,12 +45,12 @@ Source: ("Build a minimal AI-assisted car damage insurance claim portal with Cla
 - **YOLO damage detection**: an Ultralytics YOLO model (`backend/models/model.pt`) classifies `dent`, `scratch`, `crack`, `broken_lamp`, `shattered_glass`, `flat_tyre` (`backend/app/services/damage_detection_service.py`).
 - **Severity scoring**: deterministic area-ratio heuristic over the real photo dimensions, not the raw model confidence (`backend/app/services/severity_scoring_service.py`).
 - **RAG policy-clause retrieval**: hybrid dense (sentence-transformers) + sparse (TF-IDF) retrieval over per-policy ChromaDB collections built from the policy's own PDF wording (`backend/app/services/policy_clause_service.py`, wrapping the library under `backend/app/rag_scripts/src/`).
-- **LLM report synthesis**: Groq Cloud (`llama-3.3-70b-versatile` by default) produces the recommendation, confidence score, cited coverage, and a required `recommendation_reason` grounded in the retrieved clauses — with a deterministic fallback report if Groq is unavailable (`backend/app/services/report_synthesis_service.py`).
+- **LLM report synthesis**: Groq Cloud (`openai/gpt-oss-120b` by default — see `MODEL_NAME` in §3) produces the recommendation, confidence score, cited coverage, and a required `recommendation_reason` grounded in the retrieved clauses — with a deterministic fallback report if Groq is unavailable (`backend/app/services/report_synthesis_service.py`).
 - **Deterministic fraud scoring**: rule-based checks — claimant/policyholder name mismatch, expired or inactive policy, cumulative claimed amount exceeding the policy limit — that can force human review and even override an LLM "Approve" recommendation (`backend/app/services/fraud_agent_service.py`, `backend/app/services/langgraph_orchestrator.py`).
 - **LangGraph orchestration with an LLM planner**: a coordinator node with conditional edges to 5 agent nodes (damage detection, severity scoring, policy-clause retrieval, report synthesis, fraud assessment), each looping back to the coordinator; when more than one next step is valid, Groq picks which one runs next via constrained tool-calling, with a deterministic fallback (`backend/app/services/langgraph_orchestrator.py`).
 - **Langfuse observability**: every claim analysis is traced as one nested trace covering all five agents plus the coordinator's own planning decisions.
 - **Human-in-the-loop decisioning**: the AI pipeline only ever recommends; an adjuster's own decision (`approved`/`denied`/`under review`) is what changes claim status.
-- **Signup/login**: `POST /auth/signup` and `POST /auth/login` (bcrypt password hashing, JWT access tokens) — standalone infrastructure only; no existing route requires the resulting token yet (see the `users` table note below).
+- **Signup/login with enforced RBAC**: `POST /auth/signup` and `POST /auth/login` (bcrypt password hashing, JWT access tokens); every `/claims/*`, `/policies/*`, and `/analytics/*` route requires the resulting token, and the Adjuster/SIU/Supervisor portals require the `admin` role specifically — self-signup can only ever create a `user` account (see the `users` table note below).
 
 ### High-level architecture
 
@@ -250,8 +254,11 @@ Notes on real, non-obvious design decisions (verified in `models.py`, not ideali
 
 **What this does and doesn't do, precisely:**
 - ✅ A real account can be created and authenticated; the JWT payload carries `sub` (user id), `email`, and `role`.
-- ❌ **No route in the app actually requires authentication yet.** `/claims/*`, `/policies/*`, and `/analytics/*` remain fully open — signup/login exists as standalone infrastructure, not as a gate in front of anything. There is no `get_current_user` dependency applied to any existing route, and no frontend login page, token storage, or route guard (`frontend/src/router.js` has no navigation guards).
-- Only `email`/`password`/`role` are collected at signup; `role` must be one of `user`, `admin` (`backend/app/schemas/auth_schema.py::VALID_ROLES`) — invalid roles and duplicate emails are rejected with `422`. This is a two-tier role model, not one role per portal — it isn't currently tied to which of the four portals (Claimant/Adjuster/SIU/Supervisor) an account can reach.
+- ✅ **Every `/claims/*`, `/policies/*`, and `/analytics/*` route requires a valid bearer token**, enforced server-side by `Depends(get_current_user)` / `Depends(require_admin)` (`backend/app/core/security.py`) — a request without one gets `401`, not just a frontend redirect. The frontend attaches the token automatically (`frontend/src/services/api.ts`'s axios request interceptor) and logs out on a `401` response.
+- ✅ **The four portals are genuinely role-gated, both ends.** `admin` is the only role that can reach the Adjuster/SIU/Supervisor routes (`adjuster-dashboard`, `siu-dashboard`, `/{claim_id}/decision`, `/{claim_id}/siu-action`, `/analytics/summary` all require `require_admin`); `user` can reach the Claimant-facing routes (submit/list/lookup a claim). The frontend router (`frontend/src/router.js`) hides/redirects the same way, but that's a UX convenience — the backend check is what actually matters, and it's independent of what the frontend does.
+- ✅ **Public self-signup can only ever create a `user` account.** `role` is not part of the signup request (`backend/app/schemas/auth_schema.py::SignupRequest` has no `role` field) — a client cannot self-assign `admin` by sending one; the field is silently dropped. The only `admin` account is the one seeded at startup (see below).
+- One deliberate exception: `GET /claims/{claim_id}/annotated-photo` is not gated — it's rendered via a plain `<img src>`/`<a href>` in the Adjuster UI, and browsers don't attach an `Authorization` header to those requests. It exposes only a damage photo for a `claim_id` the caller already has, not claim data or the ability to act on a claim.
+- ⚠️ **A default admin account is seeded at every startup**: `admin@gmail.com` / `admin` (`AuthService.seed_default_admin`, logged as a warning on every startup). This is demo/grading convenience, not something to leave in place — **rotate or delete it before any deployment beyond local development.**
 
 ---
 
@@ -297,7 +304,8 @@ The backend reads configuration through `pydantic-settings` (`backend/app/core/c
 | `MODEL_DIR` | Where the YOLO weights are read from. | No (defaults to `backend/models`) |
 | `DATA_DIR` | Base data directory (created at startup). | No (defaults to `backend/data`) |
 | `GROQ_API_KEY` | Groq Cloud API key — powers report synthesis and the LangGraph coordinator's LLM planning. | **Effectively required** — without it, every claim gets the deterministic fallback report (`is_fallback: true`) instead of a real LLM assessment. |
-| `MODEL_NAME` | Overrides the Groq model (maps to `groq_model`). | No (defaults to `llama-3.3-70b-versatile`) |
+| `MODEL_NAME` | Overrides the Groq model (maps to `groq_model`). | No (defaults to `openai/gpt-oss-120b`; verified against `backend/app/core/config.py`) |
+| `GOOGLE_API_KEY` | Only needed to reproduce the RAGAs LLM-judge evaluation (`backend/app/rag_scripts/scripts/ragas_eval.py`, judge model `gemini-2.5-flash`). Not read by the running app. | No |
 | `GROQ_BASE_URL` | Groq's OpenAI-compatible API base URL. | No (defaults to `https://api.groq.com/openai/v1`) |
 | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` | Enables Langfuse tracing. Observability is silently disabled if either is missing. | No |
 | `LANGFUSE_HOST` or `LANGFUSE_BASE_URL` | Langfuse ingestion endpoint (both names accepted; `LANGFUSE_BASE_URL` is the one actually in `.env.example`). | No (defaults to `https://cloud.langfuse.com`) |
@@ -305,7 +313,7 @@ The backend reads configuration through `pydantic-settings` (`backend/app/core/c
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime. | No (defaults to `15`) |
 | `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | Present in config for a future refresh-token flow — **no refresh-token endpoint exists yet**, so this value isn't consumed anywhere yet. | No (defaults to `7`) |
 
-**`.env.example` exists at the repo root, but is still partially stale**: `JWT_SECRET_KEY`, `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`, and `JWT_REFRESH_TOKEN_EXPIRE_DAYS` are now real (table above). `MAX_UPLOAD_SIZE_MB`, `CHROMA_PERSIST_DIR`, `LLM_PROVIDER`, `USE_LANGGRAPH`, `MOCK_LLM_FAIL_AGENT`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OLLAMA_MODEL`, and `OLLAMA_BASE_URL` are still **not read anywhere in `backend/app`** (verified by grep against the `Settings` class). TODO: fill in manually — confirm with the team whether to prune the remaining unused entries from `.env.example`, or whether they map to other planned-but-unbuilt features.
+`.env.example` at the repo root lists exactly the variables `Settings` (`backend/app/core/config.py`) reads, plus `GOOGLE_API_KEY` (needed only to reproduce the RAGAs evaluation, not by the running app). Every value in it is a placeholder — copy it to `.env` and fill in real secrets there; never commit a real `.env`.
 
 ### API key setup
 
@@ -317,12 +325,22 @@ The backend reads configuration through `pydantic-settings` (`backend/app/core/c
 
 ## 4. Data & Inputs
 
-- **Seed policies**: 5 fictional policies (`POL-001`–`POL-005`), each with a policy holder name, coverage type, status, effective/expiry dates, and a policy limit — seeded automatically at startup (`backend/app/services/policy_service.py::SEED_POLICIES`).
+### 4.1 Data already in this repository (no download needed)
+
+- **Seed policies**: 5 fictional policies (`POL-001`–`POL-005`), each with a policy holder name, coverage type, effective/expiry dates, and a policy limit — seeded automatically at startup (`backend/app/services/policy_service.py::SEED_POLICIES`). `status` is a derived value (`active`/`pending`/`expired`) computed from those dates against the current date, not stored.
 - **Policy wording PDFs**: each seeded policy maps to a synthetic PDF under `backend/app/rag_scripts/data/policy_pdfs/synthetic/` (e.g. `policy_1_bharat_suraksha.pdf`). These are explicitly synthetic specimen documents (per their own PDF text: "This is a synthetic specimen policy for research and educational use only. Not a valid insurance contract."), auto-ingested into per-policy ChromaDB collections on first app startup (`PolicyClauseService.ensure_all_seeded_policies_ingested`).
-- **Damage detection model**: `backend/models/model.pt` (~45MB YOLO weights), loaded directly at inference time. **No training script exists in this repository** — the model is a pre-trained artifact. TODO: fill in manually — document what dataset/pipeline produced `model.pt` (an unused `backend/models/model_old.pt`, ~95MB, also sits in the repo).
-- **Claim photos**: uploaded by the claimant (1–5 required per claim), stored under `UPLOAD_DIR` at `<upload_dir>/<claim_id>/<uuid>.<ext>` (`backend/app/services/photo_storage_service.py`).
+- **Damage detection model**: `backend/models/model.pt` (~45MB YOLO weights), committed directly and loaded at inference time — no download needed to run the app. `backend/models/model_old.pt` (~95MB) is a superseded checkpoint kept for reference; the running app never loads it.
+- **RAG evaluation fixtures**: `backend/app/rag_scripts/data/chroma_db/` (a prebuilt 185-chunk vector index) and `backend/app/rag_scripts/data/rag_outputs/` (chunk corpus, evaluation results, parameter-sweep results) are committed on purpose — they are the reproducibility fixtures the numbers in §9 are generated from, not regenerable runtime state.
+- **Claim photos**: uploaded by the claimant (1–5 required per claim) at runtime, stored under `UPLOAD_DIR` at `<upload_dir>/<claim_id>/<uuid>.<ext>` (`backend/app/services/photo_storage_service.py`); not part of the committed dataset.
+
+### 4.2 Data you must download yourself
+
+- **VehiDE** (Vehicle Damage Detection Dataset, Kaggle, Apache-2.0) — the dataset the damage-detection model (`backend/models/model.pt`) was fine-tuned on. **Not committed** (13k+ images, too large). The training notebook, [`notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`](notebooks/Yolov11m_Training&HyperparameterTuning.ipynb), downloads it itself via `kagglehub.dataset_download("m4rcuseryx/vehide-segmentation-dataset")` — this needs a free Kaggle account and API credentials (`~/.kaggle/kaggle.json`, or the `KAGGLE_USERNAME`/`KAGGLE_KEY` environment variables; see [kagglehub's auth docs](https://github.com/Kaggle/kagglehub)). The notebook itself is written for **Google Colab** (`google.colab.drive`, a T4 GPU runtime) — see §6.4 for exactly how to run it.
+
+### 4.3 Data format and standalone tooling
+
 - **Data format**: claim submission accepts either `multipart/form-data` (with photo files) or `application/json` (no photos) — see §5 for the exact field list.
-- **Standalone RAG tooling** (not wired into the running app; CLI scripts under `backend/app/rag_scripts/scripts/`): `preprocess_policy_pdfs.py`, `ingest_user_policy.py`, `chunk_quality_analysis.py`, `ragas_eval.py`, `sweep_rag_params.py`, and others — these were used to develop/evaluate the retrieval pipeline (`src/retrieval/*.py`) but are not invoked at runtime.
+- **Standalone RAG tooling** (not wired into the running app; CLI scripts under `backend/app/rag_scripts/scripts/`, with their own additional `requirements.txt`): `preprocess_policy_pdfs.py`, `ingest_user_policy.py`, `chunk_quality_analysis.py`, `ragas_eval.py`, `sweep_rag_params.py`, and others — these were used to develop/evaluate the retrieval pipeline (`src/retrieval/*.py`) and to reproduce the evaluation numbers in §9, but are not invoked at runtime by the app itself. Full instructions: [`backend/app/rag_scripts/README.md`](backend/app/rag_scripts/README.md).
 
 ---
 
@@ -346,10 +364,17 @@ Open `http://localhost:5173` (Vite proxies `/api/*` to the backend on `127.0.0.1
 
 ### Example requests
 
+Every route below except `/auth/*` and `/health` needs a bearer token — log in first (see the
+signup/login example further down) and export it:
+```bash
+export TOKEN="<access_token from /auth/login>"
+```
+
 Policy lookup:
 ```bash
 curl -X POST http://127.0.0.1:8000/policies/lookup \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{"policy_number": "POL-001"}'
 ```
 
@@ -357,6 +382,7 @@ Submit a claim (JSON, no photos):
 ```bash
 curl -X POST http://127.0.0.1:8000/claims \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{
     "policy_number": "POL-001",
     "claimant_name": "Ada Lovelace",
@@ -391,30 +417,32 @@ curl http://127.0.0.1:8000/health
 
 Full endpoint list (`backend/app/routes/`):
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/policies/lookup` | Look up a policy by number |
-| POST | `/claims` | Submit a new claim (multipart or JSON) |
-| GET | `/claims` | List claims (optional `?status=`) |
-| GET | `/claims/{claim_id}` | Get a claim |
-| GET | `/claims/{claim_id}/detail` | Get a claim plus its AI analysis result |
-| GET | `/claims/{claim_id}/annotated-photo` | The claim's primary photo with detected-damage boxes drawn on it |
-| POST | `/claims/{claim_id}/decision` | Adjuster records approve/deny/request-more-info |
-| GET | `/claims/adjuster-dashboard` | Pending claims for the adjuster portal |
-| GET | `/claims/siu-dashboard` | Claims with `fraud_score >= 0.65` for the SIU portal |
-| POST | `/claims/{claim_id}/siu-action` | SIU opens/updates an investigation |
-| GET | `/analytics/summary` | Supervisor portfolio analytics |
-| POST | `/auth/signup` | Create an account (`email`, `password`, `role`) |
-| POST | `/auth/login` | Authenticate, returns a JWT access token |
-| GET | `/health` | Liveness/readiness check |
+| Method | Path | Purpose | Auth required |
+| --- | --- | --- | --- |
+| POST | `/policies/lookup` | Look up a policy by number | Any logged-in user |
+| POST | `/claims` | Submit a new claim (multipart or JSON) | Any logged-in user |
+| GET | `/claims` | List claims (optional `?status=`) | Any logged-in user |
+| GET | `/claims/{claim_id}` | Get a claim | Any logged-in user |
+| GET | `/claims/{claim_id}/detail` | Get a claim plus its AI analysis result | Any logged-in user |
+| GET | `/claims/{claim_id}/annotated-photo` | The claim's primary photo with detected-damage boxes drawn on it | **None** (see §1 users-table note for why) |
+| POST | `/claims/{claim_id}/decision` | Adjuster records approve/deny/request-more-info | `admin` role |
+| GET | `/claims/adjuster-dashboard` | Pending claims for the adjuster portal | `admin` role |
+| GET | `/claims/siu-dashboard` | Claims with `fraud_score >= 0.65` for the SIU portal | `admin` role |
+| POST | `/claims/{claim_id}/siu-action` | SIU opens/updates an investigation | `admin` role |
+| GET | `/analytics/summary` | Supervisor portfolio analytics | `admin` role |
+| POST | `/auth/signup` | Create an account (`email`, `password` — always creates role `user`) | None |
+| POST | `/auth/login` | Authenticate, returns a JWT access token | None |
+| GET | `/health` | Liveness/readiness check | None |
 
-None of the routes above `/auth/*` currently require the resulting token — see the `users` table note in §1 for exactly what is and isn't wired up.
+Every route above except `/auth/*`, `/health`, and the annotated-photo exception requires
+`Authorization: Bearer <access_token>` (`backend/app/core/security.py::get_current_user` /
+`require_admin`) — see the `users` table note in §1 for the full detail.
 
 Signup / login example:
 ```bash
 curl -X POST http://127.0.0.1:8000/auth/signup \
   -H "Content-Type: application/json" \
-  -d '{"email": "user1@example.com", "password": "supersecret1", "role": "user"}'
+  -d '{"email": "user1@example.com", "password": "supersecret1"}'
 
 curl -X POST http://127.0.0.1:8000/auth/login \
   -H "Content-Type: application/json" \
@@ -430,7 +458,7 @@ Entry point: `LangGraphClaimOrchestrator.run(claim, policy)` in `backend/app/ser
 
 Pipeline (a LangGraph `StateGraph` coordinator loop with conditional edges to each agent node, not a flat chain):
 
-1. **Damage detection** — YOLO inference on each uploaded photo (`DamageDetectionService`).
+1. **Damage detection** — YOLO inference on each uploaded photo (`DamageDetectionService`), followed by occlusion-sensitivity saliency (`DamageDetectionService.explain_detection`) for up to the top 3 detections: each one re-runs full YOLO inference on the whole image once per cell of a 4×4 occlusion grid (up to 16 extra model calls per detection, so up to ~48 total) to show which pixels actually drove that classification. This is the single most expensive part of the pipeline — see the runtime note below.
 2. **Severity scoring** and **Policy clause retrieval** — both become valid once detection finishes; when both are available, Groq's coordinator picks which runs next via constrained tool-calling (falls back to a fixed order if Groq is unavailable).
 3. **Report synthesis** — Groq LLM call producing `damage_table`, `applicable_coverage` (with clause citations), `recommendation`, `recommendation_reason`, `confidence_score`, `next_steps`.
 4. **Fraud assessment** — deterministic rule checks; can force `needs_human_review` and can override an "Approve" recommendation to "Investigate" if the policy was inactive/expired at the incident date.
@@ -438,11 +466,47 @@ Pipeline (a LangGraph `StateGraph` coordinator loop with conditional edges to ea
 
 **Model/checkpoint loading**: the YOLO model is loaded lazily on first use and cached on the service instance (`DamageDetectionService._load_model`); the sentence-transformers embedding model (`all-MiniLM-L6-v2`) downloads from the Hugging Face Hub on first use and is cached locally by `sentence-transformers` itself.
 
-**Approximate runtime**: TODO: fill in manually for a rigorous benchmark. Observed during development (not a formal measurement): a few seconds end-to-end when Groq responds normally; tens of seconds to minutes if Groq is rate-limited (3 retries with backoff) or the sentence-transformers model needs to download on a cold start.
+**Approximate runtime**: TODO: fill in manually for a rigorous benchmark. Observed during development (not a formal measurement): dominated by step 1's saliency computation, not the LLM call — each YOLO inference pass takes ~2-4s on CPU, and a claim with 2-3 detections can trigger 30-48 of them for saliency alone, so **tens of seconds to a few minutes is normal even when Groq responds instantly**; this is why `analysis_result.status` can stay `pending` for a while and the frontend's poll loop keeps firing during that whole window, not evidence of a stuck or looping claim. Add Groq rate-limiting (3 retries with backoff) or a cold-start sentence-transformers download on top, and total time can run longer still.
+
+### 6.4 Retraining the damage-detection model
+
+`backend/models/model.pt` is a committed artifact — retraining it is **not** part of running the app and is not automated by any local script, because the training pipeline needs a GPU and a Kaggle account:
+
+1. Open [`notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`](notebooks/Yolov11m_Training&HyperparameterTuning.ipynb) in **Google Colab** (it uses `google.colab.drive` and expects a T4 GPU runtime — Runtime → Change runtime type → T4 GPU).
+2. Run Section 1 ("Setup — Libraries, Configuration & Data Download"). It `pip install`s `ultralytics`/`kagglehub` and downloads the VehiDE dataset itself via `kagglehub.dataset_download("m4rcuseryx/vehide-segmentation-dataset")` — this prompts for Kaggle credentials on first run (see §4.2).
+3. Run the remaining sections in order: EDA → preprocessing → the 12-trial Optuna hyperparameter search (`seed=42`, ~9.6 hours across all trials on a T4) → the final 40-epoch training run (~5.9 hours) → validation metrics.
+4. The notebook's final checkpoint (`best.pt`) is the retrained model. Replace `backend/models/model.pt` with it to use it in the running app.
+
+This reproduces the training numbers in `docs/Milestone4_Report.md`/`docs/Milestone5_Report.md`, but **not** the earlier from-scratch VehiDE preprocessing (dedup, PII scan, letterboxing) — that pipeline's scripts are not in this repository, only its output as described in those reports (see `docs/Comprehensive_Technical_Documentation.md` §F for the same caveat).
+
+### 6.5 How the fraud score is computed
+
+`fraud_score` (0.0–1.0, surfaced in `analysis_result.fraud_score` and `report_json.fraud_assessment`) comes entirely from `FraudAgentService.assess_fraud_risk` (`backend/app/services/fraud_agent_service.py`) — a hand-written deterministic rule engine, **not a trained or statistically fitted model**. Full order of operations:
+
+1. **Baseline**: `severity_score + 0.10` (plus `+0.01` if the claimed amount exceeds $10,000), floored at 0.15 and capped at 0.99. A more severely damaged, more expensive claim starts higher purely from these two facts.
+2. **Risk-keyword check**: `+0.15` if the incident description contains "fire" or "fraud" verbatim.
+3. **Narrative red flags**: `+0.05` per LLM-extracted, verbatim-grounded red-flag phrase found in the free-text description (capped at `+0.15` total) — grounded, not a raw LLM opinion: the caller must have already verified each flagged quote is a real substring of the description before it reaches this step.
+4. **Name mismatch**: `+0.25` if the claimant's name and the policy's holder-of-record share no common token.
+5. **Policy inactive/expired**: `+0.3` if the policy's status wasn't `active`, or its expiry date was before the incident date.
+6. **Cumulative amount exceeds policy limit**: `+0.2` if this claim plus the policyholder's other non-denied claims exceed the policy limit.
+7. **Confidence dampening**: the running total is scaled by `(1 − confidence_score × 0.2)` — a more confident report synthesis slightly *reduces* the score, on the reasoning that a well-grounded assessment is itself weak evidence against fraud.
+
+`needs_investigation` is `true` if any hard-rule signal fired (steps 2–6) **or** the final score is `≥ 0.65` — the same 0.65 threshold used to populate the SIU dashboard (`SIU_FRAUD_THRESHOLD` in `backend/app/routes/claims.py`). Every step above is recorded in order in `fraud_assessment.score_breakdown`, so an adjuster/SIU reviewer can see exactly which factors moved the score and by how much, not just the final number.
+
+**How to interpret it**: think of it as a triage/prioritization signal, not a fraud probability in any calibrated statistical sense — nothing in this repository validates these specific weights (0.25 for a name mismatch, 0.3 for policy inactivity, etc.) against real confirmed-fraud outcomes; they were chosen by hand, not fit to labeled data. The claims/policy dataset here is a small seeded synthetic set (§4), so there's no real-world fraud base rate to calibrate against even if the intent were to do so. Treat a high score as "route to a human for a specific, explainable reason" (visible in `score_breakdown`), not as evidence the claim is actually fraudulent.
 
 ---
 
 ## 7. End-to-End Reproducibility
+
+**A single entry-point script** (`scripts/reproduce.py`, from the repo root) runs the steps below in sequence — installs backend deps, seeds/verifies the database, runs the full backend test suite (which exercises the real 5-agent pipeline end-to-end), and runs the no-API-key RAG retrieval evaluation from §9. It skips (with a clear message, not a silent no-op) anything that needs a key you haven't set or that this script cannot automate (frontend `npm` steps, YOLO retraining — see §6.4):
+
+```bash
+python scripts/reproduce.py --help    # see all flags
+python scripts/reproduce.py           # run everything it can
+```
+
+The manual, step-by-step equivalent (useful if you want to see each step individually, or the script doesn't fit your platform):
 
 ```bash
 # 1. Clone
@@ -473,7 +537,15 @@ npm run dev
 # 7. Verify with the test suites
 cd ../backend && python -m pytest -q
 cd ../frontend && npm test
+
+# 8. Reproduce the RAG evaluation metrics reported in §9 (optional, no API
+#    key needed for retrieval-only; see backend/app/rag_scripts/README.md
+#    for the report-generation/RAGAs evals, which do need one)
+cd ../backend/app/rag_scripts
+PYTHONPATH=. python scripts/hybrid_retrieval.py --evaluate
 ```
+
+This exact sequence (via `scripts/reproduce.py`) has been run end-to-end against this repository (backend test suite: 69 passed / 0 skipped with a live `GROQ_API_KEY` configured, 67 passed / 2 skipped without one; retrieval eval: mean P@3 ≈0.91, 0 zero-hit incidents). See [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) for the record of an **independent** verification — a fresh clone reproduced by a team member who was not primarily responsible for assembling this repository, as distinct from the run above.
 
 ---
 
@@ -518,9 +590,21 @@ Open `http://localhost:8000`.
 
 ## 9. Evaluation & Results
 
-- No automated evaluation suite runs as part of CI. `backend/app/rag_scripts/scripts/ragas_eval.py`, `eval_report_agent.py`, `sweep_rag_params.py`, and `sweep_significance.py` are standalone CLI tools used during development of the retrieval pipeline — they are not invoked by the test suite or CI workflow, and have their own separate dependencies/usage not documented here. TODO: fill in manually if these should be run as part of a documented evaluation process.
+Key reported results and exactly how to reproduce each one:
+
+| Result | Value | How to reproduce | Needs |
+| --- | --- | --- | --- |
+| RAG retrieval (50 incidents, 5-policy corpus) | Mean P@3 **0.9133**, MRR@5 **0.9767**, 0/50 zero-hit | `cd backend/app/rag_scripts && PYTHONPATH=. python scripts/hybrid_retrieval.py --evaluate` — verified reproducing (0.907/0.977) on a fresh run in this repository, small drift expected across dependency versions | Nothing (runs against the committed `data/chroma_db/` index) |
+| Report faithfulness (10 claims, 2 models) | Composite **1.00**, 0 fabricated currency figures | `PYTHONPATH=. python scripts/eval_report_agent.py` (same directory) | `GROQ_API_KEY` |
+| RAGAs LLM-judge (context_precision, faithfulness, answer_relevancy, answer_correctness) | See `backend/app/rag_scripts/README.md` §3 | `PYTHONPATH=. python scripts/ragas_eval.py --all` (same directory) | `GROQ_API_KEY`, `GOOGLE_API_KEY` |
+| YOLO11m-seg damage detection (validation split) | Box mAP50 0.485, Mask mAP50 0.449 (tuned vs. 0.438/0.401 baseline) | Re-run [`notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`](notebooks/Yolov11m_Training&HyperparameterTuning.ipynb) — see §6.4 | Google Colab (T4 GPU), Kaggle account |
+| Backend test suite | 67 passed / 2 skipped without a live Groq key; **69 passed / 0 skipped** with one (verified) | `cd backend && python -m pytest -q` — the 2 conditional tests are a real Groq call and a real embedding-retrieval call, skipped (not failed) when their service is unavailable | Nothing required; `GROQ_API_KEY` unlocks the 2 conditional tests |
+
+Full methodology, per-class breakdowns, and the provisional/validation-vs-test-split caveats behind the YOLO numbers: `docs/Milestone4_Report.md`, `docs/Milestone5_Report.md`, `docs/Comprehensive_Technical_Documentation.md` §B4–B5. Full RAG methodology and the RAGAs numbers per generator model: `backend/app/rag_scripts/README.md` §3, `docs/RAG_Component.md`.
+
+- No automated evaluation suite runs as part of CI — the table above is run manually (or via `scripts/reproduce.py`, §7), not on every push.
 - Langfuse provides live per-claim tracing (each of the 5 agents plus the coordinator's planning decisions as nested spans/generations under one trace) rather than batch metrics.
-- **Known limitations**: all 5 policy documents are synthetic specimens explicitly marked "not a valid insurance contract"; the fraud-scoring model is a hand-written rule engine, not a trained classifier; the claims/policy dataset is a small seeded set (5 policies), not a representative production sample.
+- **Known limitations**: all 5 policy documents are synthetic specimens explicitly marked "not a valid insurance contract"; the fraud-scoring model is a hand-written rule engine, not a trained classifier; the claims/policy dataset is a small seeded set (5 policies), not a representative production sample; the YOLO numbers above are validation-split, not test-split (see `docs/Milestone5_Report.md` §10).
 
 ---
 
@@ -591,7 +675,8 @@ Sourced from `specs/001-claims-portal/tasks.md` and gaps identified during devel
 
 - **No LangGraph checkpointing** (task T037) — analysis state doesn't survive a process restart mid-run.
 - **No automated end-to-end / manual validation script** covering all four portals (task T081) — the backend/frontend test suites cover units and key flows, but there's no scripted full walkthrough.
-- **Signup/login exist (`/auth/signup`, `/auth/login`), but nothing enforces them yet** — no route requires the issued JWT, there's no `get_current_user` dependency applied anywhere, and the frontend has no login page, token storage, or route guards. All four portals remain reachable by anyone; role-based access control (using the `role` already captured at signup) is the natural next step but is not built.
+- **Per-user claim ownership is still not modeled.** RBAC now gates *which portals* a role can reach (see the `users` table note in §1), but there's no foreign key from `Claim` to `users` yet — any logged-in `user` can look up or list any claim by ID, not just their own. Scoping claim visibility to the submitting account is the natural next step.
+- **The seeded default admin (`admin@gmail.com` / `admin`) must be rotated or removed before any real deployment** — it's demo/grading convenience, flagged with a startup warning, not a credential meant to survive past local development.
 - **No database migration tooling** — schema evolution goes through a homegrown `sync_sqlite_schema()` (`ADD COLUMN`-only) helper in `backend/app/db/database.py`, not Alembic; it cannot handle column removals, type changes, or renames, and destructive schema changes (e.g. removing a `UNIQUE` constraint) require a manual one-off migration function (see `_rename_legacy_policy_clauses_table`/`_restore_legacy_policy_clauses_rows` in the same file for a precedent).
 - **SQLite + local-disk ChromaDB** cap the deployment at a single replica; horizontal scaling needs a Postgres migration and a shared/hosted vector store first (see `k8s/deployment.yaml` comments).
 - **No HPA (Horizontal Pod Autoscaler)** configured, for the same reason.

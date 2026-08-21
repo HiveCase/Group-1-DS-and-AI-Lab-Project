@@ -1,11 +1,16 @@
 # RAG — Policy Agent (Retrieval-Augmented Generation)
 
-Isolated view of the RAG workstream from the vehicle-damage insurance claim project. This is
-an **orphan branch**: no shared history with `main`, containing only the retrieval, generation
-and evaluation components plus the data they need.
+Isolated view of the RAG workstream from the vehicle-damage insurance claim project. This
+document originates on a standalone **orphan branch** with no shared history with `main`
+(retrieval, generation, and evaluation components plus the data they need, with vision/YOLO and
+the multi-agent orchestration graph deliberately excluded as separate workstreams).
 
-Vision (YOLO training/inference, VehiDE/CarDD datasets) and the multi-agent orchestration graph
-are deliberately excluded — they are separate workstreams on `main`.
+**On `main`, this same content lives at `backend/app/rag_scripts/`** inside the full application
+— all commands in §5 below are given relative to that directory (`cd backend/app/rag_scripts`
+first), not repo root. `src/retrieval/*` here is genuinely used at runtime by the live app
+(`backend/app/services/policy_clause_service.py` imports it directly via a `sys.path` bootstrap,
+not a copy); `scripts/` is a standalone research/evaluation CLI toolkit the running app never
+calls.
 
 ---
 
@@ -142,20 +147,52 @@ data/eval/           reference_reports.json — hand-written reference verdicts 
 
 ## 5. Running it
 
+All commands below are relative to **this directory** (`backend/app/rag_scripts/` on `main`),
+not the repo root — `cd` here first. `scripts/` has its own, additional dependency set beyond
+`backend/requirements.txt` (heavier eval-only packages: `ragas`, `langchain-google-genai`, …).
+
 ```bash
-pip install -r requirements.txt
-cp .env.example .env          # add GROQ_API_KEY for report generation, GOOGLE_API_KEY for RAGAs
+cd backend/app/rag_scripts
+pip install -r scripts/requirements.txt
+cp ../../../../.env.example ../../../../.env   # from repo root; add GROQ_API_KEY, GOOGLE_API_KEY
+```
 
-PYTHONPATH=. python3 scripts/preprocess_policy_pdfs.py     # rebuild the corpus + index
-PYTHONPATH=. python3 scripts/hybrid_retrieval.py --evaluate # 50-incident retrieval eval
-PYTHONPATH=. python3 scripts/ingest_user_policy.py          # per-user ingestion
-PYTHONPATH=. python3 scripts/eval_report_agent.py           # faithfulness eval (needs API key)
-PYTHONPATH=. python3 scripts/ragas_eval.py --all             # LLM-judge eval (needs GOOGLE_API_KEY)
+**Retrieval evaluation — no API key needed, runs against the committed `data/chroma_db/` index.**
+Verified working from a fresh environment; reproduces the P@3/MRR figures in §3 above (small
+drift, e.g. 0.907 vs. 0.9133, is expected across dependency-version/embedding-cache differences,
+not a broken pipeline):
+```bash
+PYTHONPATH=. python scripts/hybrid_retrieval.py --evaluate
+```
+**Note:** the first run against this index with the pinned `chromadb` version rewrites
+`data/chroma_db/*.bin` and `chroma.sqlite3` in place (observed: `data_level0.bin` compacted from
+~16.7MB to ~168KB, no change in evaluation results) — `git status` will show the fixture as
+modified afterwards. This is chromadb's own on-load index migration, not data loss; `git checkout
+-- data/chroma_db/` restores the originally-committed bytes if you want a clean tree, and re-running
+the evaluation against the rewritten files still reproduces the same numbers.
 
-PYTHONPATH=. python3 scripts/sweep_rag_params.py --with-chunking  # sweeps A–F
-PYTHONPATH=. python3 scripts/sweep_significance.py                # bootstrap comparisons
-PYTHONPATH=. python3 scripts/chunk_quality_analysis.py            # chunk-quality metrics
-PYTHONPATH=. python3 scripts/check_real_policy_parse.py           # synthetic vs real policies
+**Rebuilding the corpus + index from the source PDFs** (`--pdf_dir`/`--output_dir` are required,
+not defaulted — run `python scripts/preprocess_policy_pdfs.py --help` for the full flag list):
+```bash
+PYTHONPATH=. python scripts/preprocess_policy_pdfs.py \
+  --pdf_dir data/policy_pdfs/synthetic \
+  --output_dir data/rag_outputs
+```
+
+**Report-generation and LLM-judge evaluations** (each needs the API key noted; skips/fails
+clearly without one rather than silently producing empty results):
+```bash
+PYTHONPATH=. python scripts/eval_report_agent.py     # faithfulness eval -- needs GROQ_API_KEY
+PYTHONPATH=. python scripts/ragas_eval.py --all       # RAGAs LLM-judge -- needs GOOGLE_API_KEY
+```
+
+**Parameter sweeps and other analyses:**
+```bash
+PYTHONPATH=. python scripts/sweep_rag_params.py --with-chunking  # sweeps A–F
+PYTHONPATH=. python scripts/sweep_significance.py                # bootstrap comparisons
+PYTHONPATH=. python scripts/chunk_quality_analysis.py            # chunk-quality metrics
+PYTHONPATH=. python scripts/check_real_policy_parse.py           # synthetic vs real policies
+PYTHONPATH=. python scripts/ingest_user_policy.py --help         # per-user ingestion (see --help for required args)
 ```
 
 Everything is deterministic; the bootstrap is seeded (`seed=20260807`). Sweeps A–E finish in

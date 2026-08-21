@@ -1,8 +1,0 @@
-{
-  "user_id": "POL-001",
-  "doc_id": "user_POL-001",
-  "source_pdf": "policy_1_bharat_suraksha.pdf",
-  "n_chunks": 45,
-  "ingested_at": "2026-08-11T23:53:54",
-  "embedding_model": "all-MiniLM-L6-v2"
-}

@@ -3,34 +3,25 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
-<<<<<<< HEAD
+env/
 
-# Secrets
-.env
-.env.*
-!.env.example
-
-.agent
-.gitkeep
-
-=======
+# Spec-kit / agent tooling artifacts (not part of the shipped project)
 specs-1/*
 specs/*
 .pytest_cache
 pytest.ini
 .specify
 .agents
-# Secrets
-.env
-!.env.example
-env/
 .agent
-.gitkeep
 
+# Secrets -- never commit a real .env
+.env
+.env.*
+!.env.example
 
-__pycache__/
+# Node
 frontend/node_modules/*
->>>>>>> car-damage-claim-fulstack-developement
+
 # Jupyter
 .ipynb_checkpoints/
 
@@ -39,27 +30,43 @@ data/raw/*
 data/processed/*
 models/checkpoints/*
 outputs/*
-<<<<<<< HEAD
-=======
 data/ci_claims.db
 uploads-ci/
 backend/data/*
 backend/uploads-ci/
 backend/uploads/*
 .local-data/
->>>>>>> car-damage-claim-fulstack-developement
 
-# Per-user runtime state. Never commit these: policies/ holds the documents
-# people upload (their own contracts) plus the vector index built from them,
-# and claims/ holds claim records and the LangGraph checkpoint DB. In a real
-# deployment both are customer PII; here they are regenerable test state, and
-# the binary DBs would produce unreadable diffs either way.
+# Per-user runtime state (repo-root RAG workspace). Never commit these:
+# policies/ holds the documents people upload (their own contracts) plus the
+# vector index built from them, and claims/ holds claim records and the
+# LangGraph checkpoint DB. In a real deployment both are customer PII; here
+# they are regenerable test state, and the binary DBs would produce
+# unreadable diffs either way.
 data/claim_pipeline/
 data/user_policies/
-.gitkeep
-# Keep folder placeholders
 
-<<<<<<< HEAD
-!README.md
-=======
->>>>>>> car-damage-claim-fulstack-developement
+# Same regenerable runtime state, but under the backend app's own copy of
+# the RAG pipeline (backend/app/rag_scripts/) -- ensure_all_seeded_policies_
+# ingested() rebuilds claim_pipeline/ from the committed policy PDFs on
+# first app startup (a fresh random collection ID every time), and
+# claims/checkpoints.sqlite is the LangGraph checkpoint DB for locally-run
+# claims. Neither is reproducible source data, so neither belongs in git.
+#
+# backend/app/rag_scripts/data/chroma_db/ (singular, top-level -- distinct
+# from claim_pipeline/policies/chroma_db/ above) is deliberately NOT
+# ignored: per backend/app/rag_scripts/README.md it is the prebuilt
+# 185-chunk index checked in on purpose as "the retrieval-quality
+# regression bed" the RAG evaluation scripts run against. rag_outputs/ is
+# likewise kept: those are the committed evaluation results (ragas_eval.json,
+# chunk corpus, sweep results) this repo's reproducibility claims depend on.
+backend/app/rag_scripts/data/claim_pipeline/
+backend/app/rag_scripts/data/claims/checkpoints.sqlite
+backend/app/rag_scripts/data/user_policies/chroma_db/
+
+# Output of .github/scripts/generate_evaluation_results.py (the Model
+# Evaluation workflow) -- a generated artifact, not source.
+/evaluation-results.json
+
+# Keep folder placeholders (do NOT ignore .gitkeep -- its only purpose is to
+# be committed so an otherwise-empty directory survives in git)

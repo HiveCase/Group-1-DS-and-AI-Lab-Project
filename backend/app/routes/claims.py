@@ -7,8 +7,9 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPExcepti
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
+from app.core.security import get_current_user, require_admin
 from app.db.database import SessionLocal, get_db
-from app.db.models import Claim, DecisionRecord, Policy, PolicyClause
+from app.db.models import Claim, DecisionRecord, Policy, PolicyClause, User
 from app.schemas.adjuster_schema import AdjusterDashboardResponse, AdjusterDashboardSummary, DecisionRead, DecisionRequest
 from app.schemas.claim_schema import ClaimListResponse, ClaimRead
 from app.services.analytics_service import AnalyticsService
@@ -120,6 +121,7 @@ async def create_claim(
     claimed_amount: Decimal | None = Form(default=None),
     photos: list[UploadFile] = File(default=[]),
     db: Session = Depends(get_db),
+    _user: User = Depends(get_current_user),
 ):
     if request.headers.get("content-type", "").startswith("application/json"):
         payload = await request.json()
@@ -152,7 +154,7 @@ async def create_claim(
     return claim
 
 @router.get('/adjuster-dashboard', response_model=AdjusterDashboardResponse)
-def adjuster_dashboard(db: Session = Depends(get_db)):
+def adjuster_dashboard(db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
     claims = ClaimService(db).list_claims(['submitted', 'under review'])
     summary = AdjusterDashboardSummary(
         pending_count=len(claims),
@@ -176,7 +178,7 @@ SIU_FRAUD_THRESHOLD = Decimal('0.65')
 
 
 @router.get('/siu-dashboard')
-def siu_dashboard(db: Session = Depends(get_db)):
+def siu_dashboard(db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
     claims = ClaimService(db).list_claims(['submitted', 'under review'])
     investigations = InvestigationService(db)
     cases = []
@@ -204,7 +206,7 @@ def siu_dashboard(db: Session = Depends(get_db)):
     }
 
 @router.get('/{claim_id}', response_model=ClaimRead)
-def get_claim(claim_id: str, db: Session = Depends(get_db)):
+def get_claim(claim_id: str, db: Session = Depends(get_db), _user: User = Depends(get_current_user)):
     return ClaimService(db).get_claim(claim_id)
 
 @router.get('/{claim_id}/annotated-photo')
@@ -212,7 +214,15 @@ def get_annotated_photo(claim_id: str, db: Session = Depends(get_db)):
     """Returns the claim's primary uploaded photo with the damage-detection
     model's bounding boxes drawn on it, so an adjuster can see what the
     model predicted without leaving the dashboard. Falls back to the raw
-    photo if detections aren't available yet (analysis still pending)."""
+    photo if detections aren't available yet (analysis still pending).
+
+    Deliberately left without Depends(get_current_user): it's rendered
+    directly via <img src>/<a href> in AdjusterView.vue, and browsers don't
+    attach an Authorization header to those requests -- enforcing auth here
+    would need the frontend to fetch the image as an authenticated blob and
+    manage object-URL lifecycles instead, which isn't done. Exposes only a
+    damage photo for a claim_id the caller already knows/guesses, not
+    claim data or the ability to act on a claim."""
     claim = ClaimService(db).get_claim(claim_id)
     photos = claim.photos or []
     if not photos:
@@ -236,7 +246,7 @@ def get_annotated_photo(claim_id: str, db: Session = Depends(get_db)):
     return FileResponse(source_path, media_type=photo.mime_type or 'image/jpeg')
 
 @router.get('/{claim_id}/detail')
-def get_claim_detail(claim_id: str, db: Session = Depends(get_db)):
+def get_claim_detail(claim_id: str, db: Session = Depends(get_db), _user: User = Depends(get_current_user)):
     claim = ClaimService(db).get_claim(claim_id)
     if claim.analysis_result is None:
         return {
@@ -270,7 +280,7 @@ DECISION_TO_STATUS = {
 
 
 @router.post('/{claim_id}/decision', response_model=DecisionRead)
-def submit_decision(claim_id: str, payload: DecisionRequest, db: Session = Depends(get_db)):
+def submit_decision(claim_id: str, payload: DecisionRequest, db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
     claim = ClaimService(db).get_claim(claim_id)
     record = claim.decision_record or DecisionRecord(claim=claim)
     record.decision = payload.decision
@@ -283,11 +293,11 @@ def submit_decision(claim_id: str, payload: DecisionRequest, db: Session = Depen
     return record
 
 @router.get('', response_model=ClaimListResponse)
-def list_claims(status: str | None = None, db: Session = Depends(get_db)):
+def list_claims(status: str | None = None, db: Session = Depends(get_db), _user: User = Depends(get_current_user)):
     return {'claims': ClaimService(db).list_claims(status)}
 
 @router.post('/{claim_id}/siu-action')
-def siu_action(claim_id: str, payload: dict, db: Session = Depends(get_db)):
+def siu_action(claim_id: str, payload: dict, db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
     claim = ClaimService(db).get_claim(claim_id)
     service = InvestigationService(db)
     case = service.upsert_case(claim, investigator_id=payload.get('investigator_id'), status=payload.get('status', 'under_investigation'), notes=payload.get('notes'))

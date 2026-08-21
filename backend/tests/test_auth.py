@@ -7,8 +7,8 @@ from app.main import app
 client = TestClient(app)
 
 
-def _signup(email="user1@example.com", password="supersecret1", role="user"):
-    return client.post('/auth/signup', json={'email': email, 'password': password, 'role': role})
+def _signup(email="user1@example.com", password="supersecret1"):
+    return client.post('/auth/signup', json={'email': email, 'password': password})
 
 
 def test_signup_creates_user():
@@ -22,10 +22,18 @@ def test_signup_creates_user():
     assert 'hashed_password' not in body
 
 
-def test_signup_allows_admin_role():
-    response = _signup(email="admin1@example.com", role="admin")
+def test_signup_ignores_client_supplied_role():
+    """Public self-signup can only ever create a "user" account -- role is
+    not part of SignupRequest, so a client trying to smuggle role="admin"
+    into the request body must be silently ignored (extra/unknown fields
+    are dropped by the schema), not honored and not rejected."""
+    response = client.post('/auth/signup', json={
+        'email': "wouldbeadmin@example.com",
+        'password': "supersecret1",
+        'role': "admin",
+    })
     assert response.status_code == 201
-    assert response.json()['role'] == "admin"
+    assert response.json()['role'] == "user"
 
 
 def test_signup_rejects_duplicate_email():
@@ -33,12 +41,6 @@ def test_signup_rejects_duplicate_email():
     response = _signup(email="dup@example.com")
     assert response.status_code == 422
     assert "already registered" in response.json()['detail']
-
-
-def test_signup_rejects_invalid_role():
-    response = _signup(email="badrole@example.com", role="superadmin")
-    assert response.status_code == 422
-    assert "role must be one of" in response.json()['detail']
 
 
 def test_login_succeeds_with_correct_password():

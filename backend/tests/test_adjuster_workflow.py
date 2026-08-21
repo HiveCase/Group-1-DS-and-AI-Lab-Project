@@ -1,8 +1,10 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
+from _auth_helpers import admin_auth_headers
 
 client = TestClient(app)
+client.headers.update(admin_auth_headers(client))
 
 
 def test_claim_analysis_and_adjuster_workflow():

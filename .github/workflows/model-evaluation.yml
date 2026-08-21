@@ -1,0 +1,71 @@
+name: Model Evaluation
+
+# On-demand only (GitHub -> Actions -> Model Evaluation -> Run workflow) --
+# this is a reproducibility check, not a merge gate, so it never runs on
+# push/PR. Loads the committed model/index (no dataset download, no
+# secrets), runs two independent evaluations against data already in the
+# repo, and saves evaluation-results.json as a downloadable artifact.
+#
+# What this does and does not cover:
+#   - YOLO damage-detection model: a load-and-predict smoke test only, over
+#     the 24 images committed under data/vehide/images/test/ -- NOT an mAP
+#     or confusion-matrix regeneration (only 6 of those 24 images have a
+#     label file, too small a sample for either). The real per-class
+#     mAP/confusion-matrix numbers live in docs/Milestone5_Report.md,
+#     generated from the full VehiDE test split, which isn't in this repo.
+#   - RAG policy-clause retrieval: the real, complete 50-incident P@3/MRR
+#     evaluation against the committed 185-chunk index -- no API key
+#     needed, no subset taken.
+# See .github/scripts/generate_evaluation_results.py for both steps.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    name: Run fixed evaluations against committed data
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Load fixed model, run test data, generate metrics
+        run: python .github/scripts/generate_evaluation_results.py
+
+      - name: Upload evaluation-results.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-results
+          path: evaluation-results.json
+          if-no-files-found: error
+
+      - name: Print summary
+        if: always()
+        run: |
+          {
+            echo "### Model evaluation results"
+            echo ""
+            echo "Commit: \`${GITHUB_SHA}\`"
+            echo ""
+            if [ -f evaluation-results.json ]; then
+              echo '```json'
+              cat evaluation-results.json
+              echo '```'
+            else
+              echo "evaluation-results.json was not produced -- see the job log above."
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"

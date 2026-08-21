@@ -26,8 +26,15 @@ class Settings(BaseSettings):
     )
 
     groq_api_key: str | None = None
-    groq_model: str = os.getenv("MODEL_NAME") or "openai/gpt-oss-120b"
-    groq_base_url: str = os.getenv("GROQ_BASE_URL") or "https://api.groq.com/openai/v1"
+    # Field name deliberately doesn't match its .env key (MODEL_NAME, not
+    # GROQ_MODEL) -- needs an explicit alias for pydantic-settings' own
+    # env_file binding to see it, same reason langfuse_host has one below.
+    # A bare `os.getenv("MODEL_NAME")` class-body default does NOT work
+    # here: nothing in backend/app calls load_dotenv(), so it always reads
+    # an empty real process environment and silently falls back to the
+    # hardcoded default, regardless of what .env actually says.
+    groq_model: str = Field(default="openai/gpt-oss-120b", validation_alias="MODEL_NAME")
+    groq_base_url: str = Field(default="https://api.groq.com/openai/v1", validation_alias="GROQ_BASE_URL")
 
     jwt_secret_key: str = "change-me-in-production"
     jwt_access_token_expire_minutes: int = 15

@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { login as loginApi, signup as signupApi } from './api';
 
 const STORAGE_KEY = 'claims_portal_auth';
@@ -15,9 +15,12 @@ function loadStoredAuth() {
 const stored = loadStoredAuth();
 export const currentUser = ref(stored?.user || null);
 export const accessToken = ref(stored?.access_token || null);
+// Only the internal-staff role ("admin", seeded once at startup -- never
+// self-assignable via public signup) can reach Adjuster/SIU/Supervisor.
+export const isAdmin = computed(() => currentUser.value?.role === 'admin');
 
-export async function signup(email, password, role) {
-  return signupApi({ email, password, role });
+export async function signup(email, password) {
+  return signupApi({ email, password });
 }
 
 export async function login(email, password) {

@@ -13,10 +13,7 @@
           Password
           <Password v-model="password" toggleMask placeholder="At least 8 characters" required />
         </label>
-        <label>
-          Role
-          <Select v-model="role" :options="roleOptions" optionLabel="label" optionValue="value" placeholder="Select a role" />
-        </label>
+        <p class="muted">New accounts can file and track claims (the Claimant portal). Adjuster/SIU/Supervisor access is granted separately by an administrator.</p>
         <Button type="submit" label="Sign up" :loading="submitting" />
       </form>
 
@@ -36,21 +33,14 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
-import Select from 'primevue/select';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
 import { signup } from '../services/auth';
 
 const router = useRouter();
 
-const roleOptions = [
-  { label: 'User', value: 'user' },
-  { label: 'Admin', value: 'admin' },
-];
-
 const email = ref('');
 const password = ref('');
-const role = ref('user');
 const error = ref('');
 const success = ref('');
 const submitting = ref(false);
@@ -60,7 +50,7 @@ const handleSignup = async () => {
   success.value = '';
   submitting.value = true;
   try {
-    await signup(email.value, password.value, role.value);
+    await signup(email.value, password.value);
     success.value = 'Account created. You can now log in.';
     setTimeout(() => router.push('/login'), 1000);
   } catch (err) {
