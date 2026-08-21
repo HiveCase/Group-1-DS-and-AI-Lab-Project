@@ -55,6 +55,7 @@ def _sync_policy_clauses(db: Session, policy: Policy | None, claim: Claim | None
                 "clause_type": finding.get("clause_type"),
                 "damage_class": finding.get("damage_class"),
                 "score": finding.get("score"),
+                "retrieval_breakdown": finding.get("retrieval_breakdown"),
             },
         ))
 
@@ -250,6 +251,7 @@ def get_claim_detail(claim_id: str, db: Session = Depends(get_db)):
             'status': claim.analysis_result.status,
             'severity_label': claim.analysis_result.severity_label,
             'severity_score': str(claim.analysis_result.severity_score) if claim.analysis_result.severity_score is not None else None,
+            'detections': claim.analysis_result.detections,
             'policy_findings': claim.analysis_result.policy_findings,
             'recommendation': claim.analysis_result.recommendation,
             'confidence_score': str(claim.analysis_result.confidence_score) if claim.analysis_result.confidence_score is not None else None,

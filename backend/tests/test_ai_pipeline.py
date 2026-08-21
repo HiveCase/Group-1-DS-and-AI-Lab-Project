@@ -11,6 +11,8 @@ from app.services.severity_scoring_service import SeverityScoringService
 from app.services.claim_analysis_graph import ClaimAnalysisOrchestrator
 from app.services.fraud_agent_service import FraudAgentService
 from app.services.langgraph_orchestrator import LangGraphClaimOrchestrator
+from app.services.narrative_risk_analyzer_service import NarrativeRiskAnalyzerService
+from app.services.report_consistency_service import ReportConsistencyService
 
 
 class DummyModel:
@@ -84,6 +86,75 @@ def test_damage_detection_service_get_image_dimensions_missing_file(tmp_path):
     assert service.get_image_dimensions(tmp_path / "does-not-exist.jpg") == (0, 0)
 
 
+class OcclusionAwareModel:
+    """Stands in for YOLO in the occlusion-sensitivity test: instead of real
+    CV, it looks at one fixed pixel and reports high confidence only while
+    that pixel still holds its original (non-occluded) color -- letting the
+    test assert explain_detection() correctly identifies which grid cell
+    covers that pixel as the most important one, without a real model."""
+
+    def __init__(self, feature_point, bbox, feature_color=(0, 0, 255)):
+        self.feature_point = feature_point
+        self.bbox = bbox
+        self.feature_color = feature_color
+
+    def predict(self, image, stream=None, imgsz=None):
+        pixel = image.convert("RGB").getpixel(self.feature_point)
+        confidence = 0.9 if pixel == self.feature_color else 0.05
+        return [{
+            "class_name": "dent",
+            "bbox": list(self.bbox),
+            "mask_polygon": None,
+            "confidence": confidence,
+        }]
+
+
+def test_damage_detection_service_explain_detection_finds_important_cell(tmp_path, monkeypatch):
+    from PIL import Image
+
+    # PNG (lossless), not JPEG -- JPEG's block compression would blur the
+    # single feature pixel into a neighboring color on round-trip, so the
+    # fake model's exact-pixel-match check would misfire on cells that
+    # never actually touched it.
+    image_path = tmp_path / "sample.png"
+    image = Image.new("RGB", (64, 64), color=(200, 200, 200))
+    bbox = (10, 10, 50, 50)
+    feature_point = (15, 15)  # inside the bbox's top-left grid cell only
+    image.putpixel(feature_point, (0, 0, 255))
+    image.save(image_path)
+
+    service = DamageDetectionService(model_path=tmp_path / "dummy.pt")
+    monkeypatch.setattr(service, "_load_model", lambda: OcclusionAwareModel(feature_point, bbox))
+
+    detection = {"class_name": "dent", "bbox": list(bbox), "confidence": 0.9}
+    saliency = service.explain_detection(image_path, detection, grid_size=4)
+
+    assert saliency is not None
+    assert saliency["method"] == "occlusion_sensitivity"
+    assert saliency["peak_cell"] == {"row": 0, "col": 0}
+    assert saliency["importance"][0][0] == 1.0
+    # every other cell's occlusion never touches the feature pixel, so the
+    # model's reported confidence -- and therefore the measured drop -- is
+    # unchanged for all of them.
+    flattened_elsewhere = [
+        value
+        for row_index, row in enumerate(saliency["importance"])
+        for col_index, value in enumerate(row)
+        if (row_index, col_index) != (0, 0)
+    ]
+    assert all(value == 0.0 for value in flattened_elsewhere)
+    assert saliency["peak_confidence_drop"] == pytest.approx(0.85)
+
+
+def test_damage_detection_service_explain_detection_returns_none_without_model(tmp_path, monkeypatch):
+    service = DamageDetectionService(model_path=tmp_path / "dummy.pt")
+    monkeypatch.setattr(service, "_load_model", lambda: None)
+
+    result = service.explain_detection(tmp_path / "sample.jpg", {"class_name": "dent", "bbox": [0, 0, 10, 10], "confidence": 0.9})
+
+    assert result is None
+
+
 class FakeClauseRetriever:
     def get_clauses(self, damage_class):
         return {
@@ -108,6 +179,42 @@ def test_policy_clause_service_returns_citations():
     assert findings[0]["clause_id"] == "CL-001"
     assert findings[0]["source_citation"] == "section 3.1"
     assert findings[0]["damage_class"] == "dent"
+    assert findings[0]["retrieval_breakdown"] is None
+
+
+class FakeClauseRetrieverWithBreakdown:
+    def get_clauses(self, damage_class):
+        return {
+            "coverage": [{
+                "chunk_id": "CL-001",
+                "text": "Comprehensive coverage applies to accidental body damage up to the policy limit.",
+                "heading": "section 3.1",
+                "clause_type": "coverage",
+                "doc_id": "user_POL-001",
+                "score": 0.9,
+                "retrieval_breakdown": {
+                    "dense_rank": 1, "dense_contribution": 0.0492,
+                    "sparse_rank": None, "sparse_contribution": 0.0,
+                },
+            }],
+            "exclusion_or_condition": [],
+            "coverage_clause_found": True,
+        }
+
+
+def test_policy_clause_service_propagates_retrieval_breakdown():
+    """The dense/sparse retrieval explanation from HybridRetriever must
+    survive PolicyClauseService's own findings shape, not just the
+    ClauseRetriever's internal hit dict, since it's the findings shape that
+    reaches the adjuster UI and the report-synthesis LLM payload."""
+    service = PolicyClauseService(retriever_factory=lambda policy_number: FakeClauseRetrieverWithBreakdown())
+
+    findings = service.retrieve_clauses("POL-001", ["dent"], "rear bumper damage", Decimal("1200"))
+
+    assert findings[0]["retrieval_breakdown"] == {
+        "dense_rank": 1, "dense_contribution": 0.0492,
+        "sparse_rank": None, "sparse_contribution": 0.0,
+    }
 
 
 def test_policy_clause_service_flags_amount_outside_policy_limit():
@@ -509,6 +616,193 @@ def test_fraud_agent_no_signals_for_clean_claim():
     }
 
 
+def test_fraud_agent_score_breakdown_traces_to_reported_score():
+    """score_breakdown must be an explanation of fraud_score, not a
+    separate computation -- its last step's running_total is the number
+    actually returned as fraud_score (both rounded to 4dp before the
+    outer 2dp round, so they can differ only in trailing precision)."""
+    service = FraudAgentService()
+    result = service.assess_fraud_risk(
+        claimant_name="John Smith",
+        claimed_amount="1000",
+        incident_description="fender bender",
+        severity_summary={"severity_score": 0.05},
+        confidence_score=0.9,
+        policy_holder_name="Jane Doe",
+        policy_status="active",
+    )
+
+    breakdown = result["score_breakdown"]
+    assert breakdown, "expected at least one breakdown step"
+    assert round(breakdown[-1]["running_total"], 2) == result["fraud_score"]
+    labels = [step["label"] for step in breakdown]
+    assert "Claimant/policyholder name mismatch" in labels
+    mismatch_step = next(step for step in breakdown if step["label"] == "Claimant/policyholder name mismatch")
+    assert mismatch_step["triggered"] is True
+    assert mismatch_step["delta"] > 0
+
+
+def test_fraud_agent_score_breakdown_marks_untriggered_rules():
+    service = FraudAgentService()
+    result = service.assess_fraud_risk(
+        claimant_name="Jane Doe",
+        claimed_amount="500",
+        incident_description="small scratch",
+        severity_summary={"severity_score": 0.02},
+        confidence_score=0.9,
+        policy_holder_name="Jane Doe",
+        policy_status="active",
+        incident_date="2026-08-09",
+        policy_expiry_date="2028-01-01",
+        already_claimed_amount="0",
+        policy_limit="4000",
+    )
+
+    breakdown = {step["label"]: step for step in result["score_breakdown"]}
+    assert breakdown["Claimant/policyholder name mismatch"]["triggered"] is False
+    assert breakdown["Claimant/policyholder name mismatch"]["delta"] == 0
+    assert breakdown["Policy inactive or expired at incident date"]["triggered"] is False
+    assert breakdown["Cumulative claimed amount exceeds policy limit"]["triggered"] is False
+
+
+def test_fraud_agent_narrative_flags_add_bounded_score_and_stay_out_of_signals():
+    """narrative_flags must move fraud_score and appear in score_breakdown
+    (Langfuse-only, per how the orchestrator wires it), but must NOT be
+    appended to `signals` -- that list is what the existing frontend
+    fraud-factors panel already renders, and this feature is deliberately
+    backend/observability-only, not a new UI surface."""
+    service = FraudAgentService()
+    result = service.assess_fraud_risk(
+        claimant_name="Jane Doe",
+        claimed_amount="500",
+        incident_description="ordinary fender bender",
+        severity_summary={"severity_score": 0.02},
+        confidence_score=0.9,
+        policy_holder_name="Jane Doe",
+        policy_status="active",
+        narrative_flags=[
+            {"quote": "needed the money fast", "concern": "financial pressure"},
+            {"quote": "story kept changing", "concern": "inconsistent narrative"},
+        ],
+    )
+
+    narrative_step = next(step for step in result["score_breakdown"] if step["label"] == "LLM-extracted narrative red flags")
+    assert narrative_step["triggered"] is True
+    assert narrative_step["delta"] == pytest.approx(0.1)
+    assert result["signals"] == []
+
+
+def test_fraud_agent_no_narrative_flags_marks_step_untriggered():
+    service = FraudAgentService()
+    result = service.assess_fraud_risk(
+        claimant_name="Jane Doe",
+        claimed_amount="500",
+        incident_description="ordinary fender bender",
+        severity_summary={"severity_score": 0.02},
+        confidence_score=0.9,
+        policy_holder_name="Jane Doe",
+        policy_status="active",
+    )
+
+    narrative_step = next(step for step in result["score_breakdown"] if step["label"] == "LLM-extracted narrative red flags")
+    assert narrative_step["triggered"] is False
+    assert narrative_step["delta"] == 0
+
+
+def test_narrative_risk_analyzer_rejects_ungrounded_quotes():
+    service = NarrativeRiskAnalyzerService()
+
+    grounded = service._ground_flags(
+        [
+            {"quote": "the car caught fire suddenly", "concern": "arson"},
+            {"quote": "this text was never in the description", "concern": "hallucinated"},
+        ],
+        "The claimant said the car caught fire suddenly near the parking lot.",
+    )
+
+    assert len(grounded) == 1
+    assert grounded[0]["quote"] == "the car caught fire suddenly"
+
+
+def test_narrative_risk_analyzer_short_circuits_on_empty_description():
+    service = NarrativeRiskAnalyzerService()
+
+    assert service.analyze("   ") == {"flags": [], "available": True, "reason": None}
+
+
+def test_narrative_risk_analyzer_unavailable_without_api_key(monkeypatch):
+    service = NarrativeRiskAnalyzerService()
+    monkeypatch.setattr(service, "groq_api_key", None)
+
+    result = service.analyze("Some incident description.")
+
+    assert result == {"flags": [], "available": False, "reason": "GROQ_API_KEY is not configured"}
+
+
+def test_report_consistency_service_flags_ungrounded_citation():
+    service = ReportConsistencyService()
+    report_json = {
+        "recommendation": "Approve",
+        "applicable_coverage": [{"summary": "x", "citations": [{"clause_id": "CL-999", "source": "s"}]}],
+    }
+    policy_findings = [{"clause_id": "CL-001", "clause_type": "coverage"}]
+
+    result = service.check(report_json, policy_findings, {})
+
+    citation_check = next(c for c in result["checks"] if c["rule"] == "citations_grounded")
+    assert citation_check["passed"] is False
+    assert result["all_passed"] is False
+
+
+def test_report_consistency_service_flags_sub_limit_violation():
+    service = ReportConsistencyService()
+    report_json = {"recommendation": "Approve", "applicable_coverage": []}
+    policy_findings = [{"clause_id": "POLICY-LIMIT-CHECK", "clause_type": "sub_limit", "status": "outside_policy_limit"}]
+
+    result = service.check(report_json, policy_findings, {})
+
+    check = next(c for c in result["checks"] if c["rule"] == "sub_limit_respected")
+    assert check["passed"] is False
+
+
+def test_report_consistency_service_flags_missing_coverage_basis():
+    service = ReportConsistencyService()
+    report_json = {"recommendation": "Approve", "applicable_coverage": []}
+
+    result = service.check(report_json, [], {})
+
+    check = next(c for c in result["checks"] if c["rule"] == "coverage_basis_present")
+    assert check["passed"] is False
+
+
+def test_report_consistency_service_flags_unreflected_fraud_signal():
+    service = ReportConsistencyService()
+    report_json = {
+        "recommendation": "Approve",
+        "applicable_coverage": [{"summary": "x", "citations": [{"clause_id": "CL-001", "source": "s"}]}],
+    }
+    policy_findings = [{"clause_id": "CL-001", "clause_type": "coverage"}]
+
+    result = service.check(report_json, policy_findings, {"needs_investigation": True})
+
+    check = next(c for c in result["checks"] if c["rule"] == "fraud_signals_reflected")
+    assert check["passed"] is False
+    assert result["all_passed"] is False
+
+
+def test_report_consistency_service_all_pass_for_clean_report():
+    service = ReportConsistencyService()
+    report_json = {
+        "recommendation": "Approve",
+        "applicable_coverage": [{"summary": "x", "citations": [{"clause_id": "CL-001", "source": "s"}]}],
+    }
+    policy_findings = [{"clause_id": "CL-001", "clause_type": "coverage"}]
+
+    result = service.check(report_json, policy_findings, {"needs_investigation": False})
+
+    assert result["all_passed"] is True
+
+
 def test_fraud_agent_rule_flags_reflect_expired_policy():
     service = FraudAgentService()
     result = service.assess_fraud_risk(
@@ -602,6 +896,82 @@ def test_orchestrator_overrides_approve_recommendation_when_policy_inactive():
     assert report_json["recommendation"] == "Investigate"
     assert report_json["original_recommendation"] == "Approve"
     assert report_json["recommendation_override_reason"]
+
+
+def test_orchestrator_attaches_consistency_check_and_disabled_narrative_analysis():
+    """_build_engine() never passes narrative_service, so it defaults to
+    None -- this must degrade to a clearly-labeled disabled result rather
+    than crashing or silently making a real Groq call in a unit test.
+    report_json.consistency_check should reflect a clean, grounded report."""
+    engine = _build_engine()
+
+    policy = SimpleNamespace(
+        policy_holder_name="Jane Doe",
+        status="active",
+        expiry_date=None,
+        policy_limit=Decimal("4000"),
+        claims=[],
+    )
+    claim = SimpleNamespace(
+        claim_id="CLM-CURRENT",
+        claimant_name="Jane Doe",
+        incident_description="fender bender",
+        incident_date="2026-08-09",
+        claimed_amount=Decimal("500"),
+    )
+    state = {
+        "claim": claim,
+        "policy": policy,
+        "severity_summary": {"severity_score": 0.02},
+        "policy_findings": [{"clause_id": "CL-001", "clause_type": "coverage"}],
+        "report_json": {
+            "recommendation": "Approve",
+            "applicable_coverage": [{"summary": "x", "citations": [{"clause_id": "CL-001", "source": "s"}]}],
+            "confidence_score": 0.9,
+        },
+    }
+
+    result_state = engine._assess_fraud(state)
+
+    assert result_state["fraud_assessment"]["narrative_analysis"] == {
+        "flags": [], "available": False, "reason": "Narrative risk analysis not configured",
+    }
+    assert result_state["report_json"]["consistency_check"]["all_passed"] is True
+
+
+class SaliencyAwareDamageService:
+    def detect_from_path(self, image_path):
+        return [{"class_name": "dent", "bbox": [0, 0, 20, 20], "mask_polygon": None, "confidence": 0.82}]
+
+    def get_image_dimensions(self, image_path):
+        return (100, 100)
+
+    def explain_detection(self, image_path, detection, grid_size=4):
+        return {
+            "class_name": detection["class_name"],
+            "bbox": detection["bbox"],
+            "grid_size": grid_size,
+            "method": "occlusion_sensitivity",
+            "baseline_confidence": detection["confidence"],
+            "importance": [[1.0]],
+            "peak_cell": {"row": 0, "col": 0},
+            "peak_confidence_drop": 0.5,
+        }
+
+
+def test_orchestrator_attaches_saliency_onto_detection_for_frontend_consumption():
+    """Saliency must be attached to the same detection dict that's already
+    persisted to AnalysisResult.detections and returned by the claim detail
+    API -- a Langfuse-only span would never be reachable from the app UI,
+    so the frontend has no other way to receive this data."""
+    engine = _build_engine(damage_service=SaliencyAwareDamageService())
+    claim = SimpleNamespace(photos=[SimpleNamespace(file_path="fake.jpg")])
+    state = {"claim": claim, "trace": None}
+
+    result_state = engine._detect_damage(state)
+
+    assert result_state["detections"][0]["saliency"]["method"] == "occlusion_sensitivity"
+    assert result_state["detections"][0]["saliency"]["peak_cell"] == {"row": 0, "col": 0}
 
 
 def test_orchestrator_does_not_override_recommendation_when_policy_active():

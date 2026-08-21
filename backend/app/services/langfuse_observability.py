@@ -55,21 +55,31 @@ class LangfuseObserver:
             logger.exception("Failed to start Langfuse trace %s", name)
             return None
 
-    def span(self, trace: Any | None, *, name: str, input_data: Any, output_data: Any, metadata: dict[str, Any] | None = None) -> None:
-        if trace is None:
-            return
+    def span(self, parent: Any | None, *, name: str, input_data: Any, output_data: Any, metadata: dict[str, Any] | None = None) -> Any | None:
+        """parent is either the trace (for a top-level agent span) or a span
+        already returned by this method (to nest a child span underneath
+        it, e.g. an explainability span under the agent span it explains).
+        Both expose the same .span(...) method, so this doesn't need to
+        know which kind it was given. Returns the created span so a caller
+        can pass it back in as a parent for its own children, or None if
+        logging is disabled/failed -- callers must tolerate None the same
+        way they already tolerate a None trace."""
+        if parent is None:
+            return None
         try:
-            trace.span(name=name, input=input_data, output=output_data, metadata=metadata or {})
+            return parent.span(name=name, input=input_data, output=output_data, metadata=metadata or {})
         except Exception:
             logger.exception("Failed to log Langfuse span %s", name)
+            return None
 
-    def generation(self, trace: Any | None, *, name: str, input_data: Any, output_data: Any, model: str | None = None, metadata: dict[str, Any] | None = None) -> None:
-        if trace is None:
-            return
+    def generation(self, parent: Any | None, *, name: str, input_data: Any, output_data: Any, model: str | None = None, metadata: dict[str, Any] | None = None) -> Any | None:
+        if parent is None:
+            return None
         try:
-            trace.generation(name=name, input=input_data, output=output_data, model=model, metadata=metadata or {})
+            return parent.generation(name=name, input=input_data, output=output_data, model=model, metadata=metadata or {})
         except Exception:
             logger.exception("Failed to log Langfuse generation %s", name)
+            return None
 
     def end_trace(self, trace: Any | None, *, output_data: Any) -> None:
         if trace is None:

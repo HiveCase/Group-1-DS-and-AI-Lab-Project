@@ -30,6 +30,9 @@ def test_claim_analysis_and_adjuster_workflow():
     payload = detail.json()
     assert payload['analysis_result']['status'] == 'completed'
     assert payload['analysis_result']['severity_label'] in {'Minor', 'Moderate', 'Severe'}
+    # detections (carrying per-detection saliency, when computed) must be
+    # exposed to the frontend, not just persisted internally.
+    assert 'detections' in payload['analysis_result']
 
     decision = client.post(
         f'/claims/{claim_id}/decision',

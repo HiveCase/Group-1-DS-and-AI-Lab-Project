@@ -86,9 +86,16 @@ class HybridRetriever:
         self.tfidf_matrix = self.vectorizer.fit_transform(chunk_texts)
 
     def _fused_ranking(self, query: str, dense_weight: float,
-                       sparse_weight: float, pool: int) -> list:
-        """[(chunk_id, fused_score), ...] descending, fusing the dense and
-        sparse rankings by weighted RRF."""
+                       sparse_weight: float, pool: int) -> tuple:
+        """Returns (ranked, breakdown):
+        - ranked: [(chunk_id, fused_score), ...] descending, fusing the
+          dense and sparse rankings by weighted RRF (unchanged behavior).
+        - breakdown: {chunk_id: {dense_rank, dense_contribution,
+          sparse_rank, sparse_contribution}} -- the two RRF terms that were
+          summed to produce that chunk's fused score, kept only so callers
+          can explain *why* a chunk ranked where it did (e.g. "found mostly
+          by keyword overlap, not semantic similarity"). Not consumed by
+          the fused score itself."""
         q_emb = self.model.encode(query).tolist()
         dense_ids = self.collection.query(
             query_embeddings=[q_emb], n_results=min(pool, len(self.chunk_ids)), include=[]
@@ -98,18 +105,47 @@ class HybridRetriever:
         sparse_ids = [self.chunk_ids[i] for i in sims.argsort()[::-1][:pool]]
 
         scores = {}
-        for rank, cid in enumerate(dense_ids, 1):
-            scores[cid] = scores.get(cid, 0.0) + dense_weight / (RRF_K + rank)
-        for rank, cid in enumerate(sparse_ids, 1):
-            scores[cid] = scores.get(cid, 0.0) + sparse_weight / (RRF_K + rank)
+        breakdown: dict[str, dict] = {}
 
-        return sorted(scores.items(), key=lambda kv: -kv[1])
+        def _component(cid: str) -> dict:
+            return breakdown.setdefault(cid, {
+                "dense_rank": None, "dense_contribution": 0.0,
+                "sparse_rank": None, "sparse_contribution": 0.0,
+            })
+
+        for rank, cid in enumerate(dense_ids, 1):
+            contribution = dense_weight / (RRF_K + rank)
+            scores[cid] = scores.get(cid, 0.0) + contribution
+            component = _component(cid)
+            component["dense_rank"] = rank
+            component["dense_contribution"] = round(contribution, 4)
+        for rank, cid in enumerate(sparse_ids, 1):
+            contribution = sparse_weight / (RRF_K + rank)
+            scores[cid] = scores.get(cid, 0.0) + contribution
+            component = _component(cid)
+            component["sparse_rank"] = rank
+            component["sparse_contribution"] = round(contribution, 4)
+
+        ranked = sorted(scores.items(), key=lambda kv: -kv[1])
+        return ranked, breakdown
 
     def retrieve_scored(self, query: str, top_k: int = 3,
                         dense_weight: float = DENSE_WEIGHT,
                         sparse_weight: float = SPARSE_WEIGHT,
                         pool: int = CANDIDATE_POOL) -> list:
-        return self._fused_ranking(query, dense_weight, sparse_weight, pool)[:top_k]
+        ranked, _breakdown = self._fused_ranking(query, dense_weight, sparse_weight, pool)
+        return ranked[:top_k]
+
+    def retrieve_scored_with_breakdown(self, query: str, top_k: int = 3,
+                                       dense_weight: float = DENSE_WEIGHT,
+                                       sparse_weight: float = SPARSE_WEIGHT,
+                                       pool: int = CANDIDATE_POOL) -> list:
+        """Like retrieve_scored, but each hit is (chunk_id, fused_score,
+        component) where component explains the fused score as dense vs.
+        sparse contribution -- retrieval explainability for callers that
+        want to show why a clause was surfaced, not just that it was."""
+        ranked, breakdown = self._fused_ranking(query, dense_weight, sparse_weight, pool)
+        return [(cid, score, breakdown.get(cid, {})) for cid, score in ranked[:top_k]]
 
     def retrieve(self, query: str, top_k: int = 3, **kwargs) -> list:
         return [cid for cid, _ in self.retrieve_scored(query, top_k=top_k, **kwargs)]

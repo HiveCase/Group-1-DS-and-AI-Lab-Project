@@ -118,6 +118,10 @@ class PolicyClauseService:
                     "clause_type": hit.get("clause_type"),
                     "damage_class": damage_class,
                     "score": hit.get("score"),
+                    # Explainability: why this clause was retrieved, not
+                    # just that it was -- the dense (semantic) vs. sparse
+                    # (keyword) contribution behind `score`, when available.
+                    "retrieval_breakdown": hit.get("retrieval_breakdown"),
                 })
         return findings
 

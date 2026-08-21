@@ -9,6 +9,15 @@ from langgraph.graph import END, StateGraph
 
 from app.services.langfuse_observability import LangfuseObserver
 from app.services.agent_toolkit import build_toolkit
+from app.services.report_consistency_service import ReportConsistencyService
+
+# Number of detections (highest-confidence first, across all of a claim's
+# photos) that get an occlusion-sensitivity saliency map computed. Each one
+# costs grid_size^2 extra model.predict() calls, so this bounds a
+# background task's worst case (many photos, many detections) rather than
+# silently exploding runtime -- saliency for the top detections is far more
+# useful to a reviewer than saliency for a dozen low-confidence ones.
+MAX_SALIENCY_DETECTIONS = 3
 
 logger = logging.getLogger("claims_portal.langgraph_orchestrator")
 
@@ -38,6 +47,7 @@ class ClaimAnalysisState(TypedDict, total=False):
     severity_summary: dict[str, Any]
     policy_findings: list[dict[str, Any]]
     report_json: dict[str, Any]
+    report_span: Any
     fraud_assessment: dict[str, Any]
     needs_human_review: bool
     final_status: str
@@ -47,12 +57,20 @@ class ClaimAnalysisState(TypedDict, total=False):
 
 
 class LangGraphClaimOrchestrator:
-    def __init__(self, damage_service: Any, severity_service: Any, policy_service: Any, report_service: Any, fraud_service: Any | None = None, observer: LangfuseObserver | None = None):
+    def __init__(self, damage_service: Any, severity_service: Any, policy_service: Any, report_service: Any, fraud_service: Any | None = None, narrative_service: Any | None = None, observer: LangfuseObserver | None = None):
         self.damage_service = damage_service
         self.severity_service = severity_service
         self.policy_service = policy_service
         self.report_service = report_service
         self.fraud_service = fraud_service
+        # Left None by default (unlike the other services) rather than
+        # auto-constructed: it makes a real Groq call on every claim, so
+        # tests that build this orchestrator directly (without opting in)
+        # must never pay that cost or depend on network availability.
+        # Production wiring (ClaimAnalysisOrchestrator) passes a real
+        # instance explicitly.
+        self.narrative_service = narrative_service
+        self.consistency_service = ReportConsistencyService()
         self.observer = observer or LangfuseObserver()
         self.groq_api_key = getattr(report_service, "groq_api_key", None)
         self.groq_model = getattr(report_service, "groq_model", None)
@@ -114,7 +132,13 @@ class LangGraphClaimOrchestrator:
             return state
 
         if len(valid_actions) == 1:
-            # No real choice to make -- skip the LLM call entirely.
+            # No real choice to make -- skip the LLM call entirely, and
+            # skip tracing it too: only the genuine multi-way choice below
+            # is interesting enough to appear as its own span in Langfuse.
+            # The 5 real agent spans are what a claim's trace should read
+            # as; a coordinator_decision span for every single deterministic
+            # hop between them is routing bookkeeping, not something worth
+            # surfacing as a sibling of the agents.
             state["planned_action"] = valid_actions[0]
             return state
 
@@ -157,13 +181,13 @@ class LangGraphClaimOrchestrator:
 
         if not self.groq_api_key:
             self.observer.span(
-                trace, name="coordinator_planning",
+                trace, name="coordinator_decision",
                 input_data={"valid_actions": valid_actions, "context": context},
-                output_data={"chosen_action": fallback, "reason": "GROQ_API_KEY not configured; used deterministic order"},
+                output_data={"chosen_action": fallback, "source": "fallback", "reason": "GROQ_API_KEY not configured; used deterministic order"},
             )
             return fallback
 
-        chosen, reason = fallback, None
+        chosen, reason, source = fallback, None, "fallback"
         try:
             from openai import OpenAI
 
@@ -187,6 +211,7 @@ class LangGraphClaimOrchestrator:
                     reason = None
                 if candidate in valid_actions:
                     chosen = candidate
+                    source = "llm"
                 else:
                     reason = f"LLM chose unavailable action '{candidate}'; used deterministic fallback"
         except Exception as error:
@@ -194,9 +219,9 @@ class LangGraphClaimOrchestrator:
             reason = f"Groq planning call failed: {error}"
 
         self.observer.span(
-            trace, name="coordinator_planning",
+            trace, name="coordinator_decision",
             input_data={"valid_actions": valid_actions, "context": context},
-            output_data={"chosen_action": chosen, "reason": reason},
+            output_data={"chosen_action": chosen, "source": source, "reason": reason},
         )
         return chosen
 
@@ -247,24 +272,69 @@ class LangGraphClaimOrchestrator:
         claim = state.get("claim")
         photos = getattr(claim, "photos", []) or []
         detections: list[dict[str, Any]] = []
+        detection_photo_paths: list[str] = []
         total_image_area = 0
         get_dimensions = getattr(self.damage_service, "get_image_dimensions", None)
         for photo in photos:
             image_path = getattr(photo, "file_path", None)
             if image_path:
-                detections.extend(self._call_tool("detect_damage_tool", image_path))
+                photo_detections = self._call_tool("detect_damage_tool", image_path)
+                detections.extend(photo_detections)
+                detection_photo_paths.extend([image_path] * len(photo_detections))
                 if get_dimensions is not None:
                     width, height = get_dimensions(image_path)
                     total_image_area += (width or 0) * (height or 0)
         state["detections"] = detections
         state["image_area"] = total_image_area
-        self.observer.span(
+        damage_span = self.observer.span(
             state.get("trace"),
             name="damage_detection",
             input_data={"photo_paths": [getattr(p, "file_path", None) for p in photos]},
             output_data={"detections": detections, "image_area": total_image_area},
         )
+        self._explain_top_detections(damage_span, detections, detection_photo_paths)
         return state
+
+    def _explain_top_detections(self, damage_span: Any | None, detections: list[dict[str, Any]], photo_paths: list[str]) -> None:
+        """Occlusion-sensitivity saliency (see DamageDetectionService.
+        explain_detection) for the highest-confidence detections, capped at
+        MAX_SALIENCY_DETECTIONS since each one costs grid_size^2 extra model
+        calls. Logged as a child span of damage_detection's own span (not a
+        sibling at the trace root) -- this is *why* damage_detection called
+        a region "dent", not a separate pipeline step in its own right."""
+        explain = getattr(self.damage_service, "explain_detection", None)
+        if explain is None or not detections:
+            return
+        ranked = sorted(
+            range(len(detections)),
+            key=lambda index: detections[index].get("confidence") or 0.0,
+            reverse=True,
+        )[:MAX_SALIENCY_DETECTIONS]
+
+        for index in ranked:
+            detection = detections[index]
+            image_path = photo_paths[index] if index < len(photo_paths) else None
+            if not image_path:
+                continue
+            try:
+                saliency = explain(image_path, detection)
+            except Exception as error:
+                logger.warning("Saliency computation failed for a detection: %s", error)
+                continue
+            if saliency is None:
+                continue
+            # Attached directly onto the detection dict (part of the same
+            # `detections` list already persisted to AnalysisResult.detections
+            # and returned by the API) rather than only logged to Langfuse --
+            # otherwise there would be no way for the frontend to ever show
+            # it, since Langfuse traces aren't reachable from the app UI.
+            detection["saliency"] = saliency
+            self.observer.span(
+                damage_span,
+                name="damage_saliency",
+                input_data={"photo_path": image_path, "class_name": detection.get("class_name"), "bbox": detection.get("bbox")},
+                output_data=saliency,
+            )
 
     def _score_severity(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
         detections = state.get("detections") or []
@@ -314,7 +384,7 @@ class LangGraphClaimOrchestrator:
         policy_findings = state.get("policy_findings") or []
         report_json = self._call_tool("synthesize_report_tool", detections, severity_summary, policy_findings)
         state["report_json"] = report_json
-        self.observer.generation(
+        state["report_span"] = self.observer.generation(
             state.get("trace"),
             name="report_synthesis",
             input_data={"detections": detections, "severity_summary": severity_summary, "policy_findings": policy_findings},
@@ -340,12 +410,15 @@ class LangGraphClaimOrchestrator:
                 continue
             already_claimed += getattr(sibling, "claimed_amount", None) or Decimal("0")
 
+        incident_description = getattr(claim, "incident_description", "")
+        narrative_result = self._analyze_narrative(incident_description)
+
         expiry_date = getattr(policy, "expiry_date", None)
         policy_limit = getattr(policy, "policy_limit", None)
         fraud_input = {
             "claimant_name": getattr(claim, "claimant_name", ""),
             "claimed_amount": str(getattr(claim, "claimed_amount", None)),
-            "incident_description": getattr(claim, "incident_description", ""),
+            "incident_description": incident_description,
             "severity_summary": severity_summary,
             "confidence_score": (report_json or {}).get("confidence_score", 0.5),
             "policy_holder_name": getattr(policy, "policy_holder_name", None),
@@ -354,17 +427,62 @@ class LangGraphClaimOrchestrator:
             "policy_expiry_date": str(expiry_date) if expiry_date else None,
             "already_claimed_amount": str(already_claimed),
             "policy_limit": str(policy_limit) if policy_limit is not None else None,
+            "narrative_flags": narrative_result.get("flags") or [],
         }
         fraud_assessment = self._call_tool("assess_fraud_tool", **fraud_input)
+        fraud_assessment["narrative_analysis"] = narrative_result
         state["fraud_assessment"] = fraud_assessment
-        self.observer.span(
+        fraud_span = self.observer.span(
             state.get("trace"),
             name="fraud_assessment",
             input_data=fraud_input,
             output_data=fraud_assessment,
         )
+        # Nested under fraud_assessment's own span, not a sibling of it --
+        # this is *why* the fraud score came out the way it did, not a
+        # separate pipeline step. Logged after fraud_span exists (even
+        # though the narrative analysis itself ran earlier, above) purely
+        # so it has a parent to nest under.
+        self.observer.span(
+            fraud_span,
+            name="narrative_risk_analysis",
+            input_data={"incident_description": incident_description},
+            output_data=narrative_result,
+        )
         self._override_recommendation_if_policy_invalid(state, fraud_assessment)
+        self._attach_consistency_check(state, fraud_assessment)
         return state
+
+    def _analyze_narrative(self, incident_description: str) -> dict[str, Any]:
+        """LLM-extracted, verbatim-grounded red-flag phrases from the claim's
+        free text (see NarrativeRiskAnalyzerService)."""
+        if self.narrative_service is None:
+            return {"flags": [], "available": False, "reason": "Narrative risk analysis not configured"}
+        try:
+            return self.narrative_service.analyze(incident_description)
+        except Exception as error:
+            logger.warning("Narrative risk analysis raised unexpectedly: %s", error)
+            return {"flags": [], "available": False, "reason": str(error)}
+
+    def _attach_consistency_check(self, state: ClaimAnalysisState, fraud_assessment: dict[str, Any]) -> None:
+        """Verifies the report-synthesis LLM's own recommendation against the
+        evidence it was given (grounded citations, sub-limit status,
+        coverage presence, fraud flags) instead of trusting its self-report
+        at face value -- see ReportConsistencyService for the checks. This
+        never changes `recommendation`; it's a read-only audit, nested under
+        report_synthesis's own span (the thing it's auditing), not a
+        sibling of it."""
+        report_json = state.get("report_json") or {}
+        policy_findings = state.get("policy_findings") or []
+        consistency_result = self.consistency_service.check(report_json, policy_findings, fraud_assessment)
+        report_json["consistency_check"] = consistency_result
+        state["report_json"] = report_json
+        self.observer.span(
+            state.get("report_span"),
+            name="report_consistency_check",
+            input_data={"recommendation": report_json.get("recommendation"), "policy_findings_count": len(policy_findings)},
+            output_data=consistency_result,
+        )
 
     def _override_recommendation_if_policy_invalid(self, state: ClaimAnalysisState, fraud_assessment: dict[str, Any]) -> None:
         """The report-synthesis model only ever sees clause text, detections,

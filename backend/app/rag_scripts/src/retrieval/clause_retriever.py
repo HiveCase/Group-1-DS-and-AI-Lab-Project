@@ -72,8 +72,8 @@ EXCLUSION_QUERIES = {
 }
 
 
-def _hit(chunk_id: str, score: float, meta: dict) -> dict:
-    return {
+def _hit(chunk_id: str, score: float, meta: dict, component: dict | None = None) -> dict:
+    hit = {
         "chunk_id": chunk_id,
         "text": meta["text"],
         "heading": meta["heading"],
@@ -81,6 +81,12 @@ def _hit(chunk_id: str, score: float, meta: dict) -> dict:
         "doc_id": meta["doc_id"],
         "score": round(score, 4),
     }
+    if component:
+        # Retrieval explainability: how much of this chunk's fused score
+        # came from semantic (dense) similarity vs. keyword (sparse)
+        # overlap, and where it ranked on each signal individually.
+        hit["retrieval_breakdown"] = component
+    return hit
 
 
 class ClauseRetriever:
@@ -93,11 +99,11 @@ class ClauseRetriever:
         if damage_class not in COVERAGE_QUERIES:
             raise ValueError(f"No clause queries defined for damage class '{damage_class}'")
 
-        coverage_pool = self.retriever.retrieve_scored(
+        coverage_pool = self.retriever.retrieve_scored_with_breakdown(
             COVERAGE_QUERIES[damage_class], top_k=RETRIEVAL_POOL)
-        general_coverage_pool = self.retriever.retrieve_scored(
+        general_coverage_pool = self.retriever.retrieve_scored_with_breakdown(
             GENERAL_COVERAGE_QUERY, top_k=RETRIEVAL_POOL)
-        exclusion_pool = self.retriever.retrieve_scored(
+        exclusion_pool = self.retriever.retrieve_scored_with_breakdown(
             EXCLUSION_QUERIES[damage_class], top_k=RETRIEVAL_POOL)
 
         coverage_hits = self._filter(
@@ -112,16 +118,20 @@ class ClauseRetriever:
 
     @staticmethod
     def _merge(*pools: list) -> list:
-        """Union several (chunk_id, score) pools, deduping by chunk_id and
-        keeping the max score seen for each, sorted descending. A chunk the
+        """Union several (chunk_id, score, component) pools, deduping by
+        chunk_id and keeping the max-score entry (score + its retrieval
+        component together) seen for each, sorted descending. A chunk the
         class-specific query already found scores at least as high after
         the merge -- this only ever adds candidates, never displaces one."""
-        best = {}
+        best: dict[str, tuple] = {}
         for pool in pools:
-            for cid, score in pool:
-                if cid not in best or score > best[cid]:
-                    best[cid] = score
-        return sorted(best.items(), key=lambda kv: -kv[1])
+            for cid, score, component in pool:
+                if cid not in best or score > best[cid][0]:
+                    best[cid] = (score, component)
+        return sorted(
+            ((cid, score, component) for cid, (score, component) in best.items()),
+            key=lambda item: -item[1],
+        )
 
     def _filter(self, pool: list, allowed_types: set) -> list:
         """Keep the top CLAUSES_PER_TYPE hits whose clause_type is in the
@@ -142,10 +152,10 @@ class ClauseRetriever:
         keeps the grant reachable.
         """
         hits = []
-        for cid, score in pool:
+        for cid, score, component in pool:
             meta = self.retriever.chunk_meta[cid]
             if meta["clause_type"] in allowed_types and score >= MIN_CLAUSE_SCORE:
-                hits.append(_hit(cid, score, meta))
+                hits.append(_hit(cid, score, meta, component))
             if len(hits) >= CLAUSES_PER_TYPE:
                 break
         return hits
