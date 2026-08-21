@@ -117,8 +117,8 @@ TODO: contribution percentages not yet assigned — keep this table current as o
 
 | Group Member | Contribution Percentage | Ownership Area | Remarks |
 |--------------|--------------|---------|---------|
-| **Satyajeet Kumar** | | Problem-statement definition and requirement gathering; VehiDE dataset preprocessing (dedup, PII scan, class remapping, letterboxing); YOLO11m-seg model training (Optuna hyperparameter search across baseline/extended/tuned runs); milestone presentations and technical report authoring | Primary owner of the data/vision track, dataset curation through model training |
-| **Pranab Kumar Manna** | | Problem-statement definition and requirement gathering; UI/UX wireframing; relational schema design; system architecture; Project Plan; Multi-agent orchestration ; Agent Observability & Monitoring; containerized/Kubernetes deployment; Vue 3 SPA implementation ; Pytest cases; API designed; and other backend/frontend code as committed | Primary architect and full-stack owner across backend, orchestration, and deployment |
-| **Venkata Siva Kamal Guddanti** | | RAG retrieval pipeline implementation and evaluation (hybrid dense+sparse retrieval) | Scope limited to RAG |
-| **Anuj Gautam** | | YOLO damage-detection model fine-tuning | Scope limited to YOLO fine-tuning |
-| **Harsh Pal** | | Frontend framework exploration (Vue 3 prototyping);technical report authoring; documentaion; testing | Scope limited to frontend exploration |
+| **Satyajeet Kumar** | 100%| Problem-statement definition and requirement gathering; VehiDE dataset preprocessing (dedup, PII scan, class remapping, letterboxing); YOLO11m-seg model training (Optuna hyperparameter search across baseline/extended/tuned runs); milestone presentations and technical report authoring | Primary owner of the data/vision track, dataset curation through model training |
+| **Pranab Kumar Manna** | 100%| Problem-statement definition and requirement gathering; UI/UX wireframing; relational schema design; system architecture; Project Plan; Multi-agent orchestration ; Agent Observability & Monitoring; containerized/Kubernetes deployment; Vue 3 SPA implementation ; Pytest cases; API designed; and other backend/frontend code as committed | Primary architect and full-stack owner across backend, orchestration, and deployment |
+| **Venkata Siva Kamal Guddanti** |100% | RAG retrieval pipeline implementation and evaluation (hybrid dense+sparse retrieval) | Scope limited to RAG |
+| **Anuj Gautam** | 100%| YOLO damage-detection model fine-tuning | Scope limited to YOLO fine-tuning |
+| **Harsh Pal** | 100% | Frontend framework exploration (Vue 3 prototyping);technical report authoring; documentaion; testing | Scope limited to frontend exploration |
