@@ -13,10 +13,10 @@ name: Build and push to GHCR registry
 on:
   push:
     branches:
-      - car-damage-claim-fulstack-developement
+      - main
   pull_request:
     branches:
-      - car-damage-claim-fulstack-developement
+      - main
   workflow_dispatch:
 
 env:
