@@ -1,0 +1,8 @@
+{
+  "user_id": "POL-007",
+  "doc_id": "user_POL-007",
+  "source_pdf": "policy_5_valuemotor.pdf",
+  "n_chunks": 39,
+  "ingested_at": "2026-08-21T18:55:36",
+  "embedding_model": "all-MiniLM-L6-v2"
+}

@@ -11,53 +11,74 @@ SEED_POLICIES = [
         "policy_number": "POL-001",
         "policy_holder_name": "Ada Lovelace",
         "coverage_type": "Comprehensive",
-        "status": "active",
-        "effective_date": date(2025, 1, 1),
-        "expiry_date": date(2028, 1, 1),
+        "policy_effective_date": date(2025, 1, 1),
+        "policy_expiry_date": date(2028, 1, 1),
         "policy_limit": Decimal("5000.00"),
+        "vehicle_purchase_date": date(2024, 3, 1),
     },
     {
         "policy_number": "POL-002",
         "policy_holder_name": "Grace Hopper",
         "coverage_type": "Collision",
-        "status": "active",
-        "effective_date": date(2025, 6, 1),
-        "expiry_date": date(2028, 6, 1),
+        "policy_effective_date": date(2025, 6, 1),
+        "policy_expiry_date": date(2028, 6, 1),
         "policy_limit": Decimal("3500.00"),
+        "vehicle_purchase_date": date(2023, 1, 15),
     },
     {
         "policy_number": "POL-003",
         "policy_holder_name": "Tanmay Mal",
         "coverage_type": "Comprehensive",
-        "status": "inactive",
-        "effective_date": date(2025, 3, 1),
-        "expiry_date": date(2026, 3, 1),
+        "policy_effective_date": date(2025, 3, 1),
+        "policy_expiry_date": date(2026, 3, 1),
         "policy_limit": Decimal("4000.00"),
+        "vehicle_purchase_date": date(2020, 5, 1),
     },
     {
         "policy_number": "POL-004",
         "policy_holder_name": "Alan Turing",
         "coverage_type": "Comprehensive Premium",
-        "status": "active",
-        "effective_date": date(2025, 2, 1),
-        "expiry_date": date(2025, 9, 1),
+        "policy_effective_date": date(2025, 2, 1),
+        "policy_expiry_date": date(2025, 9, 1),
         "policy_limit": Decimal("6000.00"),
+        "vehicle_purchase_date": date(2024, 11, 1),
     },
     {
         "policy_number": "POL-005",
         "policy_holder_name": "Katherine Johnson",
         "coverage_type": "Third Party",
-        "status": "active",
-        "effective_date": date(2025, 4, 1),
-        "expiry_date": date(2028, 4, 1),
+        "policy_effective_date": date(2025, 4, 1),
+        "policy_expiry_date": date(2028, 4, 1),
         "policy_limit": Decimal("2500.00"),
+        "vehicle_purchase_date": date(2026, 2, 1),
+    },
+    {
+        "policy_number": "POL-006",
+        "policy_holder_name": "Dinesh Pal",
+        "coverage_type": "Comprehensive Premium",
+        "policy_effective_date": date(2025, 1, 1),
+        "policy_expiry_date": date(2027, 4, 1),
+        "policy_limit": Decimal("9500.00"),
+        "vehicle_purchase_date": date(2022, 6, 1),
+    },
+    {
+        "policy_number": "POL-007",
+        "policy_holder_name": "Devi Prasad",
+        "coverage_type": "Third Party",
+        "policy_effective_date": date(2026, 4, 1),
+        "policy_expiry_date": date(2028, 1, 1),
+        "policy_limit": Decimal("12500.00"),
+        "vehicle_purchase_date": date(2025, 9, 1),
     },
 ]
 
 # Fields added after the initial seed; existing policy rows (already present
 # in a deployed DB) are backfilled with these in seed_defaults() rather than
 # being skipped, since seed_defaults() only *inserts* missing policy_numbers.
-_BACKFILL_FIELDS = ("policy_holder_name", "expiry_date")
+# "status" is deliberately absent: it's now Policy.status, a derived
+# property computed from policy_effective_date/policy_expiry_date, not a
+# stored column -- there is nothing to backfill.
+_BACKFILL_FIELDS = ("policy_holder_name", "policy_expiry_date", "vehicle_purchase_date")
 
 # Maps each seeded policy to the synthetic policy-wording PDF that
 # PolicyClauseService ingests for real clause retrieval. Files live under
@@ -68,11 +89,12 @@ POLICY_PDF_MAP = {
     "POL-003": "policy_3_quickclaim_general.pdf",
     "POL-004": "policy_4_autoguard_premium.pdf",
     "POL-005": "policy_5_valuemotor.pdf",
+    "POL-006": "policy_4_autoguard_premium.pdf",
+    "POL-007": "policy_5_valuemotor.pdf",
 }
 
 SEED_CLAUSES = [
     ("CL-AUTO-001", "Comprehensive coverage applies to accidental body damage up to the policy limit."),
-    ("CL-AUTO-002", "Settlement for cosmetic bumper or panel damage is capped by the active policy limit."),
 ]
 
 

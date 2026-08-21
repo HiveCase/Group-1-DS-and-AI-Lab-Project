@@ -382,16 +382,37 @@ class LangGraphClaimOrchestrator:
         detections = state.get("detections") or []
         severity_summary = state.get("severity_summary") or {}
         policy_findings = state.get("policy_findings") or []
-        report_json = self._call_tool("synthesize_report_tool", detections, severity_summary, policy_findings)
+        policy_context = self._build_policy_context(state.get("policy"), state.get("claim"))
+        report_json = self._call_tool("synthesize_report_tool", detections, severity_summary, policy_findings, policy_context=policy_context)
         state["report_json"] = report_json
         state["report_span"] = self.observer.generation(
             state.get("trace"),
             name="report_synthesis",
-            input_data={"detections": detections, "severity_summary": severity_summary, "policy_findings": policy_findings},
+            input_data={"detections": detections, "severity_summary": severity_summary, "policy_findings": policy_findings, "policy_context": policy_context},
             output_data=report_json,
             model=getattr(self.report_service, "groq_model", None),
         )
         return state
+
+    def _build_policy_context(self, policy: Any, claim: Any) -> dict[str, Any]:
+        """Policy validity/vehicle-age context handed to the Report Synthesis
+        agent -- vehicle age is measured to the claim's submission date (not
+        the incident date), per how this system defines vehicle age."""
+        if policy is None:
+            return {}
+        submitted_at = getattr(claim, "submitted_at", None)
+        submission_date = submitted_at.date() if hasattr(submitted_at, "date") else submitted_at
+        vehicle_purchase_date = getattr(policy, "vehicle_purchase_date", None)
+        vehicle_age_years = None
+        if submission_date and vehicle_purchase_date:
+            vehicle_age_years = round((submission_date - vehicle_purchase_date).days / 365.25, 1)
+        return {
+            "policy_status": getattr(policy, "status", None),
+            "policy_effective_date": str(getattr(policy, "policy_effective_date", None) or "") or None,
+            "policy_expiry_date": str(getattr(policy, "policy_expiry_date", None) or "") or None,
+            "vehicle_purchase_date": str(vehicle_purchase_date) if vehicle_purchase_date else None,
+            "vehicle_age_years": vehicle_age_years,
+        }
 
     def _assess_fraud(self, state: ClaimAnalysisState) -> ClaimAnalysisState:
         if self.fraud_service is None:
@@ -413,7 +434,7 @@ class LangGraphClaimOrchestrator:
         incident_description = getattr(claim, "incident_description", "")
         narrative_result = self._analyze_narrative(incident_description)
 
-        expiry_date = getattr(policy, "expiry_date", None)
+        expiry_date = getattr(policy, "policy_expiry_date", None)
         policy_limit = getattr(policy, "policy_limit", None)
         fraud_input = {
             "claimant_name": getattr(claim, "claimant_name", ""),

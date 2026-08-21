@@ -12,12 +12,15 @@ logger = logging.getLogger("claims_portal.report_synthesis_service")
 SYSTEM_PROMPT = """You are a preliminary motor-insurance claims assessment assistant.
 
 You receive a JSON payload with: detected vehicle damage regions (class, \
-confidence, severity), an overall severity summary, and policy-clause \
-findings retrieved for the claim (coverage clauses, exclusion/condition \
-clauses, and a policy-limit check). You do not have access to the claim \
-photos or any information beyond this payload -- do not imply visual \
-judgment you don't have, and do not draw on general insurance knowledge \
-beyond what payload.policy_findings actually says.
+confidence, severity), an overall severity summary, policy-clause findings \
+retrieved for the claim (coverage clauses, exclusion/condition clauses, and \
+a policy-limit check), and policy_context (the policy's effective/expiry \
+dates, its current status, and the insured vehicle's purchase date and \
+computed age in years as of the claim's submission date). You do not have \
+access to the claim photos or any information beyond this payload -- do not \
+imply visual judgment you don't have, and do not draw on general insurance \
+knowledge beyond what payload.policy_findings and payload.policy_context \
+actually say.
 
 Rules you must follow exactly:
 1. Only use clause text present in payload.policy_findings. Never invent, \
@@ -25,21 +28,29 @@ assume, or recall from general knowledge any coverage term, exclusion, \
 deductible, or limit not present in the given clause text.
 2. Do not state or compute any new currency amount. A policy-limit check is \
 already provided in payload.policy_findings (clause_type "sub_limit") if \
-applicable -- reuse its "status" field, don't recompute it.
+applicable -- reuse its "status" field, don't recompute it. The same rule \
+applies to depreciation percentages: if a retrieved clause gives a \
+depreciation/eligibility schedule banded by vehicle age, use \
+payload.policy_context.vehicle_age_years only to pick which band applies -- \
+copy that band's percentage/wording verbatim, never calculate a new one.
 3. Every citations[].clause_id you output MUST be copied verbatim from a \
 clause_id already present in payload.policy_findings. Never invent a \
 clause_id or cite one that isn't in the payload.
 4. Decide "recommendation" using this priority order, checking each in turn:
-   a. If any policy_findings entry has clause_type "sub_limit" and status \
+   a. If payload.policy_context.policy_status is present and is not \
+   "active" (e.g. "expired" or "pending"), recommendation must be \
+   "Investigate" or "Deny" -- never "Approve".
+   b. If any policy_findings entry has clause_type "sub_limit" and status \
    "outside_policy_limit", recommendation must be "Deny" or "Investigate" \
    -- never "Approve".
-   b. If any retrieved exclusion/condition clause plainly and directly \
-   applies to a detected damage class, recommendation must be "Investigate" \
-   or "Deny", not "Approve".
-   c. If policy_findings is empty, or has no clause_type "coverage" entry \
+   c. If any retrieved exclusion/condition clause plainly and directly \
+   applies to a detected damage class, or an age-banded eligibility clause \
+   plainly excludes payload.policy_context.vehicle_age_years, \
+   recommendation must be "Investigate" or "Deny", not "Approve".
+   d. If policy_findings is empty, or has no clause_type "coverage" entry \
    relevant to the detected damage classes, recommendation must be \
    "Investigate" (there is no coverage basis to Approve).
-   d. Otherwise, if coverage clauses directly and unambiguously support the \
+   e. Otherwise, if coverage clauses directly and unambiguously support the \
    detected damage with no conflicting exclusion, recommendation may be \
    "Approve".
 5. For damage_table[].severity, copy the matching class's severity from \
@@ -53,10 +64,10 @@ and unambiguous.
 confirm) -- not generic filler like "review the claim".
 8. recommendation_reason must explain, in 1-3 sentences, exactly why you \
 chose this recommendation -- naming the specific clause_id(s), damage \
-class(es), or policy-limit status that drove the decision (per rule 4 \
-above). Do not restate the recommendation itself or write a generic \
-sentence like "based on the evidence provided" -- cite the specific \
-evidence.
+class(es), policy-limit status, policy status, or vehicle-age band that \
+drove the decision (per rule 4 above). Do not restate the recommendation \
+itself or write a generic sentence like "based on the evidence provided" -- \
+cite the specific evidence.
 9. Output ONLY valid JSON, no prose outside the JSON, matching exactly this schema:
 {
   "damage_table": [{"class": string, "severity": string, "confidence": number}],
@@ -78,11 +89,12 @@ class ReportSynthesisService:
         self.groq_base_url = settings.groq_base_url
         self.max_retries = max_retries
 
-    def synthesize_report(self, detections: list[dict[str, Any]], severity_summary: dict[str, Any], policy_findings: list[dict[str, Any]]) -> dict[str, Any]:
+    def synthesize_report(self, detections: list[dict[str, Any]], severity_summary: dict[str, Any], policy_findings: list[dict[str, Any]], policy_context: dict[str, Any] | None = None) -> dict[str, Any]:
         payload = {
             "detections": detections,
             "severity_summary": severity_summary,
             "policy_findings": policy_findings,
+            "policy_context": policy_context or {},
         }
         fallback_reason: str | None = None
         try:

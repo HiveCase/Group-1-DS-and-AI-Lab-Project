@@ -40,9 +40,14 @@ def build_toolkit(damage_service: DamageDetectionService | None = None, severity
         return policy_service.retrieve_clauses(policy_number, damage_classes, incident_description, claimed_amount, policy_limit)
 
     @tool
-    def synthesize_report_tool(detections: list[dict[str, Any]], severity_summary: dict[str, Any], policy_findings: list[dict[str, Any]]) -> dict[str, Any]:
-        """Synthesize a structured claim report from detections, severity, and policy findings."""
-        return report_service.synthesize_report(detections, severity_summary, policy_findings)
+    def synthesize_report_tool(
+        detections: list[dict[str, Any]],
+        severity_summary: dict[str, Any],
+        policy_findings: list[dict[str, Any]],
+        policy_context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Synthesize a structured claim report from detections, severity, policy findings, and policy context (status, effective/expiry dates, vehicle age)."""
+        return report_service.synthesize_report(detections, severity_summary, policy_findings, policy_context=policy_context)
 
     @tool
     def assess_fraud_tool(

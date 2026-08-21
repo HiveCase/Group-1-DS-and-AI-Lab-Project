@@ -14,13 +14,25 @@ class Policy(Base):
     policy_number: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     policy_holder_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     coverage_type: Mapped[str] = mapped_column(String(100))
-    status: Mapped[str] = mapped_column(String(50), index=True)
-    effective_date: Mapped[date] = mapped_column(Date)
-    expiry_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    policy_effective_date: Mapped[date] = mapped_column(Date)
+    policy_expiry_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     policy_limit: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
+    vehicle_purchase_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     claims: Mapped[list["Claim"]] = relationship(back_populates="policy")
     clauses: Mapped[list["PolicyClause"]] = relationship(back_populates="policy")
+
+    @property
+    def status(self) -> str:
+        """Derived, not stored: 'active' only while today falls within
+        [policy_effective_date, policy_expiry_date]. A policy with no
+        expiry_date is treated as open-ended (never expires on its own)."""
+        today = date.today()
+        if self.policy_effective_date and today < self.policy_effective_date:
+            return "pending"
+        if self.policy_expiry_date and today > self.policy_expiry_date:
+            return "expired"
+        return "active"
 
 
 class Claim(Base):

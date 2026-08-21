@@ -512,7 +512,7 @@ class DummyPolicyService:
 
 
 class DummyReportService:
-    def synthesize_report(self, detections, severity_summary, policy_findings):
+    def synthesize_report(self, detections, severity_summary, policy_findings, policy_context=None):
         return {
             "damage_table": [{"class": "dent", "severity": "Minor", "confidence": 0.82}],
             "severity_summary": {"overall": "Minor", "per_region": [{"class": "dent", "severity": "Minor"}]},
@@ -831,7 +831,7 @@ def test_orchestrator_assess_fraud_computes_cumulative_amount_from_policy_claims
     policy = SimpleNamespace(
         policy_holder_name="Jane Doe",
         status="active",
-        expiry_date=None,
+        policy_expiry_date=None,
         policy_limit=Decimal("4000"),
         claims=[
             SimpleNamespace(claim_id="CLM-OTHER-1", status="approved", claimed_amount=Decimal("3000")),
@@ -872,7 +872,7 @@ def test_orchestrator_overrides_approve_recommendation_when_policy_inactive():
     policy = SimpleNamespace(
         policy_holder_name="Jane Doe",
         status="inactive",
-        expiry_date=None,
+        policy_expiry_date=None,
         policy_limit=Decimal("4000"),
         claims=[],
     )
@@ -908,7 +908,7 @@ def test_orchestrator_attaches_consistency_check_and_disabled_narrative_analysis
     policy = SimpleNamespace(
         policy_holder_name="Jane Doe",
         status="active",
-        expiry_date=None,
+        policy_expiry_date=None,
         policy_limit=Decimal("4000"),
         claims=[],
     )
@@ -980,7 +980,7 @@ def test_orchestrator_does_not_override_recommendation_when_policy_active():
     policy = SimpleNamespace(
         policy_holder_name="Jane Doe",
         status="active",
-        expiry_date=None,
+        policy_expiry_date=None,
         policy_limit=Decimal("4000"),
         claims=[],
     )

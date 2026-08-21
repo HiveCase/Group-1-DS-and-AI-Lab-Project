@@ -62,6 +62,22 @@ GENERAL_COVERAGE_QUERY = (
     "damage to the vehicle is covered?"
 )
 
+# Damage-class-agnostic query for depreciation/eligibility schedules banded
+# by vehicle age (e.g. a parts-depreciation table, or a Nil Depreciation /
+# Return-to-Invoice add-on's age cutoff). Merged into every class's
+# exclusion/condition candidates for the same reason GENERAL_COVERAGE_QUERY
+# is merged into coverage: a class-specific exclusion query like "what
+# limits apply to a dent claim" is not guaranteed to rank an age-banded
+# schedule table highly enough to make the kept top-N, even though it's
+# tagged clause_type "sub_limit" (already in EXCLUSION_CLAUSE_TYPES) and is
+# exactly the evidence report_synthesis needs to reason about
+# policy_context.vehicle_age_years.
+GENERAL_AGE_DEPRECIATION_QUERY = (
+    "What depreciation percentage, or vehicle-age eligibility cutoff for a "
+    "Nil Depreciation or similar add-on cover, applies based on the age of "
+    "the vehicle?"
+)
+
 EXCLUSION_QUERIES = {
     "dent": "What exclusions, conditions, or limits apply to a dent claim?",
     "scratch": "What exclusions, conditions, or limits apply to a scratch claim?",
@@ -105,10 +121,13 @@ class ClauseRetriever:
             GENERAL_COVERAGE_QUERY, top_k=RETRIEVAL_POOL)
         exclusion_pool = self.retriever.retrieve_scored_with_breakdown(
             EXCLUSION_QUERIES[damage_class], top_k=RETRIEVAL_POOL)
+        general_age_pool = self.retriever.retrieve_scored_with_breakdown(
+            GENERAL_AGE_DEPRECIATION_QUERY, top_k=RETRIEVAL_POOL)
 
         coverage_hits = self._filter(
             self._merge(coverage_pool, general_coverage_pool), COVERAGE_CLAUSE_TYPES)
-        exclusion_hits = self._filter(exclusion_pool, EXCLUSION_CLAUSE_TYPES)
+        exclusion_hits = self._filter(
+            self._merge(exclusion_pool, general_age_pool), EXCLUSION_CLAUSE_TYPES)
 
         return {
             "coverage": coverage_hits,

@@ -12,5 +12,7 @@ class PolicyRead(BaseModel):
     policy_number: str
     coverage_type: str
     status: str
-    effective_date: date
+    policy_effective_date: date
+    policy_expiry_date: date | None = None
     policy_limit: Decimal | None = None
+    vehicle_purchase_date: date | None = None

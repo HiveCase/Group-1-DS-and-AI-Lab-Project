@@ -48,7 +48,7 @@
         </label>
         <label>
           Incident Date
-          <DatePicker v-model="incidentDate" dateFormat="yy-mm-dd" showIcon />
+          <DatePicker v-model="incidentDate" dateFormat="yy-mm-dd" showIcon :minDate="minIncidentDate" :maxDate="maxIncidentDate" />
         </label>
       </div>
       <label>
@@ -102,6 +102,13 @@ const policyDetails = ref(null);
 const policyError = ref('');
 const submitError = ref('');
 const submitting = ref(false);
+
+// Incident date picker: only the last 1 year up to today is a valid
+// incident date -- future dates are never valid, and anything older is
+// outside the window this portal accepts claims for.
+const maxIncidentDate = new Date();
+const minIncidentDate = new Date(maxIncidentDate);
+minIncidentDate.setFullYear(minIncidentDate.getFullYear() - 1);
 
 const lookUpPolicy = async () => {
   policyError.value = '';
