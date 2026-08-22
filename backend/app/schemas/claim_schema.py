@@ -7,6 +7,7 @@ class ClaimCreate(BaseModel):
     policy_number: str = Field(min_length=1)
     claimant_name: str = Field(min_length=1)
     contact_info: str = Field(min_length=1)
+    vehicle_no: str | None = None
     incident_date: date
     incident_description: str = Field(min_length=1)
     claimed_amount: Decimal = Field(gt=0)
@@ -42,6 +43,7 @@ class ClaimRead(BaseModel):
     status: str
     message: str = 'Claim received'
     claimant_name: str | None = None
+    vehicle_no: str | None = None
     incident_date: date | None = None
     incident_description: str | None = None
     claimed_amount: Decimal | None = None

@@ -116,6 +116,7 @@ async def create_claim(
     policy_number: str | None = Form(default=None),
     claimant_name: str | None = Form(default=None),
     contact_info: str | None = Form(default=None),
+    vehicle_no: str | None = Form(default=None),
     incident_date: date | None = Form(default=None),
     incident_description: str | None = Form(default=None),
     claimed_amount: Decimal | None = Form(default=None),
@@ -128,6 +129,7 @@ async def create_claim(
         policy_number = payload["policy_number"]
         claimant_name = payload["claimant_name"]
         contact_info = payload["contact_info"]
+        vehicle_no = payload.get("vehicle_no")
         incident_date = date.fromisoformat(payload["incident_date"])
         incident_description = payload["incident_description"]
         claimed_amount = Decimal(str(payload["claimed_amount"]))
@@ -149,6 +151,7 @@ async def create_claim(
         incident_description,
         claimed_amount,
         photos,
+        vehicle_no=vehicle_no,
     )
     background_tasks.add_task(run_claim_analysis, claim.claim_id)
     return claim
@@ -183,22 +186,30 @@ def siu_dashboard(db: Session = Depends(get_db), _admin: User = Depends(require_
     investigations = InvestigationService(db)
     cases = []
     for claim in claims:
-        if claim.analysis_result and claim.analysis_result.fraud_score and claim.analysis_result.fraud_score >= SIU_FRAUD_THRESHOLD:
-            case = investigations.get_case(claim.claim_id)
-            cases.append({
-                'claim_id': claim.claim_id,
-                'claimant_name': claim.claimant_name,
-                'claim_type': claim.incident_description,
-                'claimed_amount': str(claim.claimed_amount),
-                'fraud_score': str(claim.analysis_result.fraud_score),
-                'needs_human_review': bool(claim.analysis_result.needs_human_review),
-                'investigation_status': case.status if case else 'not_started',
-            })
+        fraud_score = claim.analysis_result.fraud_score if claim.analysis_result else None
+        high_fraud_score = bool(fraud_score and fraud_score >= SIU_FRAUD_THRESHOLD)
+        case = investigations.get_case(claim.claim_id)
+        # A claim reaches SIU either because the AI fraud score cleared the
+        # threshold, or because an adjuster explicitly referred it via the
+        # "Request more information" decision (which opens a case below,
+        # regardless of score) -- either path leaves a case here to find.
+        if not high_fraud_score and case is None:
+            continue
+        cases.append({
+            'claim_id': claim.claim_id,
+            'claimant_name': claim.claimant_name,
+            'claim_type': claim.incident_description,
+            'claimed_amount': str(claim.claimed_amount),
+            'fraud_score': str(fraud_score) if fraud_score is not None else 'N/A',
+            'needs_human_review': bool(claim.analysis_result.needs_human_review) if claim.analysis_result else False,
+            'investigation_status': case.status if case else 'not_started',
+            'referral_reason': 'fraud_score' if high_fraud_score else 'adjuster_referral',
+        })
     under_investigation_count = sum(1 for c in cases if c['investigation_status'] == 'under_investigation')
     confirmed_fraud_count = sum(1 for c in cases if c['investigation_status'] == 'confirmed_fraud')
     return {
         'summary': {
-            'high_risk_count': len(cases),
+            'flagged_count': len(cases),
             'under_investigation_count': under_investigation_count,
             'confirmed_fraud_count': confirmed_fraud_count,
         },
@@ -288,6 +299,16 @@ def submit_decision(claim_id: str, payload: DecisionRequest, db: Session = Depen
     record.settlement_amount = payload.settlement_amount
     db.add(record)
     claim.status = DECISION_TO_STATUS.get(payload.decision, claim.status)
+    if payload.decision == 'request_more_info':
+        # Adjuster-requested info isn't something the adjuster portal can act
+        # on further -- route it to SIU as an open case so an investigator
+        # picks it up, regardless of whether the AI fraud score cleared the
+        # SIU_FRAUD_THRESHOLD below.
+        InvestigationService(db).upsert_case(
+            claim,
+            status='under_investigation',
+            notes=f"Adjuster requested more information: {payload.reasoning_note}",
+        )
     db.commit()
     db.refresh(record)
     return record

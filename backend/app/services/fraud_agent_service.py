@@ -23,6 +23,8 @@ class FraudAgentService:
         already_claimed_amount: Any = None,
         policy_limit: Any = None,
         narrative_flags: list[dict[str, Any]] | None = None,
+        vehicle_no: str | None = None,
+        policy_vehicle_registration_no: str | None = None,
     ) -> dict[str, Any]:
         claim_amount = self._to_decimal(claimed_amount)
         confidence = confidence_score if confidence_score is not None else 0.5
@@ -114,6 +116,20 @@ class FraudAgentService:
             fraud_score,
         )
 
+        vehicle_mismatch = self._vehicle_mismatch(vehicle_no, policy_vehicle_registration_no)
+        if vehicle_mismatch:
+            fraud_score = min(0.99, fraud_score + 0.25)
+            signals.append(
+                f"Claimed vehicle number '{vehicle_no}' does not match the registration on the policy "
+                f"of record '{policy_vehicle_registration_no}'"
+            )
+        record(
+            "Claim/policy vehicle registration mismatch",
+            f"Claim vehicle no. '{vehicle_no}' vs policy registration on record '{policy_vehicle_registration_no}'",
+            vehicle_mismatch,
+            fraud_score,
+        )
+
         policy_limit_decimal = self._to_decimal(policy_limit)
         already_claimed = self._to_decimal(already_claimed_amount)
         exceeds_policy_limit = bool(policy_limit_decimal and (already_claimed + claim_amount) > policy_limit_decimal)
@@ -157,6 +173,7 @@ class FraudAgentService:
             "rule_flags": {
                 "name_mismatch": name_mismatch,
                 "policy_inactive": policy_inactive,
+                "vehicle_mismatch": vehicle_mismatch,
                 "exceeds_policy_limit": exceeds_policy_limit,
             },
             # Explainability: the exact, ordered sequence of adjustments that
@@ -175,6 +192,12 @@ class FraudAgentService:
         # Any shared token (e.g. a shared first or last name) counts as a
         # match, to tolerate name-order/formatting differences.
         return claimant_tokens.isdisjoint(holder_tokens)
+
+    def _vehicle_mismatch(self, vehicle_no: str | None, policy_vehicle_registration_no: str | None) -> bool:
+        if not vehicle_no or not policy_vehicle_registration_no:
+            return False
+        normalize = lambda value: "".join(value.split()).replace("-", "").upper()
+        return normalize(vehicle_no) != normalize(policy_vehicle_registration_no)
 
     def _policy_inactive_at_incident(self, policy_status: str | None, incident_date: Any, policy_expiry_date: Any) -> bool:
         if policy_status and str(policy_status).lower() != "active":

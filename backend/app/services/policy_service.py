@@ -15,6 +15,7 @@ SEED_POLICIES = [
         "policy_expiry_date": date(2028, 1, 1),
         "policy_limit": Decimal("5000.00"),
         "vehicle_purchase_date": date(2024, 3, 1),
+        "vehicle_registration_no": "KA-01-AB-1234",
     },
     {
         "policy_number": "POL-002",
@@ -24,6 +25,7 @@ SEED_POLICIES = [
         "policy_expiry_date": date(2028, 6, 1),
         "policy_limit": Decimal("3500.00"),
         "vehicle_purchase_date": date(2023, 1, 15),
+        "vehicle_registration_no": "MH-12-CD-5678",
     },
     {
         "policy_number": "POL-003",
@@ -33,6 +35,7 @@ SEED_POLICIES = [
         "policy_expiry_date": date(2026, 3, 1),
         "policy_limit": Decimal("4000.00"),
         "vehicle_purchase_date": date(2020, 5, 1),
+        "vehicle_registration_no": "DL-03-EF-9012",
     },
     {
         "policy_number": "POL-004",
@@ -42,6 +45,7 @@ SEED_POLICIES = [
         "policy_expiry_date": date(2025, 9, 1),
         "policy_limit": Decimal("6000.00"),
         "vehicle_purchase_date": date(2024, 11, 1),
+        "vehicle_registration_no": "TN-07-GH-3456",
     },
     {
         "policy_number": "POL-005",
@@ -51,6 +55,7 @@ SEED_POLICIES = [
         "policy_expiry_date": date(2028, 4, 1),
         "policy_limit": Decimal("2500.00"),
         "vehicle_purchase_date": date(2026, 2, 1),
+        "vehicle_registration_no": "UP-16-IJ-7890",
     },
     {
         "policy_number": "POL-006",
@@ -60,6 +65,7 @@ SEED_POLICIES = [
         "policy_expiry_date": date(2027, 4, 1),
         "policy_limit": Decimal("9500.00"),
         "vehicle_purchase_date": date(2022, 6, 1),
+        "vehicle_registration_no": "GJ-05-KL-2345",
     },
     {
         "policy_number": "POL-007",
@@ -69,6 +75,7 @@ SEED_POLICIES = [
         "policy_expiry_date": date(2028, 1, 1),
         "policy_limit": Decimal("12500.00"),
         "vehicle_purchase_date": date(2025, 9, 1),
+        "vehicle_registration_no": "RJ-14-MN-6789",
     },
 ]
 
@@ -78,7 +85,7 @@ SEED_POLICIES = [
 # "status" is deliberately absent: it's now Policy.status, a derived
 # property computed from policy_effective_date/policy_expiry_date, not a
 # stored column -- there is nothing to backfill.
-_BACKFILL_FIELDS = ("policy_holder_name", "policy_expiry_date", "vehicle_purchase_date")
+_BACKFILL_FIELDS = ("policy_holder_name", "policy_expiry_date", "vehicle_purchase_date", "vehicle_registration_no")
 
 # Maps each seeded policy to the synthetic policy-wording PDF that
 # PolicyClauseService ingests for real clause retrieval. Files live under

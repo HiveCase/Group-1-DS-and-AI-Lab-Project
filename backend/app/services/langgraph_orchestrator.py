@@ -449,6 +449,8 @@ class LangGraphClaimOrchestrator:
             "already_claimed_amount": str(already_claimed),
             "policy_limit": str(policy_limit) if policy_limit is not None else None,
             "narrative_flags": narrative_result.get("flags") or [],
+            "vehicle_no": getattr(claim, "vehicle_no", None),
+            "policy_vehicle_registration_no": getattr(policy, "vehicle_registration_no", None),
         }
         fraud_assessment = self._call_tool("assess_fraud_tool", **fraud_input)
         fraud_assessment["narrative_analysis"] = narrative_result

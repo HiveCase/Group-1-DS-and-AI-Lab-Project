@@ -573,6 +573,42 @@ def test_fraud_agent_flags_inactive_policy_status():
     assert any("not active" in signal.lower() for signal in result["signals"])
 
 
+def test_fraud_agent_flags_vehicle_registration_mismatch():
+    service = FraudAgentService()
+    result = service.assess_fraud_risk(
+        claimant_name="Jane Doe",
+        claimed_amount="1000",
+        incident_description="fender bender",
+        severity_summary={"severity_score": 0.05},
+        confidence_score=0.9,
+        policy_holder_name="Jane Doe",
+        policy_status="active",
+        vehicle_no="MH-12-CD-9999",
+        policy_vehicle_registration_no="MH-12-CD-5678",
+    )
+
+    assert result["needs_investigation"] is True
+    assert result["rule_flags"]["vehicle_mismatch"] is True
+    assert any("does not match" in signal and "vehicle" in signal.lower() for signal in result["signals"])
+
+
+def test_fraud_agent_ignores_vehicle_registration_formatting_differences():
+    service = FraudAgentService()
+    result = service.assess_fraud_risk(
+        claimant_name="Jane Doe",
+        claimed_amount="500",
+        incident_description="small scratch",
+        severity_summary={"severity_score": 0.02},
+        confidence_score=0.9,
+        policy_holder_name="Jane Doe",
+        policy_status="active",
+        vehicle_no="mh12cd5678",
+        policy_vehicle_registration_no="MH-12-CD-5678",
+    )
+
+    assert result["rule_flags"]["vehicle_mismatch"] is False
+
+
 def test_fraud_agent_flags_cumulative_amount_over_policy_limit():
     service = FraudAgentService()
     result = service.assess_fraud_risk(
@@ -612,6 +648,7 @@ def test_fraud_agent_no_signals_for_clean_claim():
     assert result["rule_flags"] == {
         "name_mismatch": False,
         "policy_inactive": False,
+        "vehicle_mismatch": False,
         "exceeds_policy_limit": False,
     }
 

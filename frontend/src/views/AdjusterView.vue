@@ -162,7 +162,9 @@ const submitDecisionForClaim = async () => {
       reasoning_note: reasoningNote.value,
       settlement_amount: decision.value === 'approved' ? settlementAmount.value : null,
     });
-    decisionMessage.value = 'Decision recorded.';
+    decisionMessage.value = decision.value === 'request_more_info'
+      ? 'Decision recorded. Claim routed to SIU for further verification.'
+      : 'Decision recorded.';
     await Promise.all([loadDashboard(), loadDetail()]);
   } catch (error) {
     decisionError.value = error.response?.data?.detail || 'Unable to submit decision';

@@ -50,6 +50,10 @@
           Incident Date
           <DatePicker v-model="incidentDate" dateFormat="yy-mm-dd" showIcon :minDate="minIncidentDate" :maxDate="maxIncidentDate" />
         </label>
+        <label>
+          Vehicle No
+          <InputText v-model="vehicleNo" placeholder="Vehicle registration number" />
+        </label>
       </div>
       <label>
         Incident Description
@@ -90,6 +94,7 @@ const policyNumber = ref('');
 const claimantName = ref('');
 const contactInfo = ref('');
 const incidentDate = ref(null);
+const vehicleNo = ref('');
 const incidentDescription = ref('');
 const claimedAmount = ref(null);
 const photos = ref([]);
@@ -146,6 +151,7 @@ const submitClaim = async () => {
       claimant_name: claimantName.value,
       contact_info: contactInfo.value,
       incident_date: toIsoDate(incidentDate.value),
+      vehicle_no: vehicleNo.value,
       incident_description: incidentDescription.value,
       claimed_amount: Number(claimedAmount.value),
       photos: photos.value,

@@ -4,7 +4,7 @@
       <div>
         <p class="eyebrow">SIU portal</p>
         <h1>Investigate suspicious patterns</h1>
-        <p>Surface claims flagged by the AI analysis and prioritize the highest-risk cases.</p>
+        <p>Surface claims flagged by the AI analysis or referred by an adjuster, and prioritize the highest-risk cases.</p>
       </div>
       <div class="hero-badge">Fraud focused</div>
     </div>
@@ -13,8 +13,8 @@
     <div v-else class="card">
       <div class="stats-grid">
         <div class="stat-card">
-          <h3>High-risk</h3>
-          <p>{{ summary.high_risk_count }}</p>
+          <h3>Flagged</h3>
+          <p>{{ summary.flagged_count }}</p>
         </div>
         <div class="stat-card">
           <h3>Under investigation</h3>
@@ -31,7 +31,8 @@
           <div class="inline-group">
             <strong>{{ claim.claim_id }}</strong>
             <span>{{ claim.claimant_name }}</span>
-            <Tag :value="`Fraud score: ${claim.fraud_score}`" severity="danger" />
+            <Tag :value="`Fraud score: ${claim.fraud_score}`" :severity="claim.referral_reason === 'fraud_score' ? 'danger' : 'secondary'" />
+            <Tag v-if="claim.referral_reason === 'adjuster_referral'" value="Adjuster referral" severity="warn" />
             <Tag v-if="claim.needs_human_review" value="Needs human review" severity="warn" />
             <Tag :value="claim.investigation_status" severity="secondary" />
           </div>
@@ -39,7 +40,7 @@
         </div>
         <p>Amount: {{ claim.claimed_amount }}</p>
       </div>
-      <p v-if="!claims.length" class="muted">No claims are currently above the fraud-score threshold.</p>
+      <p v-if="!claims.length" class="muted">No claims are currently flagged for investigation.</p>
     </div>
 
     <div v-if="selectedClaimId" class="card">
@@ -83,7 +84,7 @@ import AiAnalysisPanel from '../components/AiAnalysisPanel.vue';
 import { getClaimDetail, getSIUDashboard, submitSIUAction } from '../services/api';
 
 const claims = ref([]);
-const summary = ref({ high_risk_count: 0, under_investigation_count: 0, confirmed_fraud_count: 0 });
+const summary = ref({ flagged_count: 0, under_investigation_count: 0, confirmed_fraud_count: 0 });
 const loading = ref(true);
 
 const selectedClaimId = ref('');

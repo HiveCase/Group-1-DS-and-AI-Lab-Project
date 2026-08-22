@@ -16,3 +16,4 @@ class PolicyRead(BaseModel):
     policy_expiry_date: date | None = None
     policy_limit: Decimal | None = None
     vehicle_purchase_date: date | None = None
+    vehicle_registration_no: str | None = None

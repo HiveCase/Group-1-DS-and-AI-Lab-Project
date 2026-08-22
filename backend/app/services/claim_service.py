@@ -23,6 +23,7 @@ class ClaimService:
         incident_description: str,
         claimed_amount: Decimal,
         photos: list[UploadFile],
+        vehicle_no: str | None = None,
     ) -> Claim:
         policy = self.policy_service.get_by_number(policy_number)
         if not policy or policy.status != "active":
@@ -33,6 +34,7 @@ class ClaimService:
             policy=policy,
             claimant_name=claimant_name,
             contact_info=contact_info,
+            vehicle_no=vehicle_no,
             incident_date=incident_date,
             incident_description=incident_description,
             claimed_amount=claimed_amount,

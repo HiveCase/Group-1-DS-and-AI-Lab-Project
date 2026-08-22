@@ -63,8 +63,10 @@ def build_toolkit(damage_service: DamageDetectionService | None = None, severity
         already_claimed_amount: str | None = None,
         policy_limit: str | None = None,
         narrative_flags: list[dict[str, Any]] | None = None,
+        vehicle_no: str | None = None,
+        policy_vehicle_registration_no: str | None = None,
     ) -> dict[str, Any]:
-        """Assess fraud risk for a claim based on severity, amount, report confidence, policy-holder-name / expiry / cumulative-claimed-amount checks against the policy on record, and any pre-extracted narrative red flags."""
+        """Assess fraud risk for a claim based on severity, amount, report confidence, policy-holder-name / expiry / cumulative-claimed-amount / vehicle-registration checks against the policy on record, and any pre-extracted narrative red flags."""
         return fraud_service.assess_fraud_risk(
             claimant_name=claimant_name,
             claimed_amount=claimed_amount,
@@ -78,6 +80,8 @@ def build_toolkit(damage_service: DamageDetectionService | None = None, severity
             already_claimed_amount=already_claimed_amount,
             policy_limit=policy_limit,
             narrative_flags=narrative_flags,
+            vehicle_no=vehicle_no,
+            policy_vehicle_registration_no=policy_vehicle_registration_no,
         )
 
     return [

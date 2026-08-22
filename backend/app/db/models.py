@@ -18,6 +18,7 @@ class Policy(Base):
     policy_expiry_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     policy_limit: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
     vehicle_purchase_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    vehicle_registration_no: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     claims: Mapped[list["Claim"]] = relationship(back_populates="policy")
     clauses: Mapped[list["PolicyClause"]] = relationship(back_populates="policy")
@@ -43,6 +44,7 @@ class Claim(Base):
     policy_id: Mapped[int] = mapped_column(ForeignKey("policies.id"))
     claimant_name: Mapped[str] = mapped_column(String(120))
     contact_info: Mapped[str] = mapped_column(String(160))
+    vehicle_no: Mapped[str | None] = mapped_column(String(20), nullable=True)
     incident_date: Mapped[date] = mapped_column(Date)
     incident_description: Mapped[str] = mapped_column(Text)
     claimed_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))

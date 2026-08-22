@@ -10,7 +10,7 @@ vi.mock('../src/services/api', () => ({
 }));
 
 const dashboardResponse = {
-  summary: { high_risk_count: 1, under_investigation_count: 0, confirmed_fraud_count: 0 },
+  summary: { flagged_count: 1, under_investigation_count: 0, confirmed_fraud_count: 0 },
   claims: [{
     claim_id: 'CLM-2001',
     claimant_name: 'Grace Hopper',
@@ -19,6 +19,7 @@ const dashboardResponse = {
     fraud_score: '0.8',
     needs_human_review: true,
     investigation_status: 'not_started',
+    referral_reason: 'fraud_score',
   }],
 };
 
