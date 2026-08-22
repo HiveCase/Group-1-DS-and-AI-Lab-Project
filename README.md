@@ -565,6 +565,11 @@ The `Dockerfile` builds the Vue frontend and copies its static output into the F
 ```bash
 docker build -t claims-portal .
 docker run --rm -p 8000:8000 -v ${PWD}/.local-data:/data claims-portal
+Alternative :
+docker pull ghcr.io/hivecase/group-1-ds-and-ai-lab-project:latest
+
+docker run -d --name claims-portal -p 8000:8000 -v claims-portal-data:/data -e HOME=/data -e HF_HOME=/data/.cache/huggingface -e TRANSFORMERS_CACHE=/data/.cache/huggingface -e GROQ_API_KEY="YOUR_NEW_GROQ_API_KEY" -e MODEL_NAME="openai/gpt-oss-120b" -e LANGFUSE_PUBLIC_KEY="YOUR_LANGFUSE_PUBLIC_KEY" -e LANGFUSE_SECRET_KEY="YOUR_NEW_LANGFUSE_SECRET_KEY" ghcr.io/hivecase/group-1-ds-and-ai-lab-project:latest
+
 ```
 Open `http://localhost:8000`.
 
@@ -685,19 +690,5 @@ Sourced from `specs/001-claims-portal/tasks.md` and gaps identified during devel
 - **SQLite + local-disk ChromaDB** cap the deployment at a single replica; horizontal scaling needs a Postgres migration and a shared/hosted vector store first (see `k8s/deployment.yaml` comments).
 - **No HPA (Horizontal Pod Autoscaler)** configured, for the same reason.
 
-
----
-
-***Declaration:***
-
-I have read and reviewed this submission in its entirety and confirm that it accurately represents the work of our group. By entering my initials and the date below, I acknowledge my approval of this submission.
-
-| Name | Date of Review | Sign |
-|---|---|---|
-| Satyajeet Kumar |  |  |
-| Pranab Kumar Manna |13-08-2026 | PK Manna |
-| Venkata Siva Kamal Guddanti | | |
-| Anuj Gautam | |  |
-| Harsh Pal | | |
 
 ---
