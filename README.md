@@ -685,19 +685,4 @@ Sourced from `specs/001-claims-portal/tasks.md` and gaps identified during devel
 - **SQLite + local-disk ChromaDB** cap the deployment at a single replica; horizontal scaling needs a Postgres migration and a shared/hosted vector store first (see `k8s/deployment.yaml` comments).
 - **No HPA (Horizontal Pod Autoscaler)** configured, for the same reason.
 
-
----
-
-***Declaration:***
-
-I have read and reviewed this submission in its entirety and confirm that it accurately represents the work of our group. By entering my initials and the date below, I acknowledge my approval of this submission.
-
-| Name | Date of Review | Sign |
-|---|---|---|
-| Satyajeet Kumar |  |  |
-| Pranab Kumar Manna |13-08-2026 | PK Manna |
-| Venkata Siva Kamal Guddanti | | |
-| Anuj Gautam | |  |
-| Harsh Pal | | |
-
 ---
