@@ -55,8 +55,7 @@
 9. [Evaluation & Results](#9-evaluation--results)
 10. [Repository Structure](#10-repository-structure)
 11. [Troubleshooting](#11-troubleshooting)
-12. [Contribution Summary](#12-contribution-summary)
-13. [Future Improvements / Limitations](#13-future-improvements--limitations)
+12. [Future Improvements / Limitations](#13-future-improvements--limitations)
 
 ## 1. Project Overview
 
@@ -606,27 +605,14 @@ Issues below were actually encountered and diagnosed during this project's devel
 
 ---
 
-## 12. Contribution Summary
 
-Full ownership/remarks breakdown: [`CONTRIBUTING.md`](../CONTRIBUTING.md#contribution-table).
-
-| Name | Area(s) | Summary |
-| --- | --- | --- |
-| Satyajeet Kumar | Data & Vision Pipeline | Problem-statement definition and requirement gathering; VehiDE dataset preprocessing (deduplication, PII scan, class remapping, letterboxing); YOLO11m-seg model training including the Optuna hyperparameter search across baseline/extended/tuned runs; milestone presentations and technical report authoring. Primary owner of the data/vision track end-to-end. |
-| Pranab Kumar Manna | Architecture, Backend, Orchestration, Deployment, Frontend | Problem-statement definition and requirement gathering; UI/UX wireframing; relational schema design; system architecture and project planning; LangGraph multi-agent orchestration; agent observability/monitoring; containerized/Kubernetes deployment; Vue 3 SPA implementation; pytest test suite; API design; CI/CD pipeline; and other backend/frontend code as committed. Primary architect and full-stack owner across the system, including this milestone's deployment/reproducibility work. |
-| Venkata Siva Kamal Guddanti | RAG Retrieval | RAG retrieval pipeline implementation and evaluation (hybrid dense+sparse retrieval). Scope limited to RAG. |
-| Anuj Gautam | YOLO Fine-tuning | YOLO damage-detection model fine-tuning. Scope limited to YOLO fine-tuning. |
-| Harsh Pal | Frontend Exploration, Documentation, Testing | Frontend framework exploration (Vue 3 prototyping); technical report authoring; documentation; testing. Scope limited to frontend exploration. |
-
----
-
-## 13. Future Improvements / Limitations
+## 12. Future Improvements / Limitations
 
 Gaps identified during development:
 
 - **No automated end-to-end / manual validation script** covering all four portals  — the backend/frontend test suites cover units and key flows, but there's no scripted full walkthrough.
 - **Signup/login exist (`/auth/signup`, `/auth/login`), but nothing enforces them yet** — no route requires the issued JWT, there's no `get_current_user` dependency applied anywhere, and the frontend has no login page, token storage, or route guards. All four portals remain reachable by anyone; role-based access control (using the `role` already captured at signup) is the natural next step but is not built.
-  > **Superseded:** this item was completed after this milestone — see the RBAC note under §1 above.
+
 - **No database migration tooling** — schema evolution goes through a homegrown `sync_sqlite_schema()` (`ADD COLUMN`-only) helper in `backend/app/db/database.py`, not Alembic; it cannot handle column removals, type changes, or renames, and destructive schema changes (e.g. removing a `UNIQUE` constraint) require a manual one-off migration function (see `_rename_legacy_policy_clauses_table`/`_restore_legacy_policy_clauses_rows` in the same file for a precedent).
 - **SQLite + local-disk ChromaDB** cap the deployment at a single replica; horizontal scaling needs a Postgres migration and a shared/hosted vector store first (see `k8s/deployment.yaml` comments).
 - **No HPA (Horizontal Pod Autoscaler)** configured, for the same reason.

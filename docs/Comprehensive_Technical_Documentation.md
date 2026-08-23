@@ -75,7 +75,7 @@ The system serves four role-based portals — **Claimant** (submit a claim), **A
 
 ## What was proposed vs. what was actually built
 
-Milestone 1 (`Milestone1_Report.md`) scoped this project's *proposal*: a four-agent pipeline (no dedicated fraud agent), GPT-4o with a Gemini 1.5 Flash fallback for report generation, the Policy Agent exposed as a FastMCP tool, and delivery as a Gradio app on Hugging Face Spaces. By Milestone 3 the orchestration layer itself was still listed as "planned — not implemented yet" (`Milestone3_Report.md`, §2.5).
+Milestone 1 (`Milestone1_Report.md`) scoped this project's *proposal*: a four-agent pipeline (no dedicated fraud agent), GPT-4o with a Gemini 1.5 Flash fallback for report generation, the Policy Agent exposed as a FastMCP tool, and a lightweight Gradio demo interface (see the Interface row below for what replaced it). By Milestone 3 the orchestration layer itself was still listed as "planned — not implemented yet" (`Milestone3_Report.md`, §2.5).
 
 What is actually running today, verified directly against the source in this repository, differs in several concrete ways:
 
@@ -85,7 +85,7 @@ What is actually running today, verified directly against the source in this rep
 | Agents | 4 (Damage, Severity, Policy, Report) | **5** — the same 4, plus a **Fraud Assessment** agent (deterministic rule engine) never scoped in M1 |
 | Report LLM | GPT-4o primary, Gemini 1.5 Flash fallback | **Groq-hosted `llama-3.3-70b-versatile`**, with a deterministic (non-LLM) fallback report if Groq is unavailable |
 | Policy tool exposure | FastMCP tool | Wrapped with LangChain's `@tool` decorator as an in-process name registry, invoked as a plain Python function call — not a real MCP client/server boundary (see §B3 below) |
-| Interface | Gradio on Hugging Face Spaces | **FastAPI REST API + Vue 3 SPA**, four separate role-based portals with login/signup |
+| Interface | Gradio demo (HF Spaces) | **FastAPI REST API + Vue 3 SPA** — four separate role-based portals with login/signup |
 | Deployment target | Hugging Face Spaces, CPU-basic | Docker Compose (local dev) / single production container / Kubernetes manifests for GKE — no live public deployment currently (see "Deployed Components" below) |
 
 This gap is not hidden — it reflects genuine engineering evolution across the project's milestones, and both are legitimate: the milestone reports (`Milestone1_Report.md`–`Milestone5_Report.md`) are the accurate historical record of what was *planned, trained, and evaluated*; this document and the root `README.md` describe what is *actually running* in this repository today.
