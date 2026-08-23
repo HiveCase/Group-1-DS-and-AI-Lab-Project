@@ -280,6 +280,7 @@ Notes on real, non-obvious design decisions :
 **What this does and doesn't do, precisely:**
 - ✅ A real account can be created and authenticated; the JWT payload carries `sub` (user id), `email`, and `role`.
 - ❌ **No route in the app actually requires authentication yet.** `/claims/*`, `/policies/*`, and `/analytics/*` remain fully open — signup/login exists as standalone infrastructure, not as a gate in front of anything. There is no `get_current_user` dependency applied to any existing route, and no frontend login page, token storage, or route guard (`frontend/src/router.js` has no navigation guards).
+  > **Superseded:** this was accurate as of this milestone. RBAC was subsequently implemented — `get_current_user`/`require_admin` now gate every `/claims/*`, `/policies/*`, and `/analytics/*` route, and the frontend has a login page with route guards and token storage. See `README.md` §1 and `Final_Project_Report.md` for the current state.
 - Only `email`/`password`/`role` are collected at signup; `role` must be one of `user`, `admin` (`backend/app/schemas/auth_schema.py::VALID_ROLES`) — invalid roles and duplicate emails are rejected with `422`. This is a two-tier role model, not one role per portal — it isn't currently tied to which of the four portals (Claimant/Adjuster/SIU/Supervisor) an account can reach.
 
 ---
@@ -349,6 +350,7 @@ The backend reads configuration through `pydantic-settings` (`backend/app/core/c
 - **Seed policies**: 5 fictional policies (`POL-001`–`POL-005`), each with a policy holder name, coverage type, status, effective/expiry dates, and a policy limit — seeded automatically at startup (`backend/app/services/policy_service.py::SEED_POLICIES`).
 - **Policy wording PDFs**: each seeded policy maps to a synthetic PDF under `backend/app/rag_scripts/data/policy_pdfs/synthetic/` (e.g. `policy_1_bharat_suraksha.pdf`). These are explicitly synthetic specimen documents (per their own PDF text: "This is a synthetic specimen policy for research and educational use only. Not a valid insurance contract."), auto-ingested into per-policy ChromaDB collections on first app startup (`PolicyClauseService.ensure_all_seeded_policies_ingested`).
 - **Damage detection model**: `backend/models/model.pt` (~45MB YOLO weights), loaded directly at inference time. **No training script exists in this repository** — the model is a pre-trained artifact. TODO: fill in manually — document what dataset/pipeline produced `model.pt` (an unused `backend/models/model_old.pt`, ~95MB, also sits in the repo).
+  > **Superseded:** `model_old.pt` has since been removed from the repo; only `backend/models/model.pt` remains. The training pipeline is documented in `README.md` §6.4 and `notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`.
 - **Claim photos**: uploaded by the claimant (1–5 required per claim), stored under `UPLOAD_DIR` at `<upload_dir>/<claim_id>/<uuid>.<ext>` (`backend/app/services/photo_storage_service.py`).
 - **Data format**: claim submission accepts either `multipart/form-data` (with photo files) or `application/json` (no photos) — see §5 for the exact field list.
 - **Standalone RAG tooling** (not wired into the running app; CLI scripts under `backend/app/rag_scripts/scripts/`): `preprocess_policy_pdfs.py`, `ingest_user_policy.py`, `chunk_quality_analysis.py`, `ragas_eval.py`, `sweep_rag_params.py`, and others — these were used to develop/evaluate the retrieval pipeline (`src/retrieval/*.py`) but are not invoked at runtime.
@@ -606,11 +608,15 @@ Issues below were actually encountered and diagnosed during this project's devel
 
 ## 12. Contribution Summary
 
-> TODO: fill in manually — team members, add your contributions below.
+Full ownership/remarks breakdown: [`CONTRIBUTING.md`](../CONTRIBUTING.md#contribution-table).
 
 | Name | Area(s) | Summary |
 | --- | --- | --- |
-| TODO | TODO | TODO |
+| Satyajeet Kumar | Data & Vision Pipeline | Problem-statement definition and requirement gathering; VehiDE dataset preprocessing (deduplication, PII scan, class remapping, letterboxing); YOLO11m-seg model training including the Optuna hyperparameter search across baseline/extended/tuned runs; milestone presentations and technical report authoring. Primary owner of the data/vision track end-to-end. |
+| Pranab Kumar Manna | Architecture, Backend, Orchestration, Deployment, Frontend | Problem-statement definition and requirement gathering; UI/UX wireframing; relational schema design; system architecture and project planning; LangGraph multi-agent orchestration; agent observability/monitoring; containerized/Kubernetes deployment; Vue 3 SPA implementation; pytest test suite; API design; CI/CD pipeline; and other backend/frontend code as committed. Primary architect and full-stack owner across the system, including this milestone's deployment/reproducibility work. |
+| Venkata Siva Kamal Guddanti | RAG Retrieval | RAG retrieval pipeline implementation and evaluation (hybrid dense+sparse retrieval). Scope limited to RAG. |
+| Anuj Gautam | YOLO Fine-tuning | YOLO damage-detection model fine-tuning. Scope limited to YOLO fine-tuning. |
+| Harsh Pal | Frontend Exploration, Documentation, Testing | Frontend framework exploration (Vue 3 prototyping); technical report authoring; documentation; testing. Scope limited to frontend exploration. |
 
 ---
 
@@ -620,6 +626,7 @@ Gaps identified during development:
 
 - **No automated end-to-end / manual validation script** covering all four portals  — the backend/frontend test suites cover units and key flows, but there's no scripted full walkthrough.
 - **Signup/login exist (`/auth/signup`, `/auth/login`), but nothing enforces them yet** — no route requires the issued JWT, there's no `get_current_user` dependency applied anywhere, and the frontend has no login page, token storage, or route guards. All four portals remain reachable by anyone; role-based access control (using the `role` already captured at signup) is the natural next step but is not built.
+  > **Superseded:** this item was completed after this milestone — see the RBAC note under §1 above.
 - **No database migration tooling** — schema evolution goes through a homegrown `sync_sqlite_schema()` (`ADD COLUMN`-only) helper in `backend/app/db/database.py`, not Alembic; it cannot handle column removals, type changes, or renames, and destructive schema changes (e.g. removing a `UNIQUE` constraint) require a manual one-off migration function (see `_rename_legacy_policy_clauses_table`/`_restore_legacy_policy_clauses_rows` in the same file for a precedent).
 - **SQLite + local-disk ChromaDB** cap the deployment at a single replica; horizontal scaling needs a Postgres migration and a shared/hosted vector store first (see `k8s/deployment.yaml` comments).
 - **No HPA (Horizontal Pod Autoscaler)** configured, for the same reason.

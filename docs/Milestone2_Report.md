@@ -129,6 +129,8 @@ By the end of this milestone, any team member with repository access should be a
 | Purpose in this project | Primary training and evaluation dataset for the Damage Agent |
 | Why selected | Largest publicly available annotated vehicle damage dataset (13,945 images, 36,081 instances); peer-reviewed construction paper; covers all 7 damage classes; supports detection, segmentation, and salient object detection tasks |
 
+> **Note (added post-training):** the actual training notebook (`notebooks/Yolov11m_Training&HyperparameterTuning.ipynb`) downloads from a different Kaggle handle, `m4rcuseryx/vehide-segmentation-dataset` (a pre-built YOLO-segmentation-format package), with counts close to but not identical to this section's (13,639 vs. 13,655 images). See `docs/Final_Project_Report.md` §"A dataset-provenance discrepancy worth stating plainly" for the full disclosure — it is not resolved as same-vs-different data due to insufficient evidence in this repository.
+
 
 ### 2.2 Policy and Text Datasets
 

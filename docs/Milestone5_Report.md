@@ -114,6 +114,8 @@ Labels are the pre-existing YOLO-format polygon (instance segmentation) annotati
 
 No fixed pass/fail metric threshold was assigned for this track. Results are reported and discussed comparatively - baseline vs. tuned - rather than against an absolute target.
 
+**Stated plainly against the original target:** `Milestone1_Report.md` §4.1 set mAP@50 ≥ 0.70 as the success criterion for this component. The Tuned model's test-split Box mAP50 (0.485) and Mask mAP50 (0.447) — Section 5.2 below — fall short of that target. This section's comparative framing (baseline vs. tuned, rather than vs. the Milestone 1 threshold) reflects that shortfall being treated as an open finding rather than a target this track met; see Section 11 for the recommended next steps to close the gap.
+
 ---
 
 ## 4. Performance Metrics
